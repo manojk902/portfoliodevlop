@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Container, Grid, Typography, TextField, Button, Paper, Box,
   Accordion, AccordionSummary, AccordionDetails, IconButton,
-  MenuItem, Select, FormControl, InputLabel, Avatar, Divider,
+  MenuItem, Select, FormControl, InputLabel, Avatar,
   Chip, FormControlLabel, Switch
 } from '@mui/material';
 import {

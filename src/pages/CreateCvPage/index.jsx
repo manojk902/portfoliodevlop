@@ -19,7 +19,6 @@ const CreateCvPage = () => {
   const searchParams = new URLSearchParams(location.search);
 
   const isEditMode = searchParams.get('edit') === 'true';
-  const userNameFromQuery = searchParams.get('user'); // comes from query param if any
   const existingData = location.state?.existingData || null;
   console.log("this is from allllll", userProfile, username);
 
