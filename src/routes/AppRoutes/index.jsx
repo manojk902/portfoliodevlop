@@ -17,7 +17,7 @@ import CreateCvPage from '../../pages/CreateCvPage';
 // import UserProfile from '../../Components/Common/UserProfile';
 // --- Crucial: AppRoutes destructures handleChooseTemplate from its props ---
 const AppRoutes = ({ navigate, handleChooseTemplate, selectedTemplateId, isSidebarOpen }) => {
-// --- End Crucial ---
+  // --- End Crucial ---
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
@@ -32,15 +32,15 @@ const AppRoutes = ({ navigate, handleChooseTemplate, selectedTemplateId, isSideb
           path="/header-input"
           element={
             <HeaderInputPage
-              onNavigate={navigate} 
+              onNavigate={navigate}
               isSidebarOpen={isSidebarOpen}
             />
           }
         />
-        <Route path='/profile' element={<ProfilePage />}/>
-        <Route path='/createportfolio' element={<CreatePortfolioPage />}/>
-        <Route path='/userform' element={<UserForm />}/>
-        <Route path='/create-cv' element={<CreateCvPage />}/>
+        <Route path='/profile' element={<ProfilePage />} />
+        <Route path='/createportfolio' element={<CreatePortfolioPage />} />
+        <Route path='/userform' element={<UserForm />} />
+        <Route path='/create-cv' element={<CreateCvPage />} />
 
         {/* <Route path='/userprofile' element={<UserProfile />}/> */}
 

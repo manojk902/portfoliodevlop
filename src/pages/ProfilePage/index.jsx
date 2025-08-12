@@ -41,7 +41,7 @@ const user1 = {
 export default function ProfilePage() {
   const [hasCV, setHasCV] = useState(false)
   const dispatch = useDispatch();
-   console.log("ddd", apiUrl)
+  console.log("ddd", apiUrl)
 
   const navigate = useNavigate();
   // const user = useSelector(state => state.user);
@@ -51,6 +51,7 @@ export default function ProfilePage() {
   // console.log("ttttttt", userProfile.fetchedUsed.profilePhoto);
 
   const editProfile = () => {
+    
     navigate("/userform", { state: { isUpdate: true } });
   };
   const signOut = () => {
@@ -62,14 +63,14 @@ export default function ProfilePage() {
       try {
         const updated = await axios.get(`https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/user-details/${username}`);
         dispatch(setUserProfile(updated.data));
-      } catch (error) {
+      } catch (error) { 
         console.log("thi is profile fetching erropeer", error);
 
       }
 
     }
     fetchProfile()
-  }, [username])
+  }, [username,dispatch])  /*this*/
 
   useEffect(() => {
     const checkCVExists = async () => {
@@ -84,15 +85,13 @@ export default function ProfilePage() {
         setHasCV(false);
       }
     };
-
     checkCVExists();
-  }, []);
+  }, [username]); /*this*/
   const handleCVAction = async () => {
     try {
       const res = await axios.get(
         `https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/cv-details/${username}`
       );
-
       // CV exists — navigate to edit mode using userName
       navigate('/create-cv?edit=true&user=testing_user', {
         state: { existingData: res.data }
@@ -103,10 +102,6 @@ export default function ProfilePage() {
       navigate('/create-cv');
     }
   };
-
-
-
-
   // console.log("this is from  ", user.userName);
   return (
     <Box
@@ -114,7 +109,6 @@ export default function ProfilePage() {
         minHeight: '100vh',
         // background: 'linear-gradient(to bottom right, #1A72BF, #8E2F21)',
         background: 'linear-gradient(to bottom right, #1e1e2f, #3c3c78)',
-
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -141,7 +135,6 @@ export default function ProfilePage() {
             startIcon={<EditIcon />}
             onClick={editProfile}
             variant="outlined"
-
             sx={{
               color: 'white',
               borderColor: 'white',
