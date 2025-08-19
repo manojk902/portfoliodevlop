@@ -15,54 +15,25 @@ import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../../../store/features/userSlice';
 import { setUserProfile } from '../../../store/features/userProfileSlice';
+import { apiUrl } from '../../../utils/common';
+import BuilderPage from '../../../pages/BuilderPage';
 
 const Header = ({ onNavigate, onToggleSidebar }) => {
   const user = useSelector(state => state.user);
-  // const dispatch = useDispatch();
   const dispatch = useDispatch();
-  // const navigateRouter = useNavigate(); // Get the navigate function from react-router-dom
-  // Unified navigate handler for buttons that also updates sidebar
   const handleNavigationClick = (path) => {
-    // onNavigate is the universal navigation function from AppProvider
-    // It already handles `useNavigate` and sidebar logic.
     onNavigate(path);
   };
-  /////////
   const app_name = process.env.REACT_APP_APP_NAME
   const app_url = process.env.REACT_APP_APP_URL
   const redirect_url = process.env.REACT_APP_REDIRECT_URL
-  // !!localStorage.getItem("token")
-  const [isLoggedIn, setIsLoggedIn] = useState( !!localStorage.getItem("token") );
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [searchParams] = useSearchParams();
   const [decodedToken, setDecodedToken] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
-  // {null}
   const [hasPortfolio, setHasPortfolio] = useState(null);
   const navigate = useNavigate()
   const open = Boolean(anchorEl);
-
-  // const [data, setData] = useState("jatin_451");
-
-  console.log(decodedToken?.userName, decodedToken?.email, decodedToken?.id);
-  //////////
-
-  // useEffect(() => {
-
-  //   const fetchUserProfile = async () => {
-  //     try {
-  //       const url = `https://portfoliobackend-ol8m.onrender.com/api/v1/portfolio/all-details/manoj_382`;
-  //       const response = await axios.get(url);
-  //       dispatch(setUserProfile(response.data)); // store all payload data in redux
-  //       console.log("Fetched user profile:", response.data);
-  //     } catch (e) {
-  //       console.log("error in userprofile", e);
-  //       dispatch(setUserProfile(null));
-  //     }
-  //   };
-  //   if (user.userName) {
-  //     fetchUserProfile();
-  //   }
-  // }, [user.userName, dispatch]);
 
 
   useEffect(() => {
@@ -70,8 +41,10 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
     if (isLoggedIn && decodedToken?.userName) {
       const fetchUser = async () => {
         try {
-          const user = await axios.get(`https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/user-details/${decodedToken?.userName}`);
+          const user = await axios.get(`${apiUrl}/user-details/${decodedToken?.userName}`);
           dispatch(setUserProfile(user.data)); // store all payload data in redux
+          console.log(user);
+          
 
           if (user) {
             setHasPortfolio(true);
@@ -85,17 +58,13 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
       }
       fetchUser();
     } else {
-      // dispatch(clearUser());
-      // setHasPortfolio(false);
     };
   }, [isLoggedIn, decodedToken?.userName, dispatch]);
 
-  /////////////
   useEffect(() => {
-    // Fetch all users details on mount
     const fetchData = async () => {
       try {
-        const response = await axios.get("https://portfoliobackend-ol8m.onrender.com/api/v1/portfolio/all-users-details");
+        const response = await axios.get(`${apiUrl}all-users-details`);
         console.log(response.data);
         // setData(response.data); // Uncomment if you want to store the data
       } catch (error) {
@@ -104,12 +73,6 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
     };
     fetchData();
   }, []);
-
-  // if (data === decodedToken?.userName) {
-  //   console.log("Name matched", data);
-  // } else {
-  //   console.log("Name not matched");
-  // }
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -145,9 +108,8 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-  /////////////
 
-  console.log("this0", hasPortfolio);
+  console.log("this0", user);
 
   return (
     // AppBar is a Material-UI component for the top application bar.
@@ -247,7 +209,11 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
                   <MenuItem>
                     <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>Profile</Link>
                   </MenuItem>
-                  <MenuItem>Settings</MenuItem>
+                  <MenuItem >
+                    <Link to="/edit" style={{ textDecoration: 'none', color: 'inherit' }}>
+                      BuilderPage
+                    </Link>
+                  </MenuItem>
                   <MenuItem onClick={handleLogout}>Logout</MenuItem>
                 </Menu>
               </>

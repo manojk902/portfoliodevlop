@@ -1,25 +1,38 @@
 // src/store/index.js
-// This file configures the Redux store using Redux Toolkit.
 import { configureStore } from '@reduxjs/toolkit';
-import resumeReducer from './features/resume/resumeSlice'; // Import your resume slice reducer
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage'; // Defaults to localStorage for web
+import resumeReducer from './features/resume/resumeSlice';
 import userReducer from './features/userSlice';
-import userProfileReducer from '../store/features/userProfileSlice';
-// Configure the Redux store.
-// configureStore automatically sets up Redux DevTools Extension,
-// thunk middleware, and immutable state updates.
+import userProfileReducer from './features/userProfileSlice';
+
+// Configure persist settings for userProfile slice
+const userProfilePersistConfig = {
+  key: 'userProfile', // Key for the persisted state in storage
+  storage, // Use localStorage
+  // Optionally, whitelist specific fields to persist (e.g., only username)
+  // whitelist: ['data.username'], // Uncomment and adjust if userProfile.data has a username field
+};
+
+// Wrap userProfileReducer with persistReducer
+const persistedUserProfileReducer = persistReducer(userProfilePersistConfig, userProfileReducer);
+
+// Configure the Redux store
 export const store = configureStore({
   reducer: {
-    // Define your reducers here. Each key will correspond to a slice of your state.
-    // E.g., `state.resume` will be managed by `resumeReducer`.
     resume: resumeReducer,
     user: userReducer,
-    userProfile: userProfileReducer,
-
-    // Add other slices here as your application grows (e.g., user: userReducer)
+    userProfile: persistedUserProfileReducer, // Use persisted reducer
   },
-  // Middleware setup (optional, configureStore adds defaults automatically)
-  // You can add custom middleware here if needed.
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
-  // DevTools are enabled by default in development mode.
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Ignore non-serializable values from redux-persist
+        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+      },
+    }),
   devTools: process.env.NODE_ENV !== 'production',
 });
+
+// Create the persistor object for redux-persist
+export const persistor = persistStore(store);

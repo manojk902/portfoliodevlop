@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { setUserProfile } from '../../store/features/userProfileSlice';
 import { useNavigate } from 'react-router-dom';
+import { apiUrl } from '../../utils/common';
 
 
 
@@ -98,8 +99,8 @@ useEffect(()=>{
         data.append('profilePhoto', values?.profilePhoto);
       }
       const url = isEdit
-        ? `https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/update-user`
-        : `https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/register`
+        ? `${apiUrl}/update-user`
+        : `${apiUrl}/register`
 
       const method = isEdit ? 'put' : 'post';
 
@@ -109,13 +110,13 @@ useEffect(()=>{
       if (res.data.status==="success") {
         alert("doneer")
         console.log("this is1 ",res.data.user.userName , user.userName);
-        const updated = await axios.get(`https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/user-details/${user.userName}`);
+        const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
         dispatch(setUserProfile(updated.data));
         navigate('/profile');
       }
       if (isEdit) {
         // alert("here")
-        const updated = await axios.get(`https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/user-details/${user.userName}`);
+        const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
         dispatch(setUserProfile(updated.data));
         // console.log("kkk",updated.data);/
         navigate('/profile');

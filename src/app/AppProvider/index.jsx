@@ -2,19 +2,13 @@
 import React, { useState } from 'react';
 import { Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-
 import Header from '../../Components/Layout/Header';
-
-import Modal from '../../Components/Common/Modal';
 import AppRoutes from '../../routes/AppRoutes'; // Correct path
-
 import { useSelector, useDispatch } from 'react-redux';
 import { setSelectedTemplate } from '../../store/features/resume/resumeSlice';
-import Footer from '../../Components/Layout/Footer';
+// import Footer from '../../Components/Layout/Footer';
 
-const AppProvider = ({onToggleSidebar}) => {
-  const [showModal, setShowModal] = useState(false);
-  const [modalContent, setModalContent] = useState({ title: '', message: '' });
+const AppProvider = ({ onToggleSidebar }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const selectedTemplateId = useSelector((state) => state.resume.selectedTemplateId);
@@ -47,11 +41,6 @@ const AppProvider = ({onToggleSidebar}) => {
   };
   // --- End Crucial ---
 
-  const closeModal = () => {
-    setShowModal(false);
-    setModalContent({ title: '', message: '' });
-  };
-
   return (
     <Box sx={{
       fontFamily: 'Inter, sans-serif',
@@ -70,7 +59,7 @@ const AppProvider = ({onToggleSidebar}) => {
         isSidebarOpen={isSidebarOpen}
       />
       {/* --- End Crucial --- */}
-<Footer/> {/*footer work later*/}
+      {/* <Footer/> footer work later */}
       <Box
         sx={{
           position: 'absolute',
@@ -91,14 +80,6 @@ const AppProvider = ({onToggleSidebar}) => {
       >
         😊
       </Box>
-
-      <Modal
-        show={showModal}
-        onClose={closeModal}
-        title={modalContent.title}
-        message={modalContent.message}
-      />
-      
     </Box>
   );
 };

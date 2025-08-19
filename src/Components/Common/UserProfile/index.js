@@ -2,6 +2,7 @@ import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import React, { useEffect } from 'react';
 import { setUserProfile } from "../../../store/features/userProfileSlice"; // adjust path as needed
+import { apiUrl } from "../../../utils/common";
 
 const UserProfile = () => {
   const user = useSelector(state => state.user);
@@ -10,7 +11,7 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const url = `https://portfoliobackend-ol8m.onrender.com/api/v1/portfolio/all-details/manoj_382`;
+        const url = `${apiUrl}/all-details/manoj_382`;
         const response = await axios.get(url);
         dispatch(setUserProfile(response.data)); // store all payload data in redux
         console.log("Fetched user profile:", response.data);

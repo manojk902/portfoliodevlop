@@ -61,7 +61,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const updated = await axios.get(`https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/user-details/${username}`);
+        const updated = await axios.get(`${apiUrl}/user-details/${username}`);
         dispatch(setUserProfile(updated.data));
       } catch (error) { 
         console.log("thi is profile fetching erropeer", error);
@@ -76,7 +76,7 @@ export default function ProfilePage() {
     const checkCVExists = async () => {
       try {
         const response = await axios.get(
-          `https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/cv-details/${username}`
+          `${apiUrl}/cv-details/${username}`
         );
         const exists = !!response.data;
         setHasCV(exists);
@@ -90,7 +90,7 @@ export default function ProfilePage() {
   const handleCVAction = async () => {
     try {
       const res = await axios.get(
-        `https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/cv-details/${username}`
+        `${apiUrl}/cv-details/${username}`
       );
       // CV exists — navigate to edit mode using userName
       navigate('/create-cv?edit=true&user=testing_user', {
