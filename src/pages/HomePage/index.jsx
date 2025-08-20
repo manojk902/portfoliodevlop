@@ -6,6 +6,7 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import ThreeDScrollEffect from '../../Components/Common/ThreeDScrollEffect';
 import CvTemplates from '../../Components/Templates/CvTemplates';
+import SearchBox from '../../Components/Common/SearchBox';
 
 const HomePage = () => {
   // const handleChooseSampleTemplate = (templateId) => {
@@ -26,6 +27,7 @@ const HomePage = () => {
       <Typography variant="h3" component="h1" sx={{ fontWeight: 'extrabold', color: 'text.primary', mb: 2 }}>
         Welcome to Resume Now!
       </Typography>
+      <SearchBox/>
 
       <CvTemplates />
 
