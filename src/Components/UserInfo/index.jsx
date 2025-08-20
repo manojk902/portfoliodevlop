@@ -31,7 +31,7 @@ const UserInfo = () => {
       }
     };
     fetchGroups();
-  }, []);
+  }, );
 
   // Save or update groups to API
   const saveGroupsToAPI = async (updatedGroups) => {

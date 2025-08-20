@@ -11,7 +11,6 @@ const HomePage = () => {
   // const handleChooseSampleTemplate = (templateId) => {
   //   console.log(`Sample Template ${templateId} chosen on homepage!`);
   // };
-
   return (
     <Box
       sx={{

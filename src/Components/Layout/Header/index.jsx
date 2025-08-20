@@ -27,11 +27,12 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
   const app_name = process.env.REACT_APP_APP_NAME
   const app_url = process.env.REACT_APP_APP_URL
   const redirect_url = process.env.REACT_APP_REDIRECT_URL
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  // !!localStorage.getItem("token")
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [searchParams] = useSearchParams();
   const [decodedToken, setDecodedToken] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [hasPortfolio, setHasPortfolio] = useState(null);
+  const [hasPortfolio, setHasPortfolio] = useState(true);
   const navigate = useNavigate()
   const open = Boolean(anchorEl);
 
