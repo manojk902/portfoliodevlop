@@ -51,7 +51,6 @@ export default function ProfilePage() {
   // console.log("ttttttt", userProfile.fetchedUsed.profilePhoto);
 
   const editProfile = () => {
-    
     navigate("/userform", { state: { isUpdate: true } });
   };
   const signOut = () => {
