@@ -13,6 +13,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import axios from "axios";
 import { apiUrl } from "../../../../utils/common";
+import { useSelector } from "react-redux";
 
 const lightTheme = createTheme({
   palette: {
@@ -219,6 +220,9 @@ function Cv1() {
   const fileInputRef = useRef(null);
   const [cvData, setCvData] = useState(null);
   const [user, setUser] = useState(null);
+  const userName = useSelector(state => state.user);
+  console.log("lll",userName.userName);
+  
   useEffect(() => {
     // Define an async function inside useEffect
     const fetchCvData = async () => {
@@ -228,20 +232,20 @@ function Cv1() {
         setError(null);
 
         // Use our new 'get' function. No need to write the full URL!
-        const fetchedCv = await axios.get(`${apiUrl}/cv-details/manoj_804`);
-        const fetchedUser = await axios.get(`${apiUrl}/user-details/manoj_804`);
+        const fetchedCv = await axios.get(`${apiUrl}/cv-details/${userName.userName}`);
+        const fetchedUser = await axios.get(`${apiUrl}/user-details/${userName.userName}`);
 
-        console.log(fetchedCv.data.fetchedCv, "this");
+        // console.log(fetchedCv.data.fetchedCv, "this");
         // setCv(fetchedCv); // Assuming the data is directly what you need
         setCvData(fetchedCv.data.fetchedCv)
         setUser(fetchedUser.data.fetchedUsed)
 
-        console.log(fetchedUser.data.fetchedUsed, "this is user");
+        // console.log(fetchedUser.data.fetchedUsed, "this is user");
 
       } catch (err) {
         // The error was thrown by our helper, so we can catch it here
         setError('Failed to fetch CV details. Please try again later.');
-        console.error(err); // Log the detailed error for developers
+        console.error("Failed to fetch CV details. Please try again later.",err); // Log the detailed error for developers
       } finally {
         // This runs whether the request succeeded or failed
         setLoading(false);
@@ -249,8 +253,8 @@ function Cv1() {
     };
 
     fetchCvData();
-  }, [])
-  console.log(cvData, "this is cv dataaa");
+  }, [userName.userName])
+  // console.log(cvData, "this is cv dataaa");
 
   // Show a loading message
   if (loading) {

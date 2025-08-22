@@ -16,7 +16,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../../../store/features/userSlice';
 import { setUserProfile } from '../../../store/features/userProfileSlice';
 import { apiUrl } from '../../../utils/common';
-// import BuilderPage from '../../../pages/BuilderPage';
 
 const Header = ({ onNavigate, onToggleSidebar }) => {
   const user = useSelector(state => state.user);
@@ -27,7 +26,6 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
   const app_name = process.env.REACT_APP_APP_NAME
   const app_url = process.env.REACT_APP_APP_URL
   const redirect_url = process.env.REACT_APP_REDIRECT_URL
-  // !!localStorage.getItem("token")
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [searchParams] = useSearchParams();
@@ -63,7 +61,7 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
     const fetchData = async () => {
       try {
         const response = await axios.get(`${apiUrl}all-users-details`);
-        console.log(response.data);
+        // console.log(response.data);
         // setData(response.data); // Uncomment if you want to store the data
       } catch (error) {
         console.error("Error fetching user details:", error);
@@ -119,7 +117,7 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
     setAnchorEl(null);
   };
 
-  console.log("this0", user);
+  // console.log("this0", user);
 
 return (
   <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 1, py: 1 }}>
