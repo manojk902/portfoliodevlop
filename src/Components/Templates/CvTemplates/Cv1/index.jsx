@@ -196,18 +196,18 @@ const SectionLine = ({ value, onChange, component: Component, ...props }) => {
   );
 };
 
-const ListItemLine = ({ value, onChange }) => {
-  return (
-    <li>
-      <SectionLine
-        value={value}
-        onChange={onChange}
-        component={Typography}
-        variant="body2"
-      />
-    </li>
-  );
-};
+// const ListItemLine = ({ value, onChange }) => {
+//   return (
+//     <li>
+//       <SectionLine
+//         value={value}
+//         onChange={onChange}
+//         component={Typography}
+//         variant="body2"
+//       />
+//     </li>
+//   );
+// };
 
 function Cv1() {
   // const [cv, setCv] = useState(null); // Initialize with null to handle loading state
@@ -305,18 +305,18 @@ function Cv1() {
     });
   };
 
-  const updateExperiencePoint = (expIndex, pointIndex, value) => {
-    setCvData(prev => {
-      const newExperience = [...prev.experience];
-      const newPoints = [...newExperience[expIndex].points];
-      newPoints[pointIndex] = value;
-      newExperience[expIndex] = {
-        ...newExperience[expIndex],
-        points: newPoints
-      };
-      return { ...prev, experience: newExperience };
-    });
-  };
+  // const updateExperiencePoint = (expIndex, pointIndex, value) => {
+  //   setCvData(prev => {
+  //     const newExperience = [...prev.experience];
+  //     const newPoints = [...newExperience[expIndex].points];
+  //     newPoints[pointIndex] = value;
+  //     newExperience[expIndex] = {
+  //       ...newExperience[expIndex],
+  //       points: newPoints
+  //     };
+  //     return { ...prev, experience: newExperience };
+  //   });
+  // };
 
   const updateProject = (index, field, value) => {
     setCvData(prev => {
