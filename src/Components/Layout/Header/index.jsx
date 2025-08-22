@@ -121,167 +121,167 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
 
   console.log("this0", user);
 
-  return (
-    // AppBar is a Material-UI component for the top application bar.
+return (
+  <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 1, py: 1 }}>
+    <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3, md: 4 } }}>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+          {/* Left side: logo */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Skeleton variant="circular" width={40} height={40} />
+            <Skeleton variant="text" width={120} height={30} />
+          </Box>
 
-    <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 1, py: 1 }}>
-      <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3, md: 4 } }}>
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-            {/* Left side: logo */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Skeleton variant="circular" width={40} height={40} />
-              <Skeleton variant="text" width={120} height={30} />
-            </Box>
-
-            {/* Right side: buttons & avatar */}
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Skeleton variant="rectangular" width={70} height={36} />
-              <Skeleton variant="rectangular" width={70} height={36} />
-              <Skeleton variant="rectangular" width={100} height={36} />
-              <Skeleton variant="circular" width={40} height={40} />
+          {/* Right side: buttons & avatar */}
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Skeleton variant="rectangular" width={70} height={36} />
+            <Skeleton variant="rectangular" width={70} height={36} />
+            <Skeleton variant="rectangular" width={100} height={36} />
+            <Skeleton variant="circular" width={40} height={40} />
+          </Box>
+        </Box>
+      ) : (
+        <>
+          {/* Left side: logo and sidebar toggle */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {/* Sidebar Toggle Button (visible only on small screens) */}
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              sx={{ mr: 2, display: { md: 'none' }, color: 'text.secondary' }}
+              onClick={onToggleSidebar} // Triggers sidebar open/close in AppProvider
+            >
+              <MenuIcon />
+            </IconButton>
+            {/* "Resume Now." Logo/Title */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                typography: 'h6', // MUI typography variant
+                fontWeight: 'bold',
+                color: 'text.primary',
+                cursor: 'pointer',
+              }}
+              onClick={() => handleNavigationClick('/')} // Navigates to the home page path
+            >
+              <DescriptionIcon sx={{ mr: 1, color: 'primary.main' }} /> {/* Icon for visual appeal */}
+              Resume Now.
             </Box>
           </Box>
-        ) :
-          (
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {/* Sidebar Toggle Button (visible only on small screens) */}
-              <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                sx={{ mr: 2, display: { md: 'none' }, color: 'text.secondary' }}
-                onClick={onToggleSidebar} // Triggers sidebar open/close in AppProvider
-              >
-                <MenuIcon />
-              </IconButton>
-              {/* "Resume Now." Logo/Title */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  typography: 'h6', // MUI typography variant
-                  fontWeight: 'bold',
-                  color: 'text.primary',
-                  cursor: 'pointer',
-                }}
-                onClick={() => handleNavigationClick('/')} // Navigates to the home page path
-              >
-                <DescriptionIcon sx={{ mr: 1, color: 'primary.main' }} /> {/* Icon for visual appeal */}
-                Resume Now.
-              </Box>
-            </Box>
-          )
 
-          < Box sx={{ display: 'flex', gap: 2 }}>
-        <Button
-          onClick={() => handleNavigationClick('/')} // Navigates to home path
-          variant="text" // Text button style
-          sx={{
-            color: 'text.secondary',
-            bgcolor: 'grey.200',
-            '&:hover': { bgcolor: 'grey.300' },
-            px: 2,
-            py: 1,
-          }}
-        >
-          Home
-        </Button>
+          {/* Right side: navigation buttons and user actions */}
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Button
+              onClick={() => handleNavigationClick('/')} // Navigates to home path
+              variant="text" // Text button style
+              sx={{
+                color: 'text.secondary',
+                bgcolor: 'grey.200',
+                '&:hover': { bgcolor: 'grey.300' },
+                px: 2,
+                py: 1,
+              }}
+            >
+              Home
+            </Button>
 
-        <Button
-          onClick={() => window.location.href = `${redirect_url}/signup?appName=${app_name}&redirectUrl=${app_url}`}
-          variant="text" // Text button style
-          sx={{
-            color: 'text.secondary',
-            bgcolor: 'grey.200',
-            '&:hover': { bgcolor: 'grey.300' },
-            px: 2,
-            py: 1,
-          }}
-        >
-          Signup
-        </Button>
-        <Button
-          onClick={() => handleNavigationClick('/templates')} // Navigates to templates page path
-          variant="contained" // Filled button style
-          color="primary"
-          sx={{ px: 2, py: 1 }}
-        >
-          Templates
-        </Button>
+            <Button
+              onClick={() => window.location.href = `${redirect_url}/signup?appName=${app_name}&redirectUrl=${app_url}`}
+              variant="text" // Text button style
+              sx={{
+                color: 'text.secondary',
+                bgcolor: 'grey.200',
+                '&:hover': { bgcolor: 'grey.300' },
+                px: 2,
+                py: 1,
+              }}
+            >
+              Signup
+            </Button>
 
-        {isLoggedIn ? (
-          loading ? (
-            <Skeleton variant="circular" width={40} height={40} />
-          ) : hasPortfolio ? (
-            <>
-              <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
-                <Avatar sx={{ bgcolor: 'primary.main' }}>
-                  {decodedToken?.userName?.[0]?.toUpperCase() || 'not'}
-                </Avatar>
-              </IconButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleMenuClose}
-                slotProps={{
-                  paper: {
-                    elevation: 0,
-                    sx: {
-                      mt: 1.5,
-                      minWidth: 150,
-                      borderRadius: 2,
-                    },
-                  },
-                }}
-              >
-                <MenuItem>
-                  <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>Profile</Link>
-                </MenuItem>
-                <MenuItem >
-                  <Link to="/edit" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    BuilderPage
-                  </Link>
-                </MenuItem>
-                <MenuItem onClick={handleLogout}>Logout</MenuItem>
-              </Menu>
-            </>
-          ) : (
-            <>
-              <Button onClick={handleLogout}>Logout</Button>
+            <Button
+              onClick={() => handleNavigationClick('/templates')} // Navigates to templates page path
+              variant="contained" // Filled button style
+              color="primary"
+              sx={{ px: 2, py: 1 }}
+            >
+              Templates
+            </Button>
+
+            {isLoggedIn ? (
+              loading ? (
+                <Skeleton variant="circular" width={40} height={40} />
+              ) : hasPortfolio ? (
+                <>
+                  <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
+                    <Avatar sx={{ bgcolor: 'primary.main' }}>
+                      {decodedToken?.userName?.[0]?.toUpperCase() || 'U'}
+                    </Avatar>
+                  </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={open}
+                    onClose={handleMenuClose}
+                    slotProps={{
+                      paper: {
+                        elevation: 0,
+                        sx: {
+                          mt: 1.5,
+                          minWidth: 150,
+                          borderRadius: 2,
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem>
+                      <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        Profile
+                      </Link>
+                    </MenuItem>
+                    <MenuItem>
+                      <Link to="/edit" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        BuilderPage
+                      </Link>
+                    </MenuItem>
+                    <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                  </Menu>
+                </>
+              ) : (
+                <>
+                  <Button onClick={handleLogout}>Logout</Button>
+                  <Button
+                    onClick={() => handleNavigationClick('/userform')}
+                    variant="contained"
+                    color="primary"
+                    sx={{ px: 2, py: 1 }}
+                  >
+                    Create Portfolio
+                  </Button>
+                </>
+              )
+            ) : (
               <Button
-                onClick={() => handleNavigationClick('/userform')}
-                variant="contained"
-                color="primary"
-                sx={{ px: 2, py: 1 }}
+                onClick={() => window.location.href = `${redirect_url}/login?appName=${app_name}&redirectUrl=${app_url}`}
+                variant="text"
+                sx={{
+                  color: 'text.secondary',
+                  bgcolor: 'grey.200',
+                  '&:hover': { bgcolor: 'grey.300' },
+                  px: 2,
+                  py: 1,
+                }}
               >
-                Create Portfolio
+                Login
               </Button>
-            </>
-
-          )
-        ) : (
-          <Button
-            onClick={() => window.location.href = `${redirect_url}/login?appName=${app_name}&redirectUrl=${app_url}`}
-            variant="text"
-            sx={{
-              color: 'text.secondary',
-              bgcolor: 'grey.200',
-              '&:hover': { bgcolor: 'grey.300' },
-              px: 2,
-              py: 1,
-            }}
-          >
-            Login
-          </Button>
-        )}
-
-
-      </>)}
-
+            )}
+          </Box>
+        </>
+      )}
     </Toolbar>
-    </AppBar >
-  );
+  </AppBar>
+);
 };
 
 export default Header;
