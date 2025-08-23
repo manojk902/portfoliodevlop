@@ -14,6 +14,7 @@ import jsPDF from "jspdf";
 import axios from "axios";
 import { apiUrl } from "../../../../utils/common";
 import { useSelector } from "react-redux";
+// import { useParams } from "react-router-dom";
 
 const lightTheme = createTheme({
   palette: {
@@ -212,6 +213,7 @@ const SectionLine = ({ value, onChange, component: Component, ...props }) => {
 
 function Cv1() {
   // const [cv, setCv] = useState(null); // Initialize with null to handle loading state
+  //  const { username } = useParams();
   const [hasVal] = useState(true);
   const [loading, setLoading] = useState(true); // State to track loading
   const [error, setError] = useState(null); // State to track errors

@@ -11,7 +11,9 @@ import CreateCvPage from '../../pages/CreateCvPage';
 import Cv1 from '../../Components/Templates/CvTemplates/Cv1';
 import BuilderPage from '../../pages/BuilderPage';
 import UserInfo from '../../Components/UserInfo';
+// import Template from '../../Components/Template';
 import Template from '../../Components/Template';
+import GroupForm from '../../Components/UserInfo/GroupForm';
 const AppRoutes = () => {
   return (
 
@@ -23,8 +25,11 @@ const AppRoutes = () => {
         <Route path='/editprofile' element={<UserForm />} />
         <Route path='/create-cv' element={<CreateCvPage />} />
         <Route path='/edit' element={<BuilderPage />} >
-          <Route path="userinfo" element={<UserInfo />} />
+          <Route index element={<UserInfo />} />
+          <Route path="userinfo"  element={<UserInfo />} />
           <Route path="template" element={<Template />} />
+          <Route path="add-group" element={<GroupForm />} />
+          <Route path="edit-group/:groupId" element={<GroupForm />} />
         </Route>
       </Route>
       {/* <Route path="*" element={<HomePage />} /> */}

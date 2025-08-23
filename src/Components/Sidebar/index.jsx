@@ -32,7 +32,7 @@ function Sidebar() {
             </li>
             <li className={styles.sidebarSubitem}>
               <Link to="template" className={styles.sidebarLink}>
-                Template
+                Templates
               </Link>
             </li>
           </ul>
