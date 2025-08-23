@@ -8,8 +8,8 @@ import { Navigate, Outlet } from 'react-router-dom'; // From react-router-dom
 
 const ProtectedRoute = () => {
   // const { isAuthenticated } = useAuth(); // Get authentication status from context
-  
-  const isAuthenticated = false||localStorage.getItem('token');
+
+  const isAuthenticated = true || localStorage.getItem('token');
   // alert(isAuthenticated)
   // If the user is authenticated, render the child routes (Outlet).
   // Otherwise, redirect them to the home page (or a specific login route if one existed).

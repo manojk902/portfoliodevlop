@@ -12,10 +12,14 @@ import Cv1 from '../../Components/Templates/CvTemplates/Cv1';
 import BuilderPage from '../../pages/BuilderPage';
 import UserInfo from '../../Components/UserInfo';
 import Template from '../../Components/Template';
+import Designpreview from '../../Components/Template/Designpreview';
+import Designpage from '../../Components/Template/Designpage';
 const AppRoutes = () => {
   return (
 
     <Routes>
+      <Route path="/Designpage" element={<Designpage />} />
+      <Route path="/Designpreview/:type/:id" element={<Designpreview />} />
       <Route path="/" element={<HomePage />} />
       <Route element={<ProtectedRoute />}>
         <Route path='/profile' element={<ProfilePage />} />
@@ -25,6 +29,7 @@ const AppRoutes = () => {
         <Route path='/edit' element={<BuilderPage />} >
           <Route path="userinfo" element={<UserInfo />} />
           <Route path="template" element={<Template />} />
+          {/* <Route path="/Designpage" element={<Designpage />} /> */}
         </Route>
       </Route>
       {/* <Route path="*" element={<HomePage />} /> */}
