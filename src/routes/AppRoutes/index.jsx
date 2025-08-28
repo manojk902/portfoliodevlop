@@ -12,8 +12,17 @@ import Cv1 from '../../Components/Templates/CvTemplates/Cv1';
 import BuilderPage from '../../pages/BuilderPage';
 import UserInfo from '../../Components/UserInfo';
 import Template from '../../Components/Template';
+<<<<<<< Updated upstream
 import Designpreview from '../../Components/Template/Designpreview';
 import Designpage from '../../Components/Template/Designpage';
+=======
+<<<<<<< HEAD
+import GroupForm from '../../Components/UserInfo/GroupForm';
+=======
+import Designpreview from '../../Components/Template/Designpreview';
+import Designpage from '../../Components/Template/Designpage';
+>>>>>>> template-page
+>>>>>>> Stashed changes
 const AppRoutes = () => {
   return (
 
@@ -29,7 +38,16 @@ const AppRoutes = () => {
         <Route path='/edit' element={<BuilderPage />} >
           <Route path="userinfo" element={<UserInfo />} />
           <Route path="template" element={<Template />} />
+<<<<<<< Updated upstream
           {/* <Route path="/Designpage" element={<Designpage />} /> */}
+=======
+<<<<<<< HEAD
+          <Route path="add-group" element={<GroupForm />} />
+          <Route path="edit-group/:groupId" element={<GroupForm />} />
+=======
+          {/* <Route path="/Designpage" element={<Designpage />} /> */}
+>>>>>>> template-page
+>>>>>>> Stashed changes
         </Route>
       </Route>
       {/* <Route path="*" element={<HomePage />} /> */}
