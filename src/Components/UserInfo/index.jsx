@@ -5,68 +5,92 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { getGroups, saveGroups } from './DummyData';
 import styles from './UserInfo.module.css';
 
+const sectionTypes = {
+  education: { title: 'Education' },
+  workExperience: { title: 'Work Experience' },
+  skills: { title: 'Skills' },
+  languages: { title: 'Languages' },
+  certifications: { title: 'Certifications' },
+  projects: { title: 'Projects' },
+  custom: { title: 'Custom Fields' },
+};
+
 const UserInfo = () => {
   const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [defaultGroupId, setDefaultGroupId] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Fetch groups from dummy data
+  // Fetch groups and default group from dummy data
   const fetchGroups = () => {
-    const data = getGroups();
+    const { groups: data, defaultGroupId: storedDefaultId } = getGroups();
     const newGroup = location.state?.newGroup;
+    
     if (newGroup) {
-      // Add new group from navigation state if present
       const updatedGroups = [...data.filter(g => g.id !== newGroup.id), newGroup];
       setGroups(updatedGroups);
       setSelectedGroupId(newGroup.id);
-      saveGroups(updatedGroups);
+      setDefaultGroupId(storedDefaultId || newGroup.id);
+      saveGroups({ groups: updatedGroups, defaultGroupId: storedDefaultId || newGroup.id });
     } else if (data.length === 0) {
       const defaultGroup = {
-        id: Date.now(),
+        id: crypto.randomUUID(),
         title: 'Default Group',
-        info: [
+        personalInfo: [
           { label: 'Name', value: '' },
           { label: 'Address', value: '' },
           { label: 'Phone Number', value: '' },
           { label: 'Email', value: '' },
         ],
+        sections: [],
       };
       setGroups([defaultGroup]);
       setSelectedGroupId(defaultGroup.id);
-      saveGroups([defaultGroup]);
+      setDefaultGroupId(defaultGroup.id);
+      saveGroups({ groups: [defaultGroup], defaultGroupId: defaultGroup.id });
     } else {
       setGroups(data);
-      setSelectedGroupId(location.state?.newGroupId || data[0].id);
+      setSelectedGroupId(location.state?.newGroupId || storedDefaultId || data[0].id);
+      setDefaultGroupId(storedDefaultId || data[0].id);
     }
   };
 
-  // Fetch groups on mount and when navigating to /edit/userinfo
   useEffect(() => {
     fetchGroups();
   }, [location.pathname]);
 
-  // Delete group from state and dummy data
-  const deleteGroup = (groupId) => {
-    const updatedGroups = groups.filter(g => g.id !== groupId);
-    setGroups(updatedGroups);
-    setSelectedGroupId(updatedGroups.length > 0 ? updatedGroups[0]?.id : null);
-    saveGroups(updatedGroups);
+  // Set a group as default
+  const setDefaultGroup = (groupId) => {
+    setDefaultGroupId(groupId);
+    saveGroups({ groups, defaultGroupId: groupId });
   };
 
-  // Navigate to add new group
+  // Delete group
+  const deleteGroup = (groupId) => {
+    const updatedGroups = groups.filter(g => g.id !== groupId);
+    let newDefaultGroupId = defaultGroupId;
+    if (groupId === defaultGroupId) {
+      newDefaultGroupId = updatedGroups.length > 0 ? updatedGroups[0].id : null;
+    }
+    setSelectedGroupId(updatedGroups.length > 0 ? updatedGroups[0]?.id : null);
+    setDefaultGroupId(newDefaultGroupId);
+    saveGroups({ groups: updatedGroups, defaultGroupId: newDefaultGroupId });
+  };
+
+  // Add group navigation
   const addGroup = () => {
     navigate('/edit/add-group');
   };
 
-  // Navigate to edit an existing group and set as selected
+  // Edit group
   const editGroup = (groupId) => {
     setSelectedGroupId(groupId);
     navigate(`/edit/edit-group/${groupId}`);
   };
 
-  // Function to select a group without editing
+  // Select group
   const selectGroup = (groupId) => {
     setSelectedGroupId(groupId);
   };
@@ -81,29 +105,47 @@ const UserInfo = () => {
         {groups.map(group => (
           <div
             key={group.id}
-            className={`${styles.groupCard} ${selectedGroupId === group.id ? styles.selected : ''}`}
+            className={`${styles.groupCard} ${selectedGroupId === group.id ? styles.selected : ''} ${defaultGroupId === group.id ? styles.default : ''}`}
           >
-            <div onClick={() => selectGroup(group.id)} className={styles.groupContent}>
-              <strong className={styles.groupTitle}>{group.title || 'Untitled Group'}</strong>
-              <ul className={styles.groupPreview}>
-                {group.info.map((field, index) => (
+            <div className={styles.groupHeader}>
+              <div onClick={() => selectGroup(group.id)} className={styles.groupContent}>
+                <strong className={styles.groupTitle}>{group.title || 'Untitled Group'}</strong>
+                {defaultGroupId === group.id && <span className={styles.defaultBadge}>Default</span>}
+              </div>
+              <button
+                onClick={() => setDefaultGroup(group.id)}
+                className={styles.defaultButton}
+                title="Set as Default"
+              >
+                ★
+              </button>
+            </div>
+            <div className={styles.groupPreview}>
+              <ul>
+                {group.personalInfo.map((field, index) => (
                   <li key={index} className={styles.fieldItem}>{field.label}: {field.value}</li>
+                ))}
+                {group.sections?.map((section, secIndex) => (
+                  <li key={secIndex}>
+                    <strong className={styles.sectionTitle}>{sectionTypes[section.type]?.title}</strong>
+                    <ul>
+                      {section.items.map((item, itemIndex) => (
+                        <li key={itemIndex} className={styles.itemList}>
+                          <ul>
+                            {Object.entries(item).map(([key, value], fieldIndex) => (
+                              <li key={fieldIndex}>{key.charAt(0).toUpperCase() + key.slice(1)}: {value}</li>
+                            ))}
+                          </ul>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
                 ))}
               </ul>
             </div>
             <div className={styles.groupActions}>
-              <button
-                onClick={() => editGroup(group.id)}
-                className={styles.editButton}
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => deleteGroup(group.id)}
-                className={styles.deleteButton}
-              >
-                Delete
-              </button>
+              <button onClick={() => editGroup(group.id)} className={styles.editButton}>Edit</button>
+              <button onClick={() => deleteGroup(group.id)} className={styles.deleteButton}>Delete</button>
             </div>
           </div>
         ))}
