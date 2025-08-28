@@ -13,11 +13,27 @@ import BuilderPage from '../../pages/BuilderPage';
 import UserInfo from '../../Components/UserInfo';
 // import Template from '../../Components/Template';
 import Template from '../../Components/Template';
+<<<<<<< HEAD
 import GroupForm from '../../Components/UserInfo/GroupForm';
+=======
+<<<<<<< Updated upstream
+import Designpreview from '../../Components/Template/Designpreview';
+import Designpage from '../../Components/Template/Designpage';
+=======
+<<<<<<< HEAD
+import GroupForm from '../../Components/UserInfo/GroupForm';
+=======
+import Designpreview from '../../Components/Template/Designpreview';
+import Designpage from '../../Components/Template/Designpage';
+>>>>>>> template-page
+>>>>>>> Stashed changes
+>>>>>>> template-page
 const AppRoutes = () => {
   return (
 
     <Routes>
+      <Route path="/Designpage" element={<Designpage />} />
+      <Route path="/Designpreview/:type/:id" element={<Designpreview />} />
       <Route path="/" element={<HomePage />} />
       <Route element={<ProtectedRoute />}>
         <Route path='/profile' element={<ProfilePage />} />
@@ -28,8 +44,21 @@ const AppRoutes = () => {
           <Route index element={<UserInfo />} />
           <Route path="userinfo"  element={<UserInfo />} />
           <Route path="template" element={<Template />} />
+<<<<<<< HEAD
           <Route path="add-group" element={<GroupForm />} />
           <Route path="edit-group/:groupId" element={<GroupForm />} />
+=======
+<<<<<<< Updated upstream
+          {/* <Route path="/Designpage" element={<Designpage />} /> */}
+=======
+<<<<<<< HEAD
+          <Route path="add-group" element={<GroupForm />} />
+          <Route path="edit-group/:groupId" element={<GroupForm />} />
+=======
+          {/* <Route path="/Designpage" element={<Designpage />} /> */}
+>>>>>>> template-page
+>>>>>>> Stashed changes
+>>>>>>> template-page
         </Route>
       </Route>
       {/* <Route path="*" element={<HomePage />} /> */}

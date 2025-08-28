@@ -7,7 +7,22 @@ import { Navigate, Outlet } from 'react-router-dom'; // From react-router-dom
 // import { useAuth } from '../../../utils/AuthContext'; // Import the authentication context hook
 
 const ProtectedRoute = () => {
+<<<<<<< HEAD
+=======
+<<<<<<< Updated upstream
+  // const { isAuthenticated } = useAuth(); // Get authentication status from context
+
+  const isAuthenticated = true || localStorage.getItem('token');
+=======
+<<<<<<< HEAD
+>>>>>>> template-page
   const isAuthenticated = false||localStorage.getItem('token');
+=======
+  // const { isAuthenticated } = useAuth(); // Get authentication status from context
+
+  const isAuthenticated = true || localStorage.getItem('token');
+>>>>>>> template-page
+>>>>>>> Stashed changes
   // alert(isAuthenticated)
   // If the user is authenticated, render the child routes (Outlet).
   // Otherwise, redirect them to the home page (or a specific login route if one existed).
