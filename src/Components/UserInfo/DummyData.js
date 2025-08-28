@@ -1,10 +1,11 @@
-let groups = [];
+let groupsData = [];
+let defaultGroupId = null;
 
 export const getGroups = () => {
-  return [...groups]; // Return a copy to prevent direct mutation
+  return { groups: groupsData, defaultGroupId };
 };
 
-export const saveGroups = (updatedGroups) => {
-  groups = [...updatedGroups]; // Update the in-memory store
-  return true; // Simulate successful save
+export const saveGroups = ({ groups, defaultGroupId: newDefaultGroupId }) => {
+  groupsData = groups;
+  defaultGroupId = newDefaultGroupId;
 };
