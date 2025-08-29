@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getGroups, saveGroups } from '../DummyData';
-import styles from '../UserInfo.module.css';
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
 
 const sectionTypes = {
   education: { title: 'Education', fields: ['college', 'course', 'fieldOfStudy', 'startDate', 'endDate', 'grade', 'location'] },
@@ -79,7 +91,6 @@ const GroupForm = () => {
     setGroup(prev => {
       const existingSection = prev.sections.find(s => s.name === sectionName);
       if (sectionName === 'summary') {
-        // For summary, replace existing summary if it exists, or add new
         return {
           ...prev,
           sections: [
@@ -92,10 +103,10 @@ const GroupForm = () => {
         ...prev,
         sections: existingSection
           ? prev.sections.map(s =>
-              s.name === sectionName
-                ? { ...s, data: [...s.data, fields] }
-                : s
-            )
+            s.name === sectionName
+              ? { ...s, data: [...s.data, fields] }
+              : s
+          )
           : [...prev.sections, { name: sectionName, data: [fields] }],
       };
     });
@@ -140,183 +151,133 @@ const GroupForm = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <h2 className={styles.header}>{groupId ? 'Edit Profile' : 'Add New Profile'}</h2>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <div className={styles.personalInfoSection}>
-          <h3 className={styles.subHeader}>Personal Information</h3>
-          <div className={styles.fieldRow}>
-            <label className={styles.label}>First Name:</label>
-            <input
-              type="text"
-              className={styles.input}
-              value={group.firstName}
-              onChange={e => handleInputChange('firstName', e.target.value)}
-            />
-          </div>
-          <div className={styles.fieldRow}>
-            <label className={styles.label}>Last Name:</label>
-            <input
-              type="text"
-              className={styles.input}
-              value={group.lastName}
-              onChange={e => handleInputChange('lastName', e.target.value)}
-            />
-          </div>
-          <div className={styles.fieldRow}>
-            <label className={styles.label}>Email:</label>
-            <input
-              type="email"
-              className={styles.input}
-              value={group.email}
-              onChange={e => handleInputChange('email', e.target.value)}
-            />
-          </div>
-          <div className={styles.fieldRow}>
-            <label className={styles.label}>Phone:</label>
-            <input
-              type="tel"
-              className={styles.input}
-              value={group.phoneNo}
-              onChange={e => handleInputChange('phoneNo', e.target.value)}
-            />
-          </div>
-          <div className={styles.fieldRow}>
-            <label className={styles.label}>City:</label>
-            <input
-              type="text"
-              className={styles.input}
-              value={group.address.city}
-              onChange={e => handleInputChange('address.city', e.target.value)}
-            />
-          </div>
-          <div className={styles.fieldRow}>
-            <label className={styles.label}>Pin Code:</label>
-            <input
-              type="text"
-              className={styles.input}
-              value={group.address.pinCode}
-              onChange={e => handleInputChange('address.pinCode', e.target.value)}
-            />
-          </div>
-          <div className={styles.fieldRow}>
-            <label className={styles.label}>State:</label>
-            <input
-              type="text"
-              className={styles.input}
-              value={group.address.state}
-              onChange={e => handleInputChange('address.state', e.target.value)}
-            />
-          </div>
-          <div className={styles.fieldRow}>
-            <label className={styles.label}>Country:</label>
-            <input
-              type="text"
-              className={styles.input}
-              value={group.address.country}
-              onChange={e => handleInputChange('address.country', e.target.value)}
-            />
-          </div>
-        </div>
+    <Box sx={{ maxWidth: 1000, mx: 'auto', p: 3, bgcolor: 'background.paper', borderRadius: 2 }}>
+      <Typography variant="h4" gutterBottom>
+        {groupId ? 'Edit Profile' : 'Add New Profile'}
+      </Typography>
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>Personal Information</Typography>
+            <Grid container spacing={2}>
+              {[
+                { label: 'First Name', field: 'firstName', type: 'text' },
+                { label: 'Last Name', field: 'lastName', type: 'text' },
+                { label: 'Email', field: 'email', type: 'email' },
+                { label: 'Phone', field: 'phoneNo', type: 'tel' },
+                { label: 'City', field: 'address.city', type: 'text' },
+                { label: 'Pin Code', field: 'address.pinCode', type: 'text' },
+                { label: 'State', field: 'address.state', type: 'text' },
+                { label: 'Country', field: 'address.country', type: 'text' },
+              ].map(({ label, field, type }) => (
+                <Grid item xs={12} sm={6} key={field}>
+                  <TextField
+                    fullWidth
+                    label={label}
+                    type={type}
+                    value={field.includes('address.') ? group.address[field.split('.')[1]] || '' : group[field] || ''}
+                    onChange={e => handleInputChange(field, e.target.value)}
+                    variant="outlined"
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
         {group.sections.map((section, index) => (
-          <div key={section.name} className={styles.sectionContainer}>
-            <div className={styles.sectionHeader}>
-              <h3 className={styles.subHeader}>{sectionTypes[section.name].title}</h3>
-              <button
-                type="button"
-                className={styles.removeButton}
-                onClick={() => removeSection(section.name)}
-              >
-                Remove Section
-              </button>
-            </div>
-            {section.data.map((entry, entryIndex) => (
-              <div key={entryIndex} className={styles.entryCard}>
-                {sectionTypes[section.name].fields.map(field => (
-                  <div key={field} className={styles.field}>
-                    <label className={styles.label}>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
-                    {field === 'summary' || field === 'description' ? (
-                      <textarea
-                        className={styles.textarea}
-                        value={entry[field] || ''}
-                        onChange={e => handleSectionChange(section.name, index, entryIndex, field, e.target.value)}
-                      />
-                    ) : (
-                      <input
+          <Card key={section.name} sx={{ mb: 3 }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6">{sectionTypes[section.name].title}</Typography>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => removeSection(section.name)}
+                >
+                  Remove Section
+                </Button>
+              </Box>
+              {section.data.map((entry, entryIndex) => (
+                <Box key={entryIndex} sx={{ border: 1, borderColor: 'grey.300', borderRadius: 1, p: 2, mb: 2, bgcolor: 'grey.50' }}>
+                  {sectionTypes[section.name].fields.map(field => (
+                    <Box key={field} sx={{ mb: 2 }}>
+                      <TextField
+                        fullWidth
+                        label={field.charAt(0).toUpperCase() + field.slice(1)}
                         type={field.includes('Date') ? 'date' : 'text'}
-                        className={styles.input}
+                        multiline={field === 'summary' || field === 'description'}
+                        rows={field === 'summary' || field === 'description' ? 4 : 1}
                         value={entry[field] || ''}
                         onChange={e => handleSectionChange(section.name, index, entryIndex, field, e.target.value)}
+                        variant="outlined"
+                        InputLabelProps={field.includes('Date') ? { shrink: true } : undefined}
                       />
-                    )}
-                  </div>
-                ))}
-                {section.name !== 'summary' && (
-                  <button
-                    type="button"
-                    className={styles.removeEntryButton}
-                    onClick={() => removeEntry(section.name, entryIndex)}
-                  >
-                    Remove Entry
-                  </button>
-                )}
-              </div>
-            ))}
-            {section.name !== 'summary' && (
-              <button
-                type="button"
-                className={styles.addButtonSmall}
-                onClick={() => addSectionEntry(section.name)}
-              >
-                Add {sectionTypes[section.name].title} Entry
-              </button>
-            )}
-          </div>
+                    </Box>
+                  ))}
+                  {section.name !== 'summary' && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => removeEntry(section.name, entryIndex)}
+                      sx={{ mt: 1 }}
+                    >
+                      Remove Entry
+                    </Button>
+                  )}
+                </Box>
+              ))}
+              {section.name !== 'summary' && (
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => addSectionEntry(section.name)}
+                >
+                  Add {sectionTypes[section.name].title} Entry
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         ))}
-        <button
-          type="button"
-          className={styles.addFieldButton}
+        <Button
+          variant="contained"
+          color="success"
           onClick={() => setShowModal(true)}
         >
           Add Section
-        </button>
-        {showModal && (
-          <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
-              <h3>Select Section</h3>
-              {Object.keys(sectionTypes).map(section => (
-                <button
-                  key={section}
-                  className={styles.modalButton}
-                  onClick={() => {
-                    addSectionEntry(section);
-                    setShowModal(false);
-                  }}
-                  disabled={group.sections.some(s => s.name === section)}
-                >
-                  {sectionTypes[section].title}
-                </button>
-              ))}
-              <button
-                type="button"
-                className={styles.cancelButton}
-                onClick={() => setShowModal(false)}
+        </Button>
+        <Dialog open={showModal} onClose={() => setShowModal(false)}>
+          <DialogTitle>Select Section</DialogTitle>
+          <DialogContent>
+            {Object.keys(sectionTypes).map(section => (
+              <Button
+                key={section}
+                fullWidth
+                variant="outlined"
+                onClick={() => {
+                  addSectionEntry(section);
+                  setShowModal(false);
+                }}
+                disabled={group.sections.some(s => s.name === section)}
+                sx={{ mb: 1 }}
               >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-        <div className={styles.formActions}>
-          <button type="button" className={styles.cancelButton} onClick={handleCancel}>
+                {sectionTypes[section].title}
+              </Button>
+            ))}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowModal(false)} color="secondary">Cancel</Button>
+          </DialogActions>
+        </Dialog>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <Button variant="outlined" color="secondary" onClick={handleCancel}>
             Cancel
-          </button>
-          <button type="submit" className={styles.saveButton}>
+          </Button>
+          <Button variant="contained" color="primary" type="submit">
             Save
-          </button>
-        </div>
-      </form>
-    </div>
+          </Button>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
