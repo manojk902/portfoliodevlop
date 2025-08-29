@@ -4,350 +4,318 @@ import { getGroups, saveGroups } from '../DummyData';
 import styles from '../UserInfo.module.css';
 
 const sectionTypes = {
-  education: {
-    title: 'Education',
-    itemTemplate: {
-      institution: '',
-      degree: '',
-      field: '',
-      startDate: '',
-      endDate: '',
-      gpa: '',
-      description: '',
-    },
-  },
-  workExperience: {
-    title: 'Work Experience',
-    itemTemplate: {
-      company: '',
-      position: '',
-      location: '',
-      startDate: '',
-      endDate: '',
-      description: '',
-    },
-  },
-  skills: {
-    title: 'Skills',
-    itemTemplate: {
-      skill: '',
-    },
-  },
-  languages: {
-    title: 'Languages',
-    itemTemplate: {
-      language: '',
-      proficiency: 'Intermediate',
-    },
-    proficiencyOptions: ['Native', 'Fluent', 'Intermediate', 'Basic'],
-  },
-  certifications: {
-    title: 'Certifications',
-    itemTemplate: {
-      name: '',
-      organization: '',
-      dateIssued: '',
-      expirationDate: '',
-      description: '',
-    },
-  },
-  projects: {
-    title: 'Projects',
-    itemTemplate: {
-      name: '',
-      description: '',
-      technologies: '',
-      link: '',
-    },
-  },
-  custom: {
-    title: 'Custom Fields',
-    itemTemplate: {
-      label: '',
-      value: '',
-    },
-  },
+  education: { title: 'Education', fields: ['college', 'course', 'fieldOfStudy', 'startDate', 'endDate', 'grade', 'location'] },
+  experience: { title: 'Experience', fields: ['jobTitle', 'company', 'location', 'startDate', 'endDate', 'description'] },
+  skill: { title: 'Skill', fields: ['skill', 'rating'] },
+  certification: { title: 'Certification', fields: ['name', 'institute', 'issueDate'] },
+  language: { title: 'Language', fields: ['language', 'proficiency'] },
+  project: { title: 'Project', fields: ['name', 'description', 'technologies', 'url'] },
+  custom: { title: 'Custom', fields: ['label', 'value'] },
+  summary: { title: 'Summary', fields: ['summary'] },
+  achievement: { title: 'Achievement', fields: ['title', 'description', 'date'] },
 };
 
 const GroupForm = () => {
-  const [groups, setGroups] = useState([]);
-  const [currentGroup, setCurrentGroup] = useState({
-    id: null,
-    title: '',
-    personalInfo: [
-      { label: 'Name', value: '' },
-      { label: 'Address', value: '' },
-      { label: 'Phone Number', value: '' },
-      { label: 'Email', value: '' },
-    ],
-    sections: [],
-  });
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const isEdit = !!groupId;
+  const [group, setGroup] = useState({
+    id: crypto.randomUUID(),
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNo: '',
+    address: { city: '', pinCode: '', state: '', country: '' },
+    sections: [],
+    isDefault: false,
+  });
+  const [showModal, setShowModal] = useState(false);
 
-  // Fetch groups from dummy data
   useEffect(() => {
-    const { groups: data } = getGroups();
-    setGroups(Array.isArray(data) ? data : []);
-    if (isEdit) {
-      const groupToEdit = data.find(g => g.id === groupId); // Compare as strings
-      if (groupToEdit) {
-        const personalLabels = ['Name', 'Address', 'Phone Number', 'Email'];
-        const personalInfo = personalLabels.map(label => ({
-          label,
-          value: groupToEdit.info?.find(f => f.label === label)?.value || '',
-        }));
-        let sections = groupToEdit.sections || [];
-        if (groupToEdit.customFields && groupToEdit.customFields.length > 0 && !sections.find(s => s.type === 'custom')) {
-          sections = [...sections, { type: 'custom', items: groupToEdit.customFields.map(f => ({ label: f.label, value: f.value })) }];
+    if (groupId) {
+      const fetchGroup = async () => {
+        const { groups } = await getGroups();
+        const existingGroup = groups.find(g => g.id === groupId);
+        if (existingGroup) {
+          setGroup({ ...existingGroup, sections: existingGroup.sections || [] });
         }
-        setCurrentGroup({
-          id: groupToEdit.id,
-          title: groupToEdit.title || '',
-          personalInfo,
-          sections: sections || [],
-        });
-      } else {
-        console.error(`Group with ID ${groupId} not found`);
-        // Fallback to default state with warning
-        setCurrentGroup({
-          id: groupId,
-          title: 'Editing Group (Not Found)',
-          personalInfo: [
-            { label: 'Name', value: '' },
-            { label: 'Address', value: '' },
-            { label: 'Phone Number', value: '' },
-            { label: 'Email', value: '' },
-          ],
-          sections: [],
-        });
-      }
+      };
+      fetchGroup();
+    }
+  }, [groupId]);
+
+  const handleInputChange = (field, value) => {
+    if (field.includes('address.')) {
+      const addressField = field.split('.')[1];
+      setGroup(prev => ({
+        ...prev,
+        address: { ...prev.address, [addressField]: value },
+      }));
     } else {
-      setCurrentGroup({
-        id: crypto.randomUUID(),
-        title: '',
-        personalInfo: [
-          { label: 'Name', value: '' },
-          { label: 'Address', value: '' },
-          { label: 'Phone Number', value: '' },
-          { label: 'Email', value: '' },
-        ],
-        sections: [],
-      });
+      setGroup(prev => ({ ...prev, [field]: value }));
     }
-  }, [groupId, isEdit]);
-
-  // Handle title change
-  const handleTitleChange = (e) => {
-    setCurrentGroup({ ...currentGroup, title: e.target.value });
   };
 
-  // Handle personal info change
-  const handlePersonalInfoChange = (index, value) => {
-    const updatedPersonalInfo = [...currentGroup.personalInfo];
-    updatedPersonalInfo[index] = { ...updatedPersonalInfo[index], value };
-    setCurrentGroup({ ...currentGroup, personalInfo: updatedPersonalInfo });
+  const handleSectionChange = (sectionName, sectionIndex, entryIndex, field, value) => {
+    setGroup(prev => {
+      const updatedSections = [...prev.sections];
+      const targetSection = updatedSections[sectionIndex];
+      if (!targetSection) return prev;
+      const updatedData = (targetSection.data || []).map((item, i) =>
+        i === entryIndex ? { ...item, [field]: value } : item
+      );
+      updatedSections[sectionIndex] = {
+        ...targetSection,
+        data: updatedData,
+      };
+      return { ...prev, sections: updatedSections };
+    });
   };
 
-  // Handle section item field change
-  const handleSectionChange = (sectionType, itemIndex, field, value) => {
-    const updatedSections = currentGroup.sections.map(section => {
-      if (section.type === sectionType) {
-        const updatedItems = section.items.map((item, i) => {
-          if (i === itemIndex) {
-            return { ...item, [field]: value };
-          }
-          return item;
-        });
-        return { ...section, items: updatedItems };
+  const addSectionEntry = (sectionName) => {
+    const fields = sectionTypes[sectionName].fields.reduce((acc, field) => ({
+      ...acc,
+      [field]: '',
+    }), {});
+    setGroup(prev => {
+      const existingSection = prev.sections.find(s => s.name === sectionName);
+      if (sectionName === 'summary') {
+        // For summary, replace existing summary if it exists, or add new
+        return {
+          ...prev,
+          sections: [
+            ...prev.sections.filter(s => s.name !== 'summary'),
+            { name: 'summary', data: [fields] },
+          ],
+        };
       }
-      return section;
+      return {
+        ...prev,
+        sections: existingSection
+          ? prev.sections.map(s =>
+              s.name === sectionName
+                ? { ...s, data: [...s.data, fields] }
+                : s
+            )
+          : [...prev.sections, { name: sectionName, data: [fields] }],
+      };
     });
-    setCurrentGroup({ ...currentGroup, sections: updatedSections });
   };
 
-  // Add a new section
-  const addSection = (type) => {
-    if (currentGroup.sections.find(s => s.type === type)) {
-      alert('This section is already added.');
-      return;
-    }
-    const template = sectionTypes[type].itemTemplate;
-    const newSection = { type, items: [{ ...template }] };
-    setCurrentGroup({
-      ...currentGroup,
-      sections: [...currentGroup.sections, newSection],
-    });
-    setIsModalOpen(false);
+  const removeSection = (sectionName) => {
+    setGroup(prev => ({
+      ...prev,
+      sections: prev.sections.filter(s => s.name !== sectionName),
+    }));
   };
 
-  // Add a new item to a section
-  const addItem = (type) => {
-    const template = sectionTypes[type].itemTemplate;
-    const updatedSections = currentGroup.sections.map(section => {
-      if (section.type === type) {
-        return { ...section, items: [...section.items, { ...template }] };
+  const removeEntry = (sectionName, entryIndex) => {
+    setGroup(prev => {
+      const updatedSections = [...prev.sections];
+      const sectionIndex = updatedSections.findIndex(s => s.name === sectionName);
+      if (sectionIndex !== -1) {
+        updatedSections[sectionIndex] = {
+          ...updatedSections[sectionIndex],
+          data: updatedSections[sectionIndex].data.filter((_, i) => i !== entryIndex),
+        };
+        if (updatedSections[sectionIndex].data.length === 0) {
+          updatedSections.splice(sectionIndex, 1);
+        }
       }
-      return section;
+      return { ...prev, sections: updatedSections };
     });
-    setCurrentGroup({ ...currentGroup, sections: updatedSections });
   };
 
-  // Remove an item from a section
-  const removeItem = (type, itemIndex) => {
-    const updatedSections = currentGroup.sections.map(section => {
-      if (section.type === type) {
-        const updatedItems = section.items.filter((_, i) => i !== itemIndex);
-        return { ...section, items: updatedItems };
-      }
-      return section;
-    });
-    setCurrentGroup({ ...currentGroup, sections: updatedSections });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { groups } = await getGroups();
+    const updatedGroups = groupId
+      ? groups.map(g => (g.id === groupId ? group : g))
+      : [...groups, group];
+    await saveGroups({ groups: updatedGroups });
+    navigate('/', { state: { newGroup: group } });
   };
 
-  // Remove a section
-  const removeSection = (type) => {
-    const updatedSections = currentGroup.sections.filter(section => section.type !== type);
-    setCurrentGroup({ ...currentGroup, sections: updatedSections });
-  };
-
-  // Save the group and navigate back to userinfo
-  const saveGroup = () => {
-    const info = [...currentGroup.personalInfo];
-    const groupToSave = { ...currentGroup, info };
-    const updatedGroups = Array.isArray(groups) && groups.some(g => g.id === currentGroup.id)
-      ? groups.map(g => (g.id === currentGroup.id ? groupToSave : g))
-      : [...(Array.isArray(groups) ? groups : []), groupToSave];
-    setGroups(updatedGroups);
-    saveGroups({ groups: updatedGroups, defaultGroupId: getGroups().defaultGroupId });
-    navigate('/edit/userinfo', { state: { newGroup: groupToSave } });
-  };
-
-  // Cancel and navigate back to userinfo
-  const cancel = () => {
-    navigate('/edit/userinfo');
-  };
-
-  const closeModal = (e) => {
-    if (e.target === e.currentTarget) {
-      setIsModalOpen(false);
-    }
+  const handleCancel = () => {
+    navigate('/');
   };
 
   return (
     <div className={styles.container}>
-      <h3 className={`${styles.subHeader} ${isEdit ? styles.editHeader : ''}`}>
-        {isEdit ? `Edit Group: ${currentGroup.title || 'Untitled'}` : 'Add Group'}
-      </h3>
-      {isEdit && (
-        <p className={styles.editNotice}>
-          You are editing group ID: {groupId}
-        </p>
-      )}
-      <div className={styles.form}>
-        <label className={styles.label}>
-          Group Title:
-          <input
-            type="text"
-            value={currentGroup.title}
-            onChange={handleTitleChange}
-            className={styles.input}
-            placeholder="Enter group title"
-          />
-        </label>
-
-        <h4 className={styles.subHeader}>Personal Info</h4>
+      <h2 className={styles.header}>{groupId ? 'Edit Profile' : 'Add New Profile'}</h2>
+      <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.personalInfoSection}>
-          {currentGroup.personalInfo.map((field, index) => (
-            <div key={index} className={styles.fieldRow}>
-              <label className={styles.label}>{field.label}</label>
-              <input
-                type="text"
-                placeholder={`Enter ${field.label}`}
-                value={field.value}
-                onChange={(e) => handlePersonalInfoChange(index, e.target.value)}
-                className={styles.input}
-              />
-            </div>
-          ))}
+          <h3 className={styles.subHeader}>Personal Information</h3>
+          <div className={styles.fieldRow}>
+            <label className={styles.label}>First Name:</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={group.firstName}
+              onChange={e => handleInputChange('firstName', e.target.value)}
+            />
+          </div>
+          <div className={styles.fieldRow}>
+            <label className={styles.label}>Last Name:</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={group.lastName}
+              onChange={e => handleInputChange('lastName', e.target.value)}
+            />
+          </div>
+          <div className={styles.fieldRow}>
+            <label className={styles.label}>Email:</label>
+            <input
+              type="email"
+              className={styles.input}
+              value={group.email}
+              onChange={e => handleInputChange('email', e.target.value)}
+            />
+          </div>
+          <div className={styles.fieldRow}>
+            <label className={styles.label}>Phone:</label>
+            <input
+              type="tel"
+              className={styles.input}
+              value={group.phoneNo}
+              onChange={e => handleInputChange('phoneNo', e.target.value)}
+            />
+          </div>
+          <div className={styles.fieldRow}>
+            <label className={styles.label}>City:</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={group.address.city}
+              onChange={e => handleInputChange('address.city', e.target.value)}
+            />
+          </div>
+          <div className={styles.fieldRow}>
+            <label className={styles.label}>Pin Code:</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={group.address.pinCode}
+              onChange={e => handleInputChange('address.pinCode', e.target.value)}
+            />
+          </div>
+          <div className={styles.fieldRow}>
+            <label className={styles.label}>State:</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={group.address.state}
+              onChange={e => handleInputChange('address.state', e.target.value)}
+            />
+          </div>
+          <div className={styles.fieldRow}>
+            <label className={styles.label}>Country:</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={group.address.country}
+              onChange={e => handleInputChange('address.country', e.target.value)}
+            />
+          </div>
         </div>
-
-        {currentGroup.sections.map((section) => {
-          const config = sectionTypes[section.type];
-          return (
-            <div key={section.type} className={styles.sectionContainer}>
-              <div className={styles.sectionHeader}>
-                <h4 className={styles.subHeader}>{config.title}</h4>
-                <button onClick={() => removeSection(section.type)} className={styles.removeButton}>Remove Section</button>
-              </div>
-              {section.items.map((item, itemIndex) => (
-                <div key={itemIndex} className={styles.entryCard}>
-                  {Object.entries(config.itemTemplate).map(([field]) => (
-                    <div key={field} className={styles.field}>
-                      <label className={styles.label}>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
-                      {field === 'description' ? (
-                        <textarea
-                          value={item[field]}
-                          onChange={(e) => handleSectionChange(section.type, itemIndex, field, e.target.value)}
-                          className={styles.textarea}
-                        />
-                      ) : field === 'proficiency' ? (
-                        <select
-                          value={item[field]}
-                          onChange={(e) => handleSectionChange(section.type, itemIndex, field, e.target.value)}
-                          className={styles.input}
-                        >
-                          {config.proficiencyOptions.map(option => (
-                            <option key={option} value={option}>{option}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <input
-                          type={field.includes('Date') ? 'date' : 'text'}
-                          value={item[field]}
-                          onChange={(e) => handleSectionChange(section.type, itemIndex, field, e.target.value)}
-                          className={styles.input}
-                        />
-                      )}
-                    </div>
-                  ))}
-                  {section.items.length > 1 && (
-                    <button onClick={() => removeItem(section.type, itemIndex)} className={styles.removeButton}>Remove Entry</button>
-                  )}
-                </div>
-              ))}
-              <button onClick={() => addItem(section.type)} className={styles.addButtonSmall}>+ Add Another {config.title.slice(0, -1)}</button>
+        {group.sections.map((section, index) => (
+          <div key={section.name} className={styles.sectionContainer}>
+            <div className={styles.sectionHeader}>
+              <h3 className={styles.subHeader}>{sectionTypes[section.name].title}</h3>
+              <button
+                type="button"
+                className={styles.removeButton}
+                onClick={() => removeSection(section.name)}
+              >
+                Remove Section
+              </button>
             </div>
-          );
-        })}
-
+            {section.data.map((entry, entryIndex) => (
+              <div key={entryIndex} className={styles.entryCard}>
+                {sectionTypes[section.name].fields.map(field => (
+                  <div key={field} className={styles.field}>
+                    <label className={styles.label}>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
+                    {field === 'summary' || field === 'description' ? (
+                      <textarea
+                        className={styles.textarea}
+                        value={entry[field] || ''}
+                        onChange={e => handleSectionChange(section.name, index, entryIndex, field, e.target.value)}
+                      />
+                    ) : (
+                      <input
+                        type={field.includes('Date') ? 'date' : 'text'}
+                        className={styles.input}
+                        value={entry[field] || ''}
+                        onChange={e => handleSectionChange(section.name, index, entryIndex, field, e.target.value)}
+                      />
+                    )}
+                  </div>
+                ))}
+                {section.name !== 'summary' && (
+                  <button
+                    type="button"
+                    className={styles.removeEntryButton}
+                    onClick={() => removeEntry(section.name, entryIndex)}
+                  >
+                    Remove Entry
+                  </button>
+                )}
+              </div>
+            ))}
+            {section.name !== 'summary' && (
+              <button
+                type="button"
+                className={styles.addButtonSmall}
+                onClick={() => addSectionEntry(section.name)}
+              >
+                Add {sectionTypes[section.name].title} Entry
+              </button>
+            )}
+          </div>
+        ))}
         <button
           type="button"
-          onClick={() => setIsModalOpen(true)}
           className={styles.addFieldButton}
+          onClick={() => setShowModal(true)}
         >
           Add Section
         </button>
-      </div>
-      <div className={styles.formActions}>
-        <button onClick={saveGroup} className={styles.saveButton}>Save</button>
-        <button onClick={cancel} className={styles.cancelButton}>Cancel</button>
-      </div>
-
-      {isModalOpen && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={styles.modalContent}>
-            <h3>Add Section</h3>
-            {Object.keys(sectionTypes).map(type => (
-              <button key={type} onClick={() => addSection(type)} className={styles.modalButton}>
-                Add {sectionTypes[type].title}
+        {showModal && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <h3>Select Section</h3>
+              {Object.keys(sectionTypes).map(section => (
+                <button
+                  key={section}
+                  className={styles.modalButton}
+                  onClick={() => {
+                    addSectionEntry(section);
+                    setShowModal(false);
+                  }}
+                  disabled={group.sections.some(s => s.name === section)}
+                >
+                  {sectionTypes[section].title}
+                </button>
+              ))}
+              <button
+                type="button"
+                className={styles.cancelButton}
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
               </button>
-            ))}
+            </div>
           </div>
+        )}
+        <div className={styles.formActions}>
+          <button type="button" className={styles.cancelButton} onClick={handleCancel}>
+            Cancel
+          </button>
+          <button type="submit" className={styles.saveButton}>
+            Save
+          </button>
         </div>
-      )}
+      </form>
     </div>
   );
 };

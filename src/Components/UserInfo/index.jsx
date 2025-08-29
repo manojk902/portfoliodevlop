@@ -1,157 +1,162 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getGroups, saveGroups } from './DummyData';
 import styles from './UserInfo.module.css';
 
 const sectionTypes = {
-  education: { title: 'Education' },
-  workExperience: { title: 'Work Experience' },
-  skills: { title: 'Skills' },
-  languages: { title: 'Languages' },
-  certifications: { title: 'Certifications' },
-  projects: { title: 'Projects' },
-  custom: { title: 'Custom Fields' },
+  education: { title: 'Education', fields: ['college', 'course', 'fieldOfStudy', 'startDate', 'endDate', 'grade', 'location'] },
+  experience: { title: 'Experience', fields: ['jobTitle', 'company', 'location', 'startDate', 'endDate', 'description'] },
+  skill: { title: 'Skill', fields: ['skill', 'rating'] },
+  certification: { title: 'Certification', fields: ['name', 'institute', 'issueDate'] },
+  language: { title: 'Language', fields: ['language', 'proficiency'] },
+  project: { title: 'Project', fields: ['name', 'description', 'technologies', 'url'] },
+  custom: { title: 'Custom', fields: ['label', 'value'] },
+  summary: { title: 'Summary', fields: ['summary'] },
+  achievement: { title: 'Achievement', fields: ['title', 'description', 'date'] },
 };
 
 const UserInfo = () => {
   const [groups, setGroups] = useState([]);
-  const [selectedGroupId, setSelectedGroupId] = useState(null);
-  const [defaultGroupId, setDefaultGroupId] = useState(null);
-
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Fetch groups and default group from dummy data
-  const fetchGroups = () => {
-    const { groups: data, defaultGroupId: storedDefaultId } = getGroups();
-    const newGroup = location.state?.newGroup;
-    
-    if (newGroup) {
-      const updatedGroups = [...data.filter(g => g.id !== newGroup.id), newGroup];
-      setGroups(updatedGroups);
-      setSelectedGroupId(newGroup.id);
-      setDefaultGroupId(storedDefaultId || newGroup.id);
-      saveGroups({ groups: updatedGroups, defaultGroupId: storedDefaultId || newGroup.id });
-    } else if (data.length === 0) {
-      const defaultGroup = {
-        id: crypto.randomUUID(),
-        title: 'Default Group',
-        personalInfo: [
-          { label: 'Name', value: '' },
-          { label: 'Address', value: '' },
-          { label: 'Phone Number', value: '' },
-          { label: 'Email', value: '' },
-        ],
-        sections: [],
-      };
-      setGroups([defaultGroup]);
-      setSelectedGroupId(defaultGroup.id);
-      setDefaultGroupId(defaultGroup.id);
-      saveGroups({ groups: [defaultGroup], defaultGroupId: defaultGroup.id });
-    } else {
-      setGroups(data);
-      setSelectedGroupId(location.state?.newGroupId || storedDefaultId || data[0].id);
-      setDefaultGroupId(storedDefaultId || data[0].id);
-    }
-  };
-
   useEffect(() => {
-    fetchGroups();
-  }, [location.pathname]);
+    const fetchData = async () => {
+      const { groups: data } = await getGroups();
+      console.log('Fetched groups:', data); // Debug log
+      const newGroup = location.state?.newGroup;
+      if (newGroup) {
+        const updatedGroups = [...data.filter(g => g.id !== newGroup.id), { ...newGroup, sections: newGroup.sections || [] }];
+        console.log('Updated groups with new group:', updatedGroups); // Debug log
+        setGroups(updatedGroups);
+        await saveGroups({ groups: updatedGroups });
+      } else if (data.length === 0) {
+        const defaultGroup = {
+          id: crypto.randomUUID(),
+          firstName: '',
+          lastName: '',
+          email: '',
+          phoneNo: '',
+          address: { city: '', pinCode: '', state: '', country: '' },
+          sections: [],
+          isDefault: true,
+        };
+        console.log('Created default group:', defaultGroup); // Debug log
+        setGroups([defaultGroup]);
+        await saveGroups({ groups: [defaultGroup] });
+      } else {
+        const hasDefault = data.some(g => g.isDefault);
+        const updatedData = data.map((g, index) => ({
+          ...g,
+          sections: g.sections || [],
+          isDefault: !hasDefault && index === 0 ? true : g.isDefault || false,
+        }));
+        console.log('Updated groups with default:', updatedData); // Debug log
+        setGroups(updatedData);
+        await saveGroups({ groups: updatedData });
+      }
+    };
+    fetchData();
+  }, [location.pathname, location.state?.newGroup]);
 
-  // Set a group as default
-  const setDefaultGroup = (groupId) => {
-    setDefaultGroupId(groupId);
-    saveGroups({ groups, defaultGroupId: groupId });
-  };
-
-  // Delete group
-  const deleteGroup = (groupId) => {
-    const updatedGroups = groups.filter(g => g.id !== groupId);
-    let newDefaultGroupId = defaultGroupId;
-    if (groupId === defaultGroupId) {
-      newDefaultGroupId = updatedGroups.length > 0 ? updatedGroups[0].id : null;
+  const deleteGroup = async (groupId) => {
+    console.log('Attempting to delete group:', groupId, 'Current groups length:', groups.length, 'Groups:', groups); // Debug log
+    if (groups.length <= 1) {
+      alert("You can't delete this card, one card should always be there.");
+      console.log('Deletion prevented: only one group remains'); // Debug log
+      return;
     }
-    setSelectedGroupId(updatedGroups.length > 0 ? updatedGroups[0]?.id : null);
-    setDefaultGroupId(newDefaultGroupId);
-    saveGroups({ groups: updatedGroups, defaultGroupId: newDefaultGroupId });
+    const updatedGroups = groups.filter(g => g.id !== groupId);
+    if (updatedGroups.length > 0 && groups.find(g => g.id === groupId)?.isDefault) {
+      updatedGroups[0].isDefault = true;
+    }
+    console.log('Updated groups after deletion:', updatedGroups); // Debug log
+    setGroups(updatedGroups);
+    await saveGroups({ groups: updatedGroups });
   };
 
-  // Add group navigation
   const addGroup = () => {
     navigate('/edit/add-group');
   };
 
-  // Edit group
   const editGroup = (groupId) => {
-    setSelectedGroupId(groupId);
     navigate(`/edit/edit-group/${groupId}`);
   };
 
-  // Select group
-  const selectGroup = (groupId) => {
-    setSelectedGroupId(groupId);
+  const setDefaultGroup = async (groupId) => {
+    const updatedGroups = groups.map(g => ({
+      ...g,
+      isDefault: g.id === groupId,
+    }));
+    console.log('Setting default group:', groupId, 'Updated groups:', updatedGroups); // Debug log
+    setGroups(updatedGroups);
+    await saveGroups({ groups: updatedGroups });
   };
 
+  console.log('Rendering groups:', groups); // Debug log
   return (
     <div className={styles.container}>
       <h2 className={styles.header}>User Information</h2>
-      <p className={styles.description}>This is the UserInfo component. Display user details here, like name, email, etc.</p>
-
-      <h3 className={styles.subHeader}>Groups Cluster</h3>
-      <div className={styles.cluster}>
-        {groups.map(group => (
-          <div
-            key={group.id}
-            className={`${styles.groupCard} ${selectedGroupId === group.id ? styles.selected : ''} ${defaultGroupId === group.id ? styles.default : ''}`}
-          >
-            <div className={styles.groupHeader}>
-              <div onClick={() => selectGroup(group.id)} className={styles.groupContent}>
-                <strong className={styles.groupTitle}>{group.title || 'Untitled Group'}</strong>
-                {defaultGroupId === group.id && <span className={styles.defaultBadge}>Default</span>}
+      {groups.length === 0 ? (
+        <p className={styles.noProfilesMessage}>No profiles yet. Click 'Add New Profile' to create one.</p>
+      ) : (
+        <div className={styles.cluster}>
+          {groups
+            .filter(group => (group.firstName || '').trim() || (group.lastName || '').trim() || (group.email || '').trim() || (group.phoneNo || '').trim() || Object.values(group.address || {}).some(v => (v || '').trim()) || ((group.sections || []).length > 0))
+            .map(group => (
+              <div key={group.id} className={`${styles.groupCard} ${group.isDefault ? styles.defaultGroup : ''}`}>
+                <div className={styles.groupHeader}>
+                  <strong className={styles.groupTitle}>
+                    {group.firstName} {group.lastName}
+                    {group.isDefault && <span className={styles.defaultBadge}>Default</span>}
+                  </strong>
+                </div>
+                <div className={styles.groupPreview}>
+                  <ul>
+                    {['firstName', 'lastName', 'email', 'phoneNo'].map(field => (
+                      group[field] && <li key={field} className={styles.fieldItem}>{field.charAt(0).toUpperCase() + field.slice(1)}: {group[field]}</li>
+                    ))}
+                    {group.address && ['city', 'pinCode', 'state', 'country'].map(field => (
+                      group.address[field] && <li key={field} className={styles.fieldItem}>{field.charAt(0).toUpperCase() + field.slice(1)}: {group.address[field]}</li>
+                    ))}
+                    {(group.sections || []).map((section, secIndex) => (
+                      <li key={secIndex}>
+                        <strong>{sectionTypes[section.name]?.title}</strong>
+                        <ul>
+                          {(section.data || []).map((item, itemIndex) => (
+                            <li key={itemIndex}>
+                              {sectionTypes[section.name]?.fields.map(field => (
+                                item[field] && <div key={field}>{field.charAt(0).toUpperCase() + field.slice(1)}: {item[field]}</div>
+                              ))}
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className={styles.groupActions}>
+                  <button onClick={() => editGroup(group.id)} className={styles.editButton}>Edit</button>
+                  <button
+                    onClick={() => deleteGroup(group.id)}
+                    className={styles.deleteButton}
+                    disabled={groups.length <= 1}
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => setDefaultGroup(group.id)}
+                    className={styles.defaultButton}
+                    disabled={group.isDefault}
+                  >
+                    Set as Default
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => setDefaultGroup(group.id)}
-                className={styles.defaultButton}
-                title="Set as Default"
-              >
-                ★
-              </button>
-            </div>
-            <div className={styles.groupPreview}>
-              <ul>
-                {group.personalInfo.map((field, index) => (
-                  <li key={index} className={styles.fieldItem}>{field.label}: {field.value}</li>
-                ))}
-                {group.sections?.map((section, secIndex) => (
-                  <li key={secIndex}>
-                    <strong className={styles.sectionTitle}>{sectionTypes[section.type]?.title}</strong>
-                    <ul>
-                      {section.items.map((item, itemIndex) => (
-                        <li key={itemIndex} className={styles.itemList}>
-                          <ul>
-                            {Object.entries(item).map(([key, value], fieldIndex) => (
-                              <li key={fieldIndex}>{key.charAt(0).toUpperCase() + key.slice(1)}: {value}</li>
-                            ))}
-                          </ul>
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className={styles.groupActions}>
-              <button onClick={() => editGroup(group.id)} className={styles.editButton}>Edit</button>
-              <button onClick={() => deleteGroup(group.id)} className={styles.deleteButton}>Delete</button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <button onClick={addGroup} className={styles.addButton}>Add New Group</button>
+            ))}
+        </div>
+      )}
+      <button onClick={addGroup} className={styles.addButton}>Add New Profile</button>
     </div>
   );
 };
