@@ -34,13 +34,14 @@ const UserInfo = () => {
       console.log('Fetched groups:', data);
       const newGroup = location.state?.newGroup;
       if (newGroup) {
-        const updatedGroups = [...data.filter(g => g.id !== newGroup.id), { ...newGroup, sections: newGroup.sections || [] }];
+        const updatedGroups = [...data.filter(g => g.id !== newGroup.id), { ...newGroup, sections: newGroup.sections || [], groupName: newGroup.groupName || '' }];
         console.log('Updated groups with new group:', updatedGroups);
         setGroups(updatedGroups);
         await saveGroups({ groups: updatedGroups });
       } else if (data.length === 0) {
         const defaultGroup = {
           id: crypto.randomUUID(),
+          groupName: '',
           firstName: '',
           lastName: '',
           email: '',
@@ -57,6 +58,7 @@ const UserInfo = () => {
         const updatedData = data.map((g, index) => ({
           ...g,
           sections: g.sections || [],
+          groupName: g.groupName || '',
           isDefault: !hasDefault && index === 0 ? true : g.isDefault || false,
         }));
         console.log('Updated groups with default:', updatedData);
@@ -111,7 +113,7 @@ const UserInfo = () => {
       ) : (
         <Grid container spacing={2} sx={{ mb: 3 }}>
           {groups
-            .filter(group => (group.firstName || '').trim() || (group.lastName || '').trim() || (group.email || '').trim() || (group.phoneNo || '').trim() || Object.values(group.address || {}).some(v => (v || '').trim()) || ((group.sections || []).length > 0))
+            .filter(group => (group.groupName || '').trim() || (group.firstName || '').trim() || (group.lastName || '').trim() || (group.email || '').trim() || (group.phoneNo || '').trim() || Object.values(group.address || {}).some(v => (v || '').trim()) || ((group.sections || []).length > 0))
             .map(group => (
               <Grid item xs={12} sm={6} md={4} key={group.id}>
                 <Card sx={{ 
@@ -123,7 +125,7 @@ const UserInfo = () => {
                 }}>
                   <CardContent>
                     <Typography variant="h6" sx={{ mb: 2 }}>
-                      {group.firstName || ''} {group.lastName || ''}
+                      {group.groupName || `${group.firstName || ''} ${group.lastName || ''}`.trim() || 'Unnamed Profile'}
                       {group.isDefault && (
                         <Typography component="span" color="success.main" sx={{ ml: 1, fontSize: '0.75rem', bgcolor: 'success.dark', color: 'white', px: 1, py: 0.5, borderRadius: 1 }}>
                           Default
@@ -131,7 +133,7 @@ const UserInfo = () => {
                       )}
                     </Typography>
                     <Box component="ul" sx={{ pl: 2, listStyleType: 'disc' }}>
-                      {['firstName', 'lastName', 'email', 'phoneNo'].map(field => (
+                      {['groupName', 'firstName', 'lastName', 'email', 'phoneNo'].map(field => (
                         group[field] && (
                           <Typography component="li" variant="body2" key={field} sx={{ mb: 1 }}>
                             {field.charAt(0).toUpperCase() + field.slice(1)}: {group[field]}

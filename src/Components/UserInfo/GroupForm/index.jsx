@@ -32,6 +32,7 @@ const GroupForm = () => {
   const navigate = useNavigate();
   const [group, setGroup] = useState({
     id: crypto.randomUUID(),
+    groupName: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -48,7 +49,7 @@ const GroupForm = () => {
         const { groups } = await getGroups();
         const existingGroup = groups.find(g => g.id === groupId);
         if (existingGroup) {
-          setGroup({ ...existingGroup, sections: existingGroup.sections || [] });
+          setGroup({ ...existingGroup, sections: existingGroup.sections || [], groupName: existingGroup.groupName || '' });
         }
       };
       fetchGroup();
@@ -103,10 +104,10 @@ const GroupForm = () => {
         ...prev,
         sections: existingSection
           ? prev.sections.map(s =>
-            s.name === sectionName
-              ? { ...s, data: [...s.data, fields] }
-              : s
-          )
+              s.name === sectionName
+                ? { ...s, data: [...s.data, fields] }
+                : s
+            )
           : [...prev.sections, { name: sectionName, data: [fields] }],
       };
     });
@@ -143,11 +144,11 @@ const GroupForm = () => {
       ? groups.map(g => (g.id === groupId ? group : g))
       : [...groups, group];
     await saveGroups({ groups: updatedGroups });
-    navigate('/', { state: { newGroup: group } });
+    navigate('/edit/userinfo', { state: { newGroup: group } });
   };
 
   const handleCancel = () => {
-    navigate('/');
+    navigate('/edit/userinfo');
   };
 
   return (
@@ -160,6 +161,17 @@ const GroupForm = () => {
           <CardContent>
             <Typography variant="h6" gutterBottom>Personal Information</Typography>
             <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Group Name"
+                  type="text"
+                  value={group.groupName || ''}
+                  onChange={e => handleInputChange('groupName', e.target.value)}
+                  variant="outlined"
+                  required
+                />
+              </Grid>
               {[
                 { label: 'First Name', field: 'firstName', type: 'text' },
                 { label: 'Last Name', field: 'lastName', type: 'text' },

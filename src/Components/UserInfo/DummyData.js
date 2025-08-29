@@ -1,6 +1,7 @@
 let groupsData = [
   {
     id: crypto.randomUUID(),
+    groupName: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -13,10 +14,11 @@ let groupsData = [
 
 export const getGroups = async () => {
   try {
-    const data = groupsData.map(g => ({ ...g, sections: g.sections || [], isDefault: g.isDefault || false }));
+    const data = groupsData.map(g => ({ ...g, sections: g.sections || [], groupName: g.groupName || '', isDefault: g.isDefault || false }));
     if (data.length === 0) {
       const defaultGroup = {
         id: crypto.randomUUID(),
+        groupName: '',
         firstName: '',
         lastName: '',
         email: '',
@@ -43,6 +45,7 @@ export const saveGroups = async ({ groups }) => {
       console.log('Prevented saving empty groups, initializing with default group');
       groupsData = [{
         id: crypto.randomUUID(),
+        groupName: '',
         firstName: '',
         lastName: '',
         email: '',
@@ -52,7 +55,7 @@ export const saveGroups = async ({ groups }) => {
         isDefault: true,
       }];
     } else {
-      groupsData = groups.map(g => ({ ...g, sections: g.sections || [], isDefault: g.isDefault || false }));
+      groupsData = groups.map(g => ({ ...g, sections: g.sections || [], groupName: g.groupName || '', isDefault: g.isDefault || false }));
     }
     console.log('Saved groups:', groupsData);
   } catch (error) {
