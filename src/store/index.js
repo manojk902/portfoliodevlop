@@ -13,6 +13,11 @@ const userProfilePersistConfig = {
   // Optionally, whitelist specific fields to persist (e.g., only username)
   // whitelist: ['data.username'], // Uncomment and adjust if userProfile.data has a username field
 };
+const userPersistConfig = {
+  key: 'user',
+  storage,
+};
+const persistedUserReducer = persistReducer(userPersistConfig, userReducer);
 
 // Wrap userProfileReducer with persistReducer
 const persistedUserProfileReducer = persistReducer(userProfilePersistConfig, userProfileReducer);
@@ -21,8 +26,9 @@ const persistedUserProfileReducer = persistReducer(userProfilePersistConfig, use
 export const store = configureStore({
   reducer: {
     resume: resumeReducer,
-    user: userReducer,
+    // user: userReducer,
     userProfile: persistedUserProfileReducer, // Use persisted reducer
+    user: persistedUserReducer, 
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -44,7 +44,7 @@
 }
 
 .sidebarSubmenu.open {
-  max-height: 100px; /* Adjust based on content height */
+  max-height: 200px; /* Adjust based on content height */
 }
 
 .sidebarSubitem {

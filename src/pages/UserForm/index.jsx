@@ -67,7 +67,7 @@ useEffect(()=>{
     designation: fetchedUser?.designation || '',
     email: fetchedUser?.email || '',
     phoneNo: fetchedUser?.phoneNo || '',
-    socialLink: fetchedUser?.socialLink || '',
+    socialLink: fetchedUser?.socialLinks || 's',
     city: fetchedUser?.city || '',
     state: fetchedUser?.state || '',
     pinCode: fetchedUser?.pinCode || '',
