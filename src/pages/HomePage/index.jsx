@@ -1,37 +1,3 @@
-<<<<<<< Updated upstream
-// src/pages/HomePage/index.jsx
-// This component represents the application's home or landing page.
-// It now integrates the 3D scroll effect component and an example TemplateCard.
-
-import React from 'react';
-import { Box, Typography } from '@mui/material';
-import ThreeDScrollEffect from '../../Components/Common/ThreeDScrollEffect';
-import CvTemplates from '../../Components/Templates/CvTemplates';
-import SearchBox from '../../Components/Common/SearchBox';
-
-const HomePage = () => {
-  // const handleChooseSampleTemplate = (templateId) => {
-  //   console.log(`Sample Template ${templateId} chosen on homepage!`);
-  // };
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 'calc(100vh - 180px)', // Adjust height based on header to fill remaining space
-        p: 2, // Padding
-        textAlign: 'center', // Center text alignment
-      }}
-    >
-      <Typography variant="h3" component="h1" sx={{ fontWeight: 'extrabold', color: 'text.primary', mb: 2 }}>
-        Welcome to Resume Now!
-      </Typography>
-<<<<<<< HEAD
-      <SearchBox/>
-=======
-=======
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -45,7 +11,8 @@ import {
   useTheme,
   useMediaQuery,
   Divider,
-  Avatar
+  Avatar,
+  Button
 } from '@mui/material';
 import {
   Phone,
@@ -53,7 +20,7 @@ import {
   Search as SearchIcon,
   Work
 } from '@mui/icons-material';
->>>>>>> template-page
+import { Link } from "react-router-dom";
 
 const HomePage = () => {
   const [users, setUsers] = useState([]);   // API se aane wala data
@@ -69,13 +36,12 @@ const HomePage = () => {
     fetch(`http://192.168.0.3:9000/api/v1/portfolio/search-user?name=${search}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("API Response:", data.searchedUser[0]);
-        // 👇 agar API ka response { users: [...] } hai
+        console.log("API Response:", data.searchedUser?.[0]);
         setUsers(data.searchedUser || data);
         setLoading(false);
       })
       .catch((err) => {
-        console.error("API Error kkkkkkkkkkkkkkkk:", err);
+        console.error("API Error:", err);
         setLoading(false);
       });
   }, [search]); // search change hote hi API call hoga
@@ -96,7 +62,6 @@ const HomePage = () => {
         >
           User Directory
         </Typography>
->>>>>>> Stashed changes
 
         {/* Search Bar */}
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -207,6 +172,19 @@ const HomePage = () => {
                         <Chip key={i} label={skill} size="small" />
                       ))}
                     </Box>
+                  </Box>
+
+                  {/* View CV Button */}
+                  <Box sx={{ mt: 2, textAlign: "center" }}>
+                    <Button
+                      component={Link}
+                      to="/username"
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                    >
+                      View CV
+                    </Button>
                   </Box>
                 </CardContent>
               </Card>

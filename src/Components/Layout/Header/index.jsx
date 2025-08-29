@@ -26,21 +26,9 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
   const app_name = process.env.REACT_APP_APP_NAME
   const app_url = process.env.REACT_APP_APP_URL
   const redirect_url = process.env.REACT_APP_REDIRECT_URL
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-  const [isLoggedIn, setIsLoggedIn] = useState(true)
-  // (!!localStorage.getItem("token"));
-=======
-<<<<<<< HEAD
->>>>>>> template-page
+
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
-=======
-  const [isLoggedIn, setIsLoggedIn] = useState(true)
-  // (!!localStorage.getItem("token"));
->>>>>>> template-page
->>>>>>> Stashed changes
   const [searchParams] = useSearchParams();
   const [decodedToken, setDecodedToken] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -56,17 +44,11 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
         try {
           setLoading(true); // start loading
           const user = await axios.get(`${apiUrl}/user-details/${decodedToken?.userName}`);
-<<<<<<< HEAD
+// <<<<<<< HEAD
           dispatch(setUserProfile(user.data));
           setHasPortfolio(!!user.data); // true if data exists
-=======
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
           dispatch(setUserProfile(user.data));
           setHasPortfolio(!!user.data); // true if data exists
-=======
->>>>>>> Stashed changes
           dispatch(setUserProfile(user.data)); // store all payload data in redux
           console.log(user);
 
@@ -77,11 +59,6 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
           else {
             setHasPortfolio(false);
           }
-<<<<<<< Updated upstream
-=======
->>>>>>> template-page
->>>>>>> Stashed changes
->>>>>>> template-page
         } catch (error) {
           console.log("Server error->", error);
           setHasPortfolio(false);
