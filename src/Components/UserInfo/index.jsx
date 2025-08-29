@@ -30,6 +30,7 @@ const UserInfo = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log('Fetching groups...');
       const { groups: data } = await getGroups();
       console.log('Fetched groups:', data);
       const newGroup = location.state?.newGroup;
@@ -70,7 +71,7 @@ const UserInfo = () => {
   }, [location.pathname, location.state?.newGroup]);
 
   const deleteGroup = async (groupId) => {
-    console.log('Attempting to delete group:', groupId, 'Current groups length:', groups.length, 'Groups:', groups);
+    console.log('Attempting to delete group:', groupId, 'Current groups length:', groups.length);
     if (groups.length <= 1) {
       alert("You can't delete this card, one card should always be there.");
       console.log('Deletion prevented: only one group remains');
@@ -86,10 +87,12 @@ const UserInfo = () => {
   };
 
   const addGroup = () => {
+    console.log('Navigating to add-group');
     navigate('/edit/add-group');
   };
 
   const editGroup = (groupId) => {
+    console.log('Navigating to edit-group:', groupId);
     navigate(`/edit/edit-group/${groupId}`);
   };
 
@@ -103,11 +106,20 @@ const UserInfo = () => {
     await saveGroups({ groups: updatedGroups });
   };
 
+  const truncateText = (text, maxLength = 50) => {
+    if (typeof text !== 'string') return '';
+    return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+  };
+
+  console.log('Rendering UserInfo with groups:', groups);
+
   return (
-    <Box sx={{ maxWidth: 1000, mx: 'auto', p: 3, bgcolor: 'background.paper', borderRadius: 2 }}>
-      <Typography variant="h4" gutterBottom>User Information</Typography>
+    <Box sx={{ maxWidth: '90vw', mx: 'auto', p: 3, bgcolor: '#fff', borderRadius: 8 }}>
+      <Typography variant="h4" sx={{ fontSize: '1.75rem', fontWeight: 700, mb: 3 }}>
+        User Information
+      </Typography>
       {groups.length === 0 ? (
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body1" sx={{ color: '#666' }}>
           No profiles yet. Click 'Add New Profile' to create one.
         </Typography>
       ) : (
@@ -117,46 +129,43 @@ const UserInfo = () => {
             .map(group => (
               <Grid item xs={12} sm={6} md={4} key={group.id}>
                 <Card sx={{ 
-                  border: group.isDefault ? '2px solid' : '1px solid', 
-                  borderColor: group.isDefault ? 'success.main' : 'grey.300',
-                  bgcolor: group.isDefault ? 'success.light' : 'background.paper',
+                  border: group.isDefault ? '2px solid #4caf50' : '1px solid #e0e0e0',
+                  bgcolor: group.isDefault ? '#e8f5e9' : '#fff',
+                  minHeight: 300,
+                  maxHeight: 300,
+                  overflow: 'hidden',
+                  borderRadius: 8,
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
                   transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': { transform: 'translateY(-4px)', boxShadow: 3 },
+                  '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)' },
                 }}>
                   <CardContent>
-                    <Typography variant="h6" sx={{ mb: 2 }}>
+                    <Typography variant="h6" sx={{ fontSize: '1.25rem', fontWeight: 600, mb: 2 }}>
                       {group.groupName || `${group.firstName || ''} ${group.lastName || ''}`.trim() || 'Unnamed Profile'}
                       {group.isDefault && (
-                        <Typography component="span" color="success.main" sx={{ ml: 1, fontSize: '0.75rem', bgcolor: 'success.dark', color: 'white', px: 1, py: 0.5, borderRadius: 1 }}>
+                        <Typography component="span" sx={{ ml: 1, fontSize: '0.75rem', bgcolor: '#388e3c', color: '#fff', px: 1, py: 0.5, borderRadius: 4 }}>
                           Default
                         </Typography>
                       )}
                     </Typography>
                     <Box component="ul" sx={{ pl: 2, listStyleType: 'disc' }}>
-                      {['groupName', 'firstName', 'lastName', 'email', 'phoneNo'].map(field => (
+                      {['groupName', 'firstName', 'lastName', 'email'].map(field => (
                         group[field] && (
-                          <Typography component="li" variant="body2" key={field} sx={{ mb: 1 }}>
-                            {field.charAt(0).toUpperCase() + field.slice(1)}: {group[field]}
+                          <Typography component="li" variant="body2" key={field} sx={{ mb: 1, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {field.charAt(0).toUpperCase() + field.slice(1)}: {truncateText(group[field])}
                           </Typography>
                         )
                       ))}
-                      {group.address && ['city', 'pinCode', 'state', 'country'].map(field => (
-                        group.address[field] && (
-                          <Typography component="li" variant="body2" key={field} sx={{ mb: 1 }}>
-                            {field.charAt(0).toUpperCase() + field.slice(1)}: {group.address[field]}
-                          </Typography>
-                        )
-                      ))}
-                      {(group.sections || []).map((section, secIndex) => (
-                        <Typography component="li" key={secIndex} sx={{ mb: 1 }}>
+                      {(group.sections || []).slice(0, 1).map((section, secIndex) => (
+                        <Typography component="li" key={secIndex} sx={{ mb: 1, fontSize: '0.875rem' }}>
                           <strong>{sectionTypes[section.name]?.title || section.name}</strong>
                           <Box component="ul" sx={{ pl: 2, listStyleType: 'circle' }}>
-                            {(section.data || []).map((item, itemIndex) => (
+                            {(section.data || []).slice(0, 1).map((item, itemIndex) => (
                               <Typography component="li" key={itemIndex}>
-                                {sectionTypes[section.name]?.fields.map(field => (
+                                {sectionTypes[section.name]?.fields.slice(0, 2).map(field => (
                                   item[field] && (
-                                    <Typography key={field} variant="body2">
-                                      {field.charAt(0).toUpperCase() + field.slice(1)}: {item[field]}
+                                    <Typography key={field} variant="body2" sx={{ fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                      {field.charAt(0).toUpperCase() + field.slice(1)}: {truncateText(item[field])}
                                     </Typography>
                                   )
                                 ))}
@@ -168,17 +177,22 @@ const UserInfo = () => {
                     </Box>
                   </CardContent>
                   <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
-                    <Button onClick={() => editGroup(group.id)} color="primary">Edit</Button>
+                    <Button 
+                      onClick={() => editGroup(group.id)} 
+                      sx={{ color: '#1976d2', textTransform: 'none', fontSize: '0.875rem' }}
+                    >
+                      Edit
+                    </Button>
                     <Button
                       onClick={() => deleteGroup(group.id)}
-                      color="error"
+                      sx={{ color: '#d32f2f', textTransform: 'none', fontSize: '0.875rem' }}
                       disabled={groups.length <= 1}
                     >
                       Delete
                     </Button>
                     <Button
                       onClick={() => setDefaultGroup(group.id)}
-                      color="success"
+                      sx={{ color: '#388e3c', textTransform: 'none', fontSize: '0.875rem' }}
                       disabled={group.isDefault}
                     >
                       Set as Default
@@ -189,7 +203,11 @@ const UserInfo = () => {
             ))}
         </Grid>
       )}
-      <Button variant="contained" color="primary" onClick={addGroup}>
+      <Button 
+        onClick={addGroup}
+        variant="contained"
+        sx={{ bgcolor: '#1976d2', color: '#fff', textTransform: 'none', borderRadius: 6, px: 3, py: 1 }}
+      >
         Add New Profile
       </Button>
     </Box>
