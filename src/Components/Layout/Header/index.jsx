@@ -26,6 +26,7 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
   const app_name = process.env.REACT_APP_APP_NAME
   const app_url = process.env.REACT_APP_APP_URL
   const redirect_url = process.env.REACT_APP_REDIRECT_URL
+
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [searchParams] = useSearchParams();
@@ -44,8 +45,21 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
         try {
           setLoading(true); // start loading
           const user = await axios.get(`${apiUrl}/user-details/${decodedToken?.userName}`);
+// <<<<<<< HEAD
           dispatch(setUserProfile(user.data));
           setHasPortfolio(!!user.data); // true if data exists
+          dispatch(setUserProfile(user.data));
+          setHasPortfolio(!!user.data); // true if data exists
+          dispatch(setUserProfile(user.data)); // store all payload data in redux
+          console.log(user);
+
+
+          if (user) {
+            setHasPortfolio(true);
+          }
+          else {
+            setHasPortfolio(false);
+          }
         } catch (error) {
           console.log("Server error->", error);
           setHasPortfolio(false);
