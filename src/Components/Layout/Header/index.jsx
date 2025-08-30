@@ -32,6 +32,7 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
   const [decodedToken, setDecodedToken] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [hasPortfolio, setHasPortfolio] = useState(null);
+  const [data, setData] = useState(null);
   const navigate = useNavigate()
   const open = Boolean(anchorEl);
 
@@ -62,7 +63,7 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
       try {
         const response = await axios.get(`${apiUrl}all-users-details`);
         // console.log(response.data);
-        // setData(response.data); // Uncomment if you want to store the data
+        setData(response.data); // Uncomment if you want to store the data
       } catch (error) {
         console.error("Error fetching user details:", error);
       }
@@ -250,7 +251,7 @@ return (
                 <>
                   <Button onClick={handleLogout}>Logout</Button>
                   <Button
-                    onClick={() => handleNavigationClick('/userform')}
+                    onClick={() => handleNavigationClick('/editprofile')}
                     variant="contained"
                     color="primary"
                     sx={{ px: 2, py: 1 }}

@@ -20,20 +20,23 @@ import { ExpandMore, ExpandLess, DragIndicator } from '@mui/icons-material';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
-const ItemType = 'SECTION';
-
+// Define section types based on schema
 const sectionTypes = {
-  education: { title: 'Education', fields: ['college', 'course', 'fieldOfStudy', 'startDate', 'endDate', 'grade', 'location'] },
-  experience: { title: 'Experience', fields: ['jobTitle', 'company', 'location', 'startDate', 'endDate', 'description'] },
-  skill: { title: 'Skill', fields: ['skill', 'rating'] },
-  certification: { title: 'Certification', fields: ['name', 'institute', 'issueDate'] },
-  language: { title: 'Language', fields: ['language', 'proficiency'] },
-  project: { title: 'Project', fields: ['name', 'description', 'technologies', 'url'] },
-  custom: { title: 'Custom', fields: ['label', 'value'] },
-  summary: { title: 'Summary', fields: ['summary'] },
-  achievement: { title: 'Achievement', fields: ['title', 'description', 'date'] },
+  education: { title: 'Education', fields: ['college', 'course', 'fieldOfStudy', 'startDate', 'endDate', 'grade', 'location'], required: ['college', 'course'] },
+  experience: { title: 'Experience', fields: ['jobTitle', 'company', 'location', 'startDate', 'endDate', 'description'], required: ['jobTitle', 'company'] },
+  skill: { title: 'Skill', fields: ['skill', 'rating'], required: ['skill', 'rating'] },
+  certification: { title: 'Certification', fields: ['name', 'institute', 'issueDate'], required: ['name'] },
+  language: { title: 'Language', fields: ['language', 'proficiency'], required: ['language'] },
+  project: { title: 'Project', fields: ['name', 'description', 'url', 'technologies', 'projectImages'], required: ['name'] },
+  summary: { title: 'Summary', fields: ['summary'], required: ['summary'], single: true },
+  achievement: { title: 'Achievement', fields: ['title'], required: ['title'] },
+  interest: { title: 'Interest', fields: ['interest'], required: ['interest'] },
+  award: { title: 'Award', fields: ['title', 'issuer', 'date', 'description'], required: ['title'] },
 };
 
+const ItemType = 'SECTION';
+
+// Draggable section component
 const DraggableSection = ({ section, index, moveSection, toggleSection, expandedSections, handleSectionChange, removeSection, removeEntry, addSectionEntry }) => {
   const [{ isDragging }, drag] = useDrag({
     type: ItemType,
@@ -56,69 +59,52 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
   return (
     <Card
       ref={node => drag(drop(node))}
-      sx={{
-        mb: 2,
-        borderRadius: 8,
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-        opacity: isDragging ? 0.5 : 1,
-      }}
+      sx={{ mb: 1, borderRadius: 4, opacity: isDragging ? 0.5 : 1 }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          p: 2,
-          bgcolor: '#f5f5f5',
-          borderRadius: '8px 8px 0 0',
-        }}
-      >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1, bgcolor: '#f5f5f5' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DragIndicator sx={{ color: '#666', cursor: 'grab' }} />
-          <Typography variant="h6" sx={{ fontSize: '1.25rem', fontWeight: 600 }}>
+          <DragIndicator sx={{ color: '#666', fontSize: 20 }} />
+          <Typography sx={{ fontSize: '1rem', fontWeight: 500 }}>
             {sectionTypes[section.name].title}
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
-            variant="contained"
-            sx={{ bgcolor: '#d32f2f', color: '#fff', textTransform: 'none', borderRadius: 6 }}
+            sx={{ color: '#d32f2f', textTransform: 'none', fontSize: '0.875rem' }}
             onClick={() => removeSection(section.name)}
           >
-            Remove Section
+            Remove
           </Button>
           <IconButton onClick={() => toggleSection(section.name)}>
-            {expandedSections[section.name] ? (
-              <ExpandLess sx={{ color: '#666' }} />
-            ) : (
-              <ExpandMore sx={{ color: '#666' }} />
-            )}
+            {expandedSections[section.name] ? <ExpandLess sx={{ color: '#666', fontSize: 20 }} /> : <ExpandMore sx={{ color: '#666', fontSize: 20 }} />}
           </IconButton>
         </Box>
       </Box>
       <Collapse in={expandedSections[section.name]}>
-        <CardContent>
+        <CardContent sx={{ p: 2 }}>
           {section.data.map((entry, entryIndex) => (
-            <Box key={entryIndex} sx={{ border: '1px solid #e0e0e0', borderRadius: 4, p: 2, mb: 2, bgcolor: '#f5f5f5' }}>
+            <Box key={entryIndex} sx={{ border: '1px solid #e0e0e0', borderRadius: 4, p: 2, mb: 1 }}>
               {sectionTypes[section.name].fields.map(field => (
-                <Box key={field} sx={{ mb: 2 }}>
+                <Box key={field} sx={{ mb: 1 }}>
                   <TextField
                     fullWidth
                     label={field.charAt(0).toUpperCase() + field.slice(1)}
-                    type={field.includes('Date') ? 'date' : 'text'}
-                    multiline={field === 'summary' || field === 'description'}
+                    type={field.includes('Date') ? 'date' : field === 'rating' ? 'number' : 'text'}
+                    multiline={field === 'summary' || field === 'description' || field === 'technologies' || field === 'projectImages'}
                     rows={field === 'summary' || field === 'description' ? 4 : 1}
                     value={entry[field] || ''}
                     onChange={e => handleSectionChange(section.name, index, entryIndex, field, e.target.value)}
                     variant="outlined"
                     InputLabelProps={field.includes('Date') ? { shrink: true } : undefined}
+                    error={sectionTypes[section.name].required.includes(field) && !entry[field]}
+                    helperText={sectionTypes[section.name].required.includes(field) && !entry[field] ? `${field.charAt(0).toUpperCase() + field.slice(1)} is required` : ''}
+                    inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
                   />
                 </Box>
               ))}
-              {section.name !== 'summary' && (
+              {!sectionTypes[section.name].single && (
                 <Button
-                  variant="outlined"
-                  sx={{ color: '#d32f2f', borderColor: '#d32f2f', textTransform: 'none', borderRadius: 6 }}
+                  sx={{ color: '#d32f2f', textTransform: 'none', fontSize: '0.875rem' }}
                   onClick={() => removeEntry(section.name, entryIndex)}
                 >
                   Remove Entry
@@ -126,13 +112,12 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
               )}
             </Box>
           ))}
-          {section.name !== 'summary' && (
+          {!sectionTypes[section.name].single && (
             <Button
-              variant="contained"
-              sx={{ bgcolor: '#388e3c', color: '#fff', textTransform: 'none', borderRadius: 6 }}
+              sx={{ bgcolor: '#388e3c', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }}
               onClick={() => addSectionEntry(section.name)}
             >
-              Add {sectionTypes[section.name].title} Entry
+              Add Entry
             </Button>
           )}
         </CardContent>
@@ -157,16 +142,16 @@ const GroupForm = () => {
   });
   const [showModal, setShowModal] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
+  const [errors, setErrors] = useState({});
 
+  // Load existing group for editing
   useEffect(() => {
     if (groupId) {
       const fetchGroup = async () => {
-        console.log('Fetching group with ID:', groupId);
         const { groups } = await getGroups();
         const existingGroup = groups.find(g => g.id === groupId);
         if (existingGroup) {
-          console.log('Found group:', existingGroup);
-          setGroup({ ...existingGroup, sections: existingGroup.sections || [], groupName: existingGroup.groupName || '' });
+          setGroup({ ...existingGroup, sections: existingGroup.sections || [] });
           setExpandedSections(
             (existingGroup.sections || []).reduce((acc, section) => ({
               ...acc,
@@ -179,8 +164,8 @@ const GroupForm = () => {
     }
   }, [groupId]);
 
+  // Handle input changes for personal info (unchanged)
   const handleInputChange = (field, value) => {
-    console.log('Input change:', field, value);
     if (field.includes('address.')) {
       const addressField = field.split('.')[1];
       setGroup(prev => ({
@@ -192,37 +177,36 @@ const GroupForm = () => {
     }
   };
 
+  // Handle section field changes
   const handleSectionChange = (sectionName, sectionIndex, entryIndex, field, value) => {
-    console.log('Section change:', { sectionName, sectionIndex, entryIndex, field, value });
     setGroup(prev => {
       const updatedSections = [...prev.sections];
       const targetSection = updatedSections[sectionIndex];
       if (!targetSection) return prev;
-      const updatedData = (targetSection.data || []).map((item, i) =>
-        i === entryIndex ? { ...item, [field]: value } : item
+      const updatedData = targetSection.data.map((item, i) =>
+        i === entryIndex ? { ...item, [field]: field === 'rating' ? Number(value) : value } : item
       );
-      updatedSections[sectionIndex] = {
-        ...targetSection,
-        data: updatedData,
-      };
+      updatedSections[sectionIndex] = { ...targetSection, data: updatedData };
       return { ...prev, sections: updatedSections };
     });
+    // Clear error on change
+    setErrors(prev => ({ ...prev, [`${sectionName}_${entryIndex}_${field}`]: '' }));
   };
 
+  // Add a new section or entry
   const addSectionEntry = (sectionName) => {
-    console.log('Adding section entry:', sectionName);
     const fields = sectionTypes[sectionName].fields.reduce((acc, field) => ({
       ...acc,
-      [field]: '',
+      [field]: field === 'rating' ? 1 : '',
     }), {});
     setGroup(prev => {
       const existingSection = prev.sections.find(s => s.name === sectionName);
-      if (sectionName === 'summary') {
+      if (sectionName === 'summary' || sectionName === 'achievement' || sectionName === 'interest') {
         return {
           ...prev,
           sections: [
-            ...prev.sections.filter(s => s.name !== 'summary'),
-            { name: 'summary', data: [fields] },
+            ...prev.sections.filter(s => s.name !== sectionName),
+            { name: sectionName, data: sectionName === 'summary' ? fields.summary : [fields] },
           ],
         };
       }
@@ -240,8 +224,8 @@ const GroupForm = () => {
     setExpandedSections(prev => ({ ...prev, [sectionName]: true }));
   };
 
+  // Remove a section
   const removeSection = (sectionName) => {
-    console.log('Removing section:', sectionName);
     setGroup(prev => ({
       ...prev,
       sections: prev.sections.filter(s => s.name !== sectionName),
@@ -251,10 +235,17 @@ const GroupForm = () => {
       delete newExpanded[sectionName];
       return newExpanded;
     });
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      Object.keys(prev).forEach(key => {
+        if (key.startsWith(sectionName)) delete newErrors[key];
+      });
+      return newErrors;
+    });
   };
 
+  // Remove an entry
   const removeEntry = (sectionName, entryIndex) => {
-    console.log('Removing entry:', sectionName, entryIndex);
     setGroup(prev => {
       const updatedSections = [...prev.sections];
       const sectionIndex = updatedSections.findIndex(s => s.name === sectionName);
@@ -274,70 +265,125 @@ const GroupForm = () => {
       }
       return { ...prev, sections: updatedSections };
     });
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      Object.keys(prev).forEach(key => {
+        if (key.startsWith(`${sectionName}_${entryIndex}`)) delete newErrors[key];
+      });
+      return newErrors;
+    });
   };
 
+  // Toggle section collapse
   const toggleSection = (sectionName) => {
-    console.log('Toggling section:', sectionName);
     setExpandedSections(prev => ({
       ...prev,
       [sectionName]: !prev[sectionName],
     }));
   };
 
+  // Move section for drag-and-drop
   const moveSection = (fromIndex, toIndex) => {
-    console.log('Moving section from:', fromIndex, 'to:', toIndex);
     setGroup(prev => {
       const reorderedSections = [...prev.sections];
       const [moved] = reorderedSections.splice(fromIndex, 1);
       reorderedSections.splice(toIndex, 0, moved);
-      console.log('Reordered sections:', reorderedSections);
       return { ...prev, sections: reorderedSections };
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log('Submitting group:', group);
-    const { groups } = await getGroups();
-    const updatedGroups = groupId
-      ? groups.map(g => (g.id === groupId ? group : g))
-      : [...groups, group];
-    await saveGroups({ groups: updatedGroups });
-    navigate('/edit/userinfo', { state: { newGroup: group } });
+  // Validate form
+  const validateForm = () => {
+    const newErrors = {};
+    let isValid = true;
+
+    group.sections.forEach((section, sectionIndex) => {
+      const sectionConfig = sectionTypes[section.name];
+      const data = section.name === 'summary' ? [section.data] : section.data;
+      data.forEach((entry, entryIndex) => {
+        sectionConfig.required.forEach(field => {
+          if (!entry[field]) {
+            newErrors[`${section.name}_${entryIndex}_${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+            isValid = false;
+          }
+        });
+        if (section.name === 'skill' && entry.rating && (entry.rating < 1 || entry.rating > 5)) {
+          newErrors[`${section.name}_${entryIndex}_rating`] = 'Rating must be between 1 and 5';
+          isValid = false;
+        }
+      });
+    });
+
+    setErrors(newErrors);
+    return isValid;
   };
 
+  // Submit form to API
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      alert('Please fill all required fields correctly.');
+      return;
+    }
+
+    // Format sections for API
+    const formattedSections = group.sections.map(section => {
+      if (section.name === 'summary') {
+        return { name: section.name, data: section.data.summary || '' };
+      }
+      if (section.name === 'achievement' || section.name === 'interest') {
+        return { name: section.name, data: section.data.map(entry => entry.title || entry.interest) };
+      }
+      return section;
+    });
+
+    try {
+      const response = await fetch('http://192.168.0.3:9000/api/v1/portfolio/create-cv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sections: formattedSections }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create CV');
+      }
+      const result = await response.json();
+      console.log('API response:', result);
+
+      // Update local storage (fallback)
+      const { groups } = await getGroups();
+      const updatedGroups = groupId
+        ? groups.map(g => (g.id === groupId ? { ...group, sections: formattedSections } : g))
+        : [...groups, { ...group, sections: formattedSections }];
+      await saveGroups({ groups: updatedGroups });
+
+      navigate('/edit/userinfo', { state: { newGroup: group } });
+    } catch (error) {
+      console.error('API error:', error);
+      alert('Failed to save CV. Please try again.');
+    }
+  };
+
+  // Cancel form
   const handleCancel = () => {
-    console.log('Canceling form');
     navigate('/edit/userinfo');
   };
 
-  console.log('Rendering GroupForm with group:', group, 'Expanded sections:', expandedSections);
-
   return (
     <DndProvider backend={HTML5Backend}>
-      <Box sx={{ maxWidth: 1000, mx: 'auto', p: 3, bgcolor: '#fff', borderRadius: 8 }}>
-        <Typography variant="h4" sx={{ fontSize: '1.75rem', fontWeight: 700, mb: 3 }}>
+      <Box sx={{ maxWidth: 800, mx: 'auto', p: 2, bgcolor: '#fff', borderRadius: 4 }}>
+        <Typography sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2 }}>
           {groupId ? 'Edit Profile' : 'Add New Profile'}
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Card sx={{ borderRadius: 8, boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)' }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {/* Personal Information (unchanged, no API) */}
+          <Card sx={{ borderRadius: 4 }}>
             <CardContent>
-              <Typography variant="h6" sx={{ fontSize: '1.25rem', fontWeight: 600, mb: 2 }}>
+              <Typography sx={{ fontSize: '1rem', fontWeight: 500, mb: 1 }}>
                 Personal Information
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Group Name"
-                    type="text"
-                    value={group.groupName || ''}
-                    onChange={e => handleInputChange('groupName', e.target.value)}
-                    variant="outlined"
-                    required
-                  />
-                </Grid>
                 {[
+                  { label: 'Group Name', field: 'groupName', type: 'text', required: true },
                   { label: 'First Name', field: 'firstName', type: 'text' },
                   { label: 'Last Name', field: 'lastName', type: 'text' },
                   { label: 'Email', field: 'email', type: 'email' },
@@ -346,7 +392,7 @@ const GroupForm = () => {
                   { label: 'Pin Code', field: 'address.pinCode', type: 'text' },
                   { label: 'State', field: 'address.state', type: 'text' },
                   { label: 'Country', field: 'address.country', type: 'text' },
-                ].map(({ label, field, type }) => (
+                ].map(({ label, field, type, required }) => (
                   <Grid item xs={12} sm={6} key={field}>
                     <TextField
                       fullWidth
@@ -355,12 +401,14 @@ const GroupForm = () => {
                       value={field.includes('address.') ? group.address[field.split('.')[1]] || '' : group[field] || ''}
                       onChange={e => handleInputChange(field, e.target.value)}
                       variant="outlined"
+                      required={required}
                     />
                   </Grid>
                 ))}
               </Grid>
             </CardContent>
           </Card>
+          {/* Sections */}
           {group.sections.map((section, index) => (
             <DraggableSection
               key={section.name}
@@ -376,51 +424,44 @@ const GroupForm = () => {
             />
           ))}
           <Button
-            variant="contained"
-            sx={{ bgcolor: '#388e3c', color: '#fff', textTransform: 'none', borderRadius: 6 }}
+            sx={{ bgcolor: '#388e3c', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }}
             onClick={() => setShowModal(true)}
           >
             Add Section
           </Button>
           <Dialog open={showModal} onClose={() => setShowModal(false)}>
-            <DialogTitle>Select Section</DialogTitle>
+            <DialogTitle>Add Section</DialogTitle>
             <DialogContent>
               {Object.keys(sectionTypes).map(section => (
                 <Button
                   key={section}
                   fullWidth
-                  variant="outlined"
+                  sx={{ textTransform: 'none', mb: 1 }}
                   onClick={() => {
                     addSectionEntry(section);
                     setShowModal(false);
                   }}
                   disabled={group.sections.some(s => s.name === section)}
-                  sx={{ mb: 1, textTransform: 'none', borderRadius: 6 }}
                 >
                   {sectionTypes[section].title}
                 </Button>
               ))}
             </DialogContent>
             <DialogActions>
-              <Button
-                onClick={() => setShowModal(false)}
-                sx={{ color: '#666', textTransform: 'none', borderRadius: 6 }}
-              >
+              <Button sx={{ color: '#666', textTransform: 'none' }} onClick={() => setShowModal(false)}>
                 Cancel
               </Button>
             </DialogActions>
           </Dialog>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
             <Button
-              variant="outlined"
-              sx={{ color: '#666', borderColor: '#666', textTransform: 'none', borderRadius: 6 }}
+              sx={{ color: '#666', textTransform: 'none', fontSize: '0.875rem' }}
               onClick={handleCancel}
             >
               Cancel
             </Button>
             <Button
-              variant="contained"
-              sx={{ bgcolor: '#1976d2', color: '#fff', textTransform: 'none', borderRadius: 6 }}
+              sx={{ bgcolor: '#1976d2', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }}
               type="submit"
             >
               Save
