@@ -178,7 +178,7 @@ const HomePage = () => {
                   <Box sx={{ mt: 2, textAlign: "center" }}>
                     <Button
                       component={Link}
-                      to="/username"
+                      to={`/${user?.userName}`}
                       variant="contained"
                       color="primary"
                       fullWidth

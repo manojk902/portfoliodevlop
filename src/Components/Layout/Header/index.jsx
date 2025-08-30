@@ -264,7 +264,7 @@ return (
                 <>
                   <Button onClick={handleLogout}>Logout</Button>
                   <Button
-                    onClick={() => handleNavigationClick('/userform')}
+                    onClick={() => handleNavigationClick('/editprofile')}
                     variant="contained"
                     color="primary"
                     sx={{ px: 2, py: 1 }}
