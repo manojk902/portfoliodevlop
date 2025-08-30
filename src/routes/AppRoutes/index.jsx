@@ -20,7 +20,7 @@ const AppRoutes = () => {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<HomePage />} />
-      <Route path="/username" element={<Cv1 />} />   {/* ✅ Static CV route */}
+      <Route path="/:username" element={<Cv1 />} />   {/* ✅ Static CV route */}
 
       {/* Design Routes */}
       <Route path="/Designpage" element={<Designpage />} />
@@ -32,7 +32,6 @@ const AppRoutes = () => {
         <Route path="/createportfolio" element={<CreatePortfolioPage />} />
         <Route path="/editprofile" element={<UserForm />} />
         <Route path="/create-cv" element={<CreateCvPage />} />
-
         {/* Builder Routes */}
         <Route path="/edit" element={<BuilderPage />}>
           <Route index element={<UserInfo />} />

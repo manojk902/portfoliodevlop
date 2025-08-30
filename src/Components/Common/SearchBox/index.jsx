@@ -14,6 +14,7 @@ const SearchBox = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const navigate = useNavigate();
 
   const handleSearch = (e) => {
     const searchTerm = e.target.value;
@@ -31,6 +32,7 @@ const SearchBox = () => {
     setSelectedUser(user);
     setQuery(''); // Clear search input
     setResults([]); // Clear results
+    navigate(`/cv/${user.name.toLowerCase()}`);
   };
 
   return (
