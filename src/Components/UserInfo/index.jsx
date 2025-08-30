@@ -1,158 +1,216 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getGroups, saveGroups } from './DummyData';
-import styles from './UserInfo.module.css';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  Grid,
+} from '@mui/material';
 
 const sectionTypes = {
-  education: { title: 'Education' },
-  workExperience: { title: 'Work Experience' },
-  skills: { title: 'Skills' },
-  languages: { title: 'Languages' },
-  certifications: { title: 'Certifications' },
-  projects: { title: 'Projects' },
-  custom: { title: 'Custom Fields' },
+  education: { title: 'Education', fields: ['college', 'course', 'fieldOfStudy', 'startDate', 'endDate', 'grade', 'location'] },
+  experience: { title: 'Experience', fields: ['jobTitle', 'company', 'location', 'startDate', 'endDate', 'description'] },
+  skill: { title: 'Skill', fields: ['skill', 'rating'] },
+  certification: { title: 'Certification', fields: ['name', 'institute', 'issueDate'] },
+  language: { title: 'Language', fields: ['language', 'proficiency'] },
+  project: { title: 'Project', fields: ['name', 'description', 'technologies', 'url'] },
+  custom: { title: 'Custom', fields: ['label', 'value'] },
+  summary: { title: 'Summary', fields: ['summary'] },
+  achievement: { title: 'Achievement', fields: ['title', 'description', 'date'] },
 };
 
 const UserInfo = () => {
   const [groups, setGroups] = useState([]);
-  const [selectedGroupId, setSelectedGroupId] = useState(null);
-  const [defaultGroupId, setDefaultGroupId] = useState(null);
-
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Fetch groups and default group from dummy data
-  const fetchGroups = () => {
-    const { groups: data, defaultGroupId: storedDefaultId } = getGroups();
-    const newGroup = location.state?.newGroup;
-    
-    if (newGroup) {
-      const updatedGroups = [...data.filter(g => g.id !== newGroup.id), newGroup];
-      setGroups(updatedGroups);
-      setSelectedGroupId(newGroup.id);
-      setDefaultGroupId(storedDefaultId || newGroup.id);
-      saveGroups({ groups: updatedGroups, defaultGroupId: storedDefaultId || newGroup.id });
-    } else if (data.length === 0) {
-      const defaultGroup = {
-        id: crypto.randomUUID(),
-        title: 'Default Group',
-        personalInfo: [
-          { label: 'Name', value: '' },
-          { label: 'Address', value: '' },
-          { label: 'Phone Number', value: '' },
-          { label: 'Email', value: '' },
-        ],
-        sections: [],
-      };
-      setGroups([defaultGroup]);
-      setSelectedGroupId(defaultGroup.id);
-      setDefaultGroupId(defaultGroup.id);
-      saveGroups({ groups: [defaultGroup], defaultGroupId: defaultGroup.id });
-    } else {
-      setGroups(data);
-      setSelectedGroupId(location.state?.newGroupId || storedDefaultId || data[0].id);
-      setDefaultGroupId(storedDefaultId || data[0].id);
-    }
-  };
-
   useEffect(() => {
-    fetchGroups();
-  }, [location.pathname]);
+    const fetchData = async () => {
+      console.log('Fetching groups...');
+      const { groups: data } = await getGroups();
+      console.log('Fetched groups:', data);
+      const newGroup = location.state?.newGroup;
+      if (newGroup) {
+        const updatedGroups = [...data.filter(g => g.id !== newGroup.id), { ...newGroup, sections: newGroup.sections || [], groupName: newGroup.groupName || '' }];
+        console.log('Updated groups with new group:', updatedGroups);
+        setGroups(updatedGroups);
+        await saveGroups({ groups: updatedGroups });
+      } else if (data.length === 0) {
+        const defaultGroup = {
+          id: crypto.randomUUID(),
+          groupName: '',
+          firstName: '',
+          lastName: '',
+          email: '',
+          phoneNo: '',
+          address: { city: '', pinCode: '', state: '', country: '' },
+          sections: [],
+          isDefault: true,
+        };
+        console.log('Created default group:', defaultGroup);
+        setGroups([defaultGroup]);
+        await saveGroups({ groups: [defaultGroup] });
+      } else {
+        const hasDefault = data.some(g => g.isDefault);
+        const updatedData = data.map((g, index) => ({
+          ...g,
+          sections: g.sections || [],
+          groupName: g.groupName || '',
+          isDefault: !hasDefault && index === 0 ? true : g.isDefault || false,
+        }));
+        console.log('Updated groups with default:', updatedData);
+        setGroups(updatedData);
+        await saveGroups({ groups: updatedData });
+      }
+    };
+    fetchData();
+  }, [location.pathname, location.state?.newGroup]);
 
-  // Set a group as default
-  const setDefaultGroup = (groupId) => {
-    setDefaultGroupId(groupId);
-    saveGroups({ groups, defaultGroupId: groupId });
-  };
-
-  // Delete group
-  const deleteGroup = (groupId) => {
-    const updatedGroups = groups.filter(g => g.id !== groupId);
-    let newDefaultGroupId = defaultGroupId;
-    if (groupId === defaultGroupId) {
-      newDefaultGroupId = updatedGroups.length > 0 ? updatedGroups[0].id : null;
+  const deleteGroup = async (groupId) => {
+    console.log('Attempting to delete group:', groupId, 'Current groups length:', groups.length);
+    if (groups.length <= 1) {
+      alert("You can't delete this card, one card should always be there.");
+      console.log('Deletion prevented: only one group remains');
+      return;
     }
-    setSelectedGroupId(updatedGroups.length > 0 ? updatedGroups[0]?.id : null);
-    setDefaultGroupId(newDefaultGroupId);
-    saveGroups({ groups: updatedGroups, defaultGroupId: newDefaultGroupId });
+    const updatedGroups = groups.filter(g => g.id !== groupId);
+    if (updatedGroups.length > 0 && groups.find(g => g.id === groupId)?.isDefault) {
+      updatedGroups[0].isDefault = true;
+    }
+    console.log('Updated groups after deletion:', updatedGroups);
+    setGroups(updatedGroups);
+    await saveGroups({ groups: updatedGroups });
   };
 
-  // Add group navigation
   const addGroup = () => {
+    console.log('Navigating to add-group');
     navigate('/edit/add-group');
   };
 
-  // Edit group
   const editGroup = (groupId) => {
-    setSelectedGroupId(groupId);
+    console.log('Navigating to edit-group:', groupId);
     navigate(`/edit/edit-group/${groupId}`);
   };
 
-  // Select group
-  const selectGroup = (groupId) => {
-    setSelectedGroupId(groupId);
+  const setDefaultGroup = async (groupId) => {
+    const updatedGroups = groups.map(g => ({
+      ...g,
+      isDefault: g.id === groupId,
+    }));
+    console.log('Setting default group:', groupId, 'Updated groups:', updatedGroups);
+    setGroups(updatedGroups);
+    await saveGroups({ groups: updatedGroups });
   };
 
+  const truncateText = (text, maxLength = 50) => {
+    if (typeof text !== 'string') return '';
+    return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+  };
+
+  console.log('Rendering UserInfo with groups:', groups);
+
   return (
-    <div className={styles.container}>
-      <h2 className={styles.header}>User Information</h2>
-      <p className={styles.description}>This is the UserInfo component. Display user details here, like name, email, etc.</p>
-
-      <h3 className={styles.subHeader}>Groups Cluster</h3>
-      <div className={styles.cluster}>
-        {groups.map(group => (
-          <div
-            key={group.id}
-            className={`${styles.groupCard} ${selectedGroupId === group.id ? styles.selected : ''} ${defaultGroupId === group.id ? styles.default : ''}`}
-          >
-            <div className={styles.groupHeader}>
-              <div onClick={() => selectGroup(group.id)} className={styles.groupContent}>
-                <strong className={styles.groupTitle}>{group.title || 'Untitled Group'}</strong>
-                {defaultGroupId === group.id && <span className={styles.defaultBadge}>Default</span>}
-              </div>
-              <button
-                onClick={() => setDefaultGroup(group.id)}
-                className={styles.defaultButton}
-                title="Set as Default"
-              >
-                ★
-              </button>
-            </div>
-            <div className={styles.groupPreview}>
-              <ul>
-                {group.personalInfo.map((field, index) => (
-                  <li key={index} className={styles.fieldItem}>{field.label}: {field.value}</li>
-                ))}
-                {group.sections?.map((section, secIndex) => (
-                  <li key={secIndex}>
-                    <strong className={styles.sectionTitle}>{sectionTypes[section.type]?.title}</strong>
-                    <ul>
-                      {section.items.map((item, itemIndex) => (
-                        <li key={itemIndex} className={styles.itemList}>
-                          <ul>
-                            {Object.entries(item).map(([key, value], fieldIndex) => (
-                              <li key={fieldIndex}>{key.charAt(0).toUpperCase() + key.slice(1)}: {value}</li>
-                            ))}
-                          </ul>
-                        </li>
+    <Box sx={{ maxWidth: '90vw', mx: 'auto', p: 3, bgcolor: '#fff', borderRadius: 8 }}>
+      <Typography variant="h4" sx={{ fontSize: '1.75rem', fontWeight: 700, mb: 3 }}>
+        User Information
+      </Typography>
+      {groups.length === 0 ? (
+        <Typography variant="body1" sx={{ color: '#666' }}>
+          No profiles yet. Click 'Add New Profile' to create one.
+        </Typography>
+      ) : (
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          {groups
+            .filter(group => (group.groupName || '').trim() || (group.firstName || '').trim() || (group.lastName || '').trim() || (group.email || '').trim() || (group.phoneNo || '').trim() || Object.values(group.address || {}).some(v => (v || '').trim()) || ((group.sections || []).length > 0))
+            .map(group => (
+              <Grid item xs={12} sm={6} md={4} key={group.id}>
+                <Card sx={{ 
+                  border: group.isDefault ? '2px solid #4caf50' : '1px solid #e0e0e0',
+                  bgcolor: group.isDefault ? '#e8f5e9' : '#fff',
+                  minHeight: 300,
+                  maxHeight: 300,
+                  overflow: 'hidden',
+                  borderRadius: 8,
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)' },
+                }}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontSize: '1.25rem', fontWeight: 600, mb: 2 }}>
+                      {group.groupName || `${group.firstName || ''} ${group.lastName || ''}`.trim() || 'Unnamed Profile'}
+                      {group.isDefault && (
+                        <Typography component="span" sx={{ ml: 1, fontSize: '0.75rem', bgcolor: '#388e3c', color: '#fff', px: 1, py: 0.5, borderRadius: 4 }}>
+                          Default
+                        </Typography>
+                      )}
+                    </Typography>
+                    <Box component="ul" sx={{ pl: 2, listStyleType: 'disc' }}>
+                      {['groupName', 'firstName', 'lastName', 'email'].map(field => (
+                        group[field] && (
+                          <Typography component="li" variant="body2" key={field} sx={{ mb: 1, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {field.charAt(0).toUpperCase() + field.slice(1)}: {truncateText(group[field])}
+                          </Typography>
+                        )
                       ))}
-                    </ul>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className={styles.groupActions}>
-              <button onClick={() => editGroup(group.id)} className={styles.editButton}>Edit</button>
-              <button onClick={() => deleteGroup(group.id)} className={styles.deleteButton}>Delete</button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <button onClick={addGroup} className={styles.addButton}>Add New Group</button>
-    </div>
+                      {(group.sections || []).slice(0, 1).map((section, secIndex) => (
+                        <Typography component="li" key={secIndex} sx={{ mb: 1, fontSize: '0.875rem' }}>
+                          <strong>{sectionTypes[section.name]?.title || section.name}</strong>
+                          <Box component="ul" sx={{ pl: 2, listStyleType: 'circle' }}>
+                            {(section.data || []).slice(0, 1).map((item, itemIndex) => (
+                              <Typography component="li" key={itemIndex}>
+                                {sectionTypes[section.name]?.fields.slice(0, 2).map(field => (
+                                  item[field] && (
+                                    <Typography key={field} variant="body2" sx={{ fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                      {field.charAt(0).toUpperCase() + field.slice(1)}: {truncateText(item[field])}
+                                    </Typography>
+                                  )
+                                ))}
+                              </Typography>
+                            ))}
+                          </Box>
+                        </Typography>
+                      ))}
+                    </Box>
+                  </CardContent>
+                  <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
+                    <Button 
+                      onClick={() => editGroup(group.id)} 
+                      sx={{ color: '#1976d2', textTransform: 'none', fontSize: '0.875rem' }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      onClick={() => deleteGroup(group.id)}
+                      sx={{ color: '#d32f2f', textTransform: 'none', fontSize: '0.875rem' }}
+                      disabled={groups.length <= 1}
+                    >
+                      Delete
+                    </Button>
+                    <Button
+                      onClick={() => setDefaultGroup(group.id)}
+                      sx={{ color: '#388e3c', textTransform: 'none', fontSize: '0.875rem' }}
+                      disabled={group.isDefault}
+                    >
+                      Set as Default
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))}
+        </Grid>
+      )}
+      <Button 
+        onClick={addGroup}
+        variant="contained"
+        sx={{ bgcolor: '#1976d2', color: '#fff', textTransform: 'none', borderRadius: 6, px: 3, py: 1 }}
+      >
+        Add New Profile
+      </Button>
+    </Box>
   );
 };
 

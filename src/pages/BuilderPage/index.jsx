@@ -1,14 +1,15 @@
-import { Outlet } from "react-router-dom";
-import Sidebar from "../../Components/Sidebar";
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import { Box } from '@mui/material';
+import Sidebar from '../../Components/Sidebar'; // Adjust to './UserInfo/Sidebar' if needed
 
-const BuilderPage = () => {
-  return (
-    <div style={{ display: 'flex',marginTop:'1px' }}>
-      <Sidebar />
-      <main style={{ flex: 1, padding: '20px',marginTop:'1px' }}>
-        <Outlet /> {/* This is where the clicked component will render */}
-      </main>
-    </div>
-  );
-};
+const BuilderPage = () => (
+  <Box sx={{ display: 'flex' }}>
+    <Sidebar />
+    <Box sx={{ flexGrow: 1, p: 2 }}> {/* Reduced padding for minimal look */}
+      <Outlet />
+    </Box>
+  </Box>
+);
+
 export default BuilderPage;

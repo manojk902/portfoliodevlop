@@ -558,12 +558,12 @@ function Cv1() {
                 Professional Summary
               </Typography>
               <SectionLine
-                // value={"work  "}
-                value={cvData.summary}
-                onChange={updateSummary}
-                component={Typography}
-                variant="body1"
-              />
+                  // value={"work  "}
+                  value={cvData?.summary}
+                  onChange={updateSummary}
+                  component={Typography}
+                  variant="body1"
+                />
             </Section>
 
             <Section>
@@ -578,7 +578,7 @@ function Cv1() {
       "endDate": "2025-08-18",
       "description": "string" */}
 
-              {cvData?.experience.map((exp, expIndex) => (
+              {(cvData?.experience || []).map((exp, expIndex) => (
                 <Box key={expIndex} mb={3}>
                   <Box display="flex" justifyContent="space-between">
                     <SectionLine
@@ -622,9 +622,9 @@ function Cv1() {
               </Typography>
 
               <Grid container spacing={2}>
-                {cvData.projects.map((project, index) => (
-                  <Box>
-                    <Grid item xs={12} sm={6} key={index}>
+                {(cvData?.projects || []).map((project, index) => (
+                  <Box key={index}>
+                    <Grid item xs={12} sm={6}>
                       <Paper elevation={0} sx={{ p: 2, height: "100%", borderLeft: "3px solid", borderColor: "primary.main" }}>
                         <SectionLine
                           value={`${project.name} =>`}
@@ -640,7 +640,7 @@ function Cv1() {
                           variant="body2"
                         />
                         <Box mt={1.5}>
-                          {project.technologies.map((skill, skillIndex) => (
+                          {(project?.technologies || []).map((skill, skillIndex) => (
                             <SkillChip
                               key={skillIndex}
                               label={
@@ -677,7 +677,7 @@ function Cv1() {
                   Frontend
                 </Typography> */}
                 <Box display="flex" flexWrap="wrap" mt={1}>
-                  {cvData.skills.map((skill, index) => (
+                  {(cvData?.skills?.frontend || []).map((skill, index) => (
                     <SkillChip
                       key={index}
                       label={
@@ -704,7 +704,7 @@ function Cv1() {
                 Languages
               </Typography>
               {
-                cvData.languages.map((lang, langIndex) => (
+                (cvData?.languages || []).map((lang, langIndex) => (
                   <Typography key={langIndex}>{`${lang.language}(${lang.proficiency})`} </Typography>
                 ))
               }
@@ -715,7 +715,7 @@ function Cv1() {
                 interests
               </Typography>
               {
-                cvData.interests.map((interest, interIndex) => (
+                (cvData?.interests || []).map((interest, interIndex) => (
                   <Typography key={interIndex}>{`${interest}`} </Typography>
                 ))
               }
@@ -726,7 +726,7 @@ function Cv1() {
                 achievements
               </Typography>
               {
-                cvData.achievements.map((achive, achiveIndex) => (
+                (cvData?.achievements || []).map((achive, achiveIndex) => (
                   <Typography key={achiveIndex}>{`${achive}`} </Typography>
                 ))
               }
@@ -735,8 +735,8 @@ function Cv1() {
               <Typography variant="h5" color="primary" gutterBottom>
                 Education
               </Typography>
-              {cvData.education.map((edu, index) => (
-                <Box key={index} mb={index < cvData.education.length - 1 ? 2 : 0}>
+              {(cvData?.education || []).map((edu, index) => (
+                <Box key={index} mb={index < (cvData?.education || []).length - 1 ? 2 : 0}>
                   <SectionLine
                     value={edu.fieldOfStudy}
                     onChange={(val) => updateEducation(index, 'degree', val)}
@@ -765,7 +765,7 @@ function Cv1() {
                 Certifications
               </Typography>
               <ul style={{ paddingLeft: 20, marginTop: 0 }}>
-                {cvData.certifications.map((cert, index) => (
+                {(cvData?.certifications || []).map((cert, index) => (
                   <li key={index}>
                     <SectionLine
                       value={`${cert.name} from ${cert.institute} IssueDate ${cert.issueDate}`}
