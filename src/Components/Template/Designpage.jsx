@@ -174,7 +174,7 @@ export default function DesignPage() {
 
         <Grid container spacing={3} justifyContent="flex-start">
           {designsToShow.map(({ id, name, Component, scale, baseWidth }, index) => {
-            const isPortfolio = false; // Only CV templates now
+            // const isPortfolio = false; // Only CV templates now
             const itemProps = { xs: 12, sm: 6, md: 4, lg: 3 }; // Adjusted layout for better spacing
 
             const cardMaxWidth = 320;

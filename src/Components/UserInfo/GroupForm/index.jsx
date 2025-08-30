@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getGroups, saveGroups } from '../DummyData';
@@ -214,10 +215,10 @@ const GroupForm = () => {
         ...prev,
         sections: existingSection
           ? prev.sections.map(s =>
-              s.name === sectionName
-                ? { ...s, data: [...s.data, fields] }
-                : s
-            )
+            s.name === sectionName
+              ? { ...s, data: [...s.data, fields] }
+              : s
+          )
           : [...prev.sections, { name: sectionName, data: [fields] }],
       };
     });
