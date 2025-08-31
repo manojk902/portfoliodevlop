@@ -20,19 +20,20 @@ import {
 import { ExpandMore, ExpandLess, DragIndicator } from '@mui/icons-material';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import axios from 'axios';
 
 // Define section types based on schema
 const sectionTypes = {
-  education: { title: 'Education', fields: ['college', 'course', 'fieldOfStudy', 'startDate', 'endDate', 'grade', 'location'], required: ['college', 'course'] },
-  experience: { title: 'Experience', fields: ['jobTitle', 'company', 'location', 'startDate', 'endDate', 'description'], required: ['jobTitle', 'company'] },
-  skill: { title: 'Skill', fields: ['skill', 'rating'], required: ['skill', 'rating'] },
-  certification: { title: 'Certification', fields: ['name', 'institute', 'issueDate'], required: ['name'] },
-  language: { title: 'Language', fields: ['language', 'proficiency'], required: ['language'] },
-  project: { title: 'Project', fields: ['name', 'description', 'url', 'technologies', 'projectImages'], required: ['name'] },
-  summary: { title: 'Summary', fields: ['summary'], required: ['summary'], single: true },
-  achievement: { title: 'Achievement', fields: ['title'], required: ['title'] },
-  interest: { title: 'Interest', fields: ['interest'], required: ['interest'] },
-  award: { title: 'Award', fields: ['title', 'issuer', 'date', 'description'], required: ['title'] },
+  Education: { title: 'Education', fields: ['college', 'course', 'fieldOfStudy', 'startDate', 'endDate', 'grade', 'location'], required: ['college', 'course'] },
+  Experience: { title: 'Experience', fields: ['jobTitle', 'company', 'location', 'startDate', 'endDate', 'description'], required: ['jobTitle', 'company'] },
+  Skill: { title: 'Skill', fields: ['skill', 'rating'], required: ['skill', 'rating'] },
+  Certification: { title: 'Certification', fields: ['name', 'institute', 'issueDate'], required: ['name'] },
+  Language: { title: 'Language', fields: ['language', 'proficiency'], required: ['language'] },
+  Project: { title: 'Project', fields: ['name', 'description', 'url', 'technologies', 'projectImages'], required: ['name'] },
+  Summary: { title: 'Summary', fields: ['summary'], required: ['summary'], single: true },
+  Achievement: { title: 'Achievement', fields: ['title'], required: ['title'] },
+  Interest: { title: 'Interest', fields: ['interest'], required: ['interest'] },
+  Award: { title: 'Award', fields: ['title', 'issuer', 'date', 'description'], required: ['title'] },
 };
 
 const ItemType = 'SECTION';
@@ -337,12 +338,39 @@ const GroupForm = () => {
       }
       return section;
     });
+    console.log("vvvvv", formattedSections);
 
     try {
-      const response = await fetch('http://192.168.0.3:9000/api/v1/portfolio/create-cv', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sections: formattedSections }),
+      const response = await axios.post('http://192.168.0.3:9000/api/v1/portfolio/create-cv', {
+
+        userId: 2,
+        userName: "manoj_804",
+        cvInfo: [
+          {
+            isDefault: true,
+            firstName: "manoj",
+            lastName: "Kumar",
+            email: "manoj@example.com",
+            phoneNo: "9876543210",
+            dob: "1998-05-10",
+            gender: "Male",
+            profilePhoto: "https://example.com/photo.jpg",
+            designation: "Software Engineer",
+            socialLink: [
+              "https://linkedin.com/in/mukesh",
+              "https://github.com/mukesh"
+            ],
+            address: {
+              city: "Delhi",
+              pinCode: 110001,
+              state: "Delhi",
+              country: "India"
+            },
+            sections: formattedSections
+          }
+        ]
+
+        // sections: formattedSections
       });
       if (!response.ok) {
         throw new Error('Failed to create CV');
