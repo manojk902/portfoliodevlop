@@ -16,7 +16,7 @@ const Cv1 = () => {
     const fetchCvData = async () => {
       try {
         const res = await axios.get(
-          `http://192.168.0.3:9000/api/v1/portfolio/defaultCv/${username}`
+          `http://192.168.0.2:9000/api/v1/portfolio/defaultCv/${username}`
         );
         console.log("📌 API Response:", res.data.fetchedCvInfo.defaultCvInfo);
         setCvData(res.data.fetchedCvInfo.defaultCvInfo);

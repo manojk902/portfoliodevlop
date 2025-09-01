@@ -29,7 +29,7 @@ import CV4 from "./Cv4";
 import CV5 from "./Cv5";
 import CV6 from "./Cv6";
 
-export default function DesignPage() {
+ function DesignPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectedCategory, setSelectedCategory] = useState("cv");
@@ -525,3 +525,4 @@ export default function DesignPage() {
     </Box>
   );
 }
+export default DesignPage;

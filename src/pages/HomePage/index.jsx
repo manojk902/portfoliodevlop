@@ -34,7 +34,7 @@ const HomePage = () => {
   // 🔹 API call
   useEffect(() => {
     setLoading(true);
-    fetch(`http://192.168.0.3:9000/api/v1/portfolio/search-user?name=${search}`)
+    fetch(`http://192.168.0.2:9000/api/v1/portfolio/search-user?name=${search}`)
       .then((res) => res.json())
       .then((data) => {
         console.log("API Response:", data.searchedUser?.[0]);

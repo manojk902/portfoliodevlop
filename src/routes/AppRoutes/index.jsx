@@ -14,6 +14,7 @@ import Template from '../../Components/Template';
 import GroupForm from '../../Components/UserInfo/GroupForm';
 import Designpreview from '../../Components/Template/Designpreview';
 import Designpage from '../../Components/Template/Designpage';
+import For from '../../pages/For';
 
 const AppRoutes = () => {
   return (
@@ -21,6 +22,7 @@ const AppRoutes = () => {
       {/* Public Routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/:username" element={<Cv1 />} />   {/* ✅ Static CV route */}
+      <Route path="/for" element={<For />} />   {/* ✅ Static CV route */}
 
       {/* Design Routes */}
       <Route path="/Designpage" element={<Designpage />} />
