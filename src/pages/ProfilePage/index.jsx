@@ -50,6 +50,8 @@ export default function ProfilePage() {
   const userProfile = useSelector(state => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName
 
+console.log(username,"mm");
+
   // console.log("ttttttt", userProfile.fetchedUsed.profilePhoto);
 
   const editProfile = () => {

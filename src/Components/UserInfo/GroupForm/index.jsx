@@ -143,9 +143,9 @@ const GroupForm = () => {
     groupName: '',
     firstName: '',
     lastName: '',
-    email: '',
-    phoneNo: '',
-    address: { city: '', pinCode: '', state: '', country: '' },
+    email: 'manojkumar6448@gmail.com',
+    phoneNo: 8858585857,
+    address: { city: '', pinCode: 122001, state: '', country: '' },
     sections: [],
     isDefault: false,
   });
@@ -381,7 +381,7 @@ const GroupForm = () => {
         userName: 'manoj_804',
         cvInfo: [
           {
-            isDefault: group.isDefault,
+            // isDefault: group.isDefault,
             firstName: group.firstName,
             lastName: group.lastName,
             email: group.email,
@@ -420,7 +420,7 @@ const GroupForm = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Box sx={{ maxWidth: 800, mx: 'auto', p: 2, bgcolor: '#fff', borderRadius: 4 }}>
+      <Box sx={{ fullWidth: true, mx: 'auto', p: 2, bgcolor: '#fff', borderRadius: 4 }}>
         <Typography sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2 }}>
           {groupId ? 'Edit Profile' : 'Add New Profile'}
         </Typography>
@@ -431,15 +431,16 @@ const GroupForm = () => {
               <Typography sx={{ fontSize: '1rem', fontWeight: 500, mb: 1 }}>Personal Information</Typography>
               <Grid container spacing={2}>
                 {[
-                  { label: 'Group Name', field: 'groupName', type: 'text', required: true },
+                  // { label: 'Group Name', field: 'groupName', type: 'text', required: true },
                   { label: 'First Name', field: 'firstName', type: 'text' },
                   { label: 'Last Name', field: 'lastName', type: 'text' },
                   { label: 'Email', field: 'email', type: 'email' },
                   { label: 'Phone', field: 'phoneNo', type: 'tel' },
                   { label: 'City', field: 'address.city', type: 'text' },
-                  { label: 'Pin Code', field: 'address.pinCode', type: 'text' },
+                  { label: 'Pin Code', field: 'address.pinCode', type: 'number' },
                   { label: 'State', field: 'address.state', type: 'text' },
                   { label: 'Country', field: 'address.country', type: 'text' },
+                  { label: 'gender', field: 'address.country', type: 'text' },
                 ].map(({ label, field, type, required }) => (
                   <Grid item xs={12} sm={6} key={field} >
                     <TextField
@@ -449,7 +450,7 @@ const GroupForm = () => {
                       value={field.includes('address.') ? group.address[field.split('.')[1]] || '' : group[field] || ''}
                       onChange={e => handleInputChange(field, e.target.value)}
                       variant="outlined"
-                      required={required}
+                    // required={required}
                     />
                   </Grid>
                 ))}
@@ -488,7 +489,7 @@ const GroupForm = () => {
                     addSectionEntry(section);
                     setShowModal(false);
                   }}
-                  disabled={group.sections.some(s => s.name === section && sectionTypes[section].single)}
+                  disabled={group.sections.some(s => (s.name || '').toString().toLowerCase() === section.toLowerCase())}
                 >
                   {sectionTypes[section].title}
                 </Button>

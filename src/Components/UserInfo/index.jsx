@@ -1,4 +1,5 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+// ...existing code...
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -6,58 +7,68 @@ import {
   Typography,
   Box,
   Button,
-  IconButton
+  IconButton,
+  Grid,
+  Skeleton
 } from "@mui/material";
 import { Edit, Delete, Add } from "@mui/icons-material";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import { apiUrl } from "../../utils/common";
+import { useNavigate } from "react-router-dom";
+// ...existing code...
 
 function UserInfo() {
+  const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [defaultUser, setDefaultUser] = useState({});
-  const [userid, setUserId] = useState()
+  const [userid, setUserId] = useState();
+  const [updatingCvId, setUpdatingCvId] = useState(null);
+  const [deletingCvId, setDeletingCvId] = useState(null);
+  const userProfile = useSelector((state) => state.userProfile.data);
+  const username = userProfile?.fetchedUsed?.userName || "mukesh_277";
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get(
-          `http://192.168.0.2:9000/api/v1/portfolio/cv-details/mukesh_277`
-        );
-        setUsers(response.data.fetchedCv.cvInfo);
-        setUserId(response.data.fetchedCv.userId);
-        setDefaultUser(response.data.fetchedCv.templateInfo);
-        // manoj_804 userid52,,, manoj_756 userid5
-        console.log(`=====`, response.data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-    fetchUsers();
-  }, [userid]);
-  
-  const handleSetDefault = async (userId, cvInfoId) => {
-    console.log(userId, cvInfoId);
-
+  const fetchUsers = async () => {
+    if (!username) return;
     try {
-      const response = await axios.put(
-        `http://192.168.0.2:9000/api/v1/portfolio/updateDefaultCvId`
-        , {
-          userId: userId,
-          cvInfoId: cvInfoId
-        });
-      // setUsers(response.data.fetchedCv.cvInfo);
-      // manoj_804 userid52,,, manoj_756 userid5
-      console.log(`=====d`, response);
+      setLoading(true);
+      const response = await axios.get(`${apiUrl}/cv-details/${username}`);
+      setUsers(response.data.fetchedCv.cvInfo || []);
+      setUserId(response.data.fetchedCv.userId);
+      setDefaultUser(response.data.fetchedCv.templateInfo || {});
+      console.log("===== ", response.data);
     } catch (error) {
       console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
     }
-    // updateDefaultCvId
-    // handleSetDefault;
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [username]);
+
+  const handleSetDefault = async (userId, cvInfoId) => {
+    if (!userId || !cvInfoId) return;
+    setUpdatingCvId(cvInfoId);
+    try {
+      await axios.put(`${apiUrl}/updateDefaultCvId`, {
+        userId,
+        cvInfoId,
+      });
+      await fetchUsers();
+    } catch (error) {
+      console.error("Error setting default:", error);
+    } finally {
+      setUpdatingCvId(null);
+    }
   };
 
   const handleEdit = (id) => {
     axios
       .put(`https://jsonplaceholder.typicode.com/users/${id}`, {
-        name: "Updated Name"
+        name: "Updated Name",
       })
       .then((res) => {
         console.log("Edit API response:", res.data);
@@ -66,111 +77,163 @@ function UserInfo() {
       .catch((err) => console.error(err));
   };
 
-  const handleDelete = (id) => {
-    axios
-      .delete(`https://jsonplaceholder.typicode.com/users/${id}`)
-      .then((res) => {
-        console.log("Delete API response:", res.data);
-        alert(`Deleted user with id ${id}`);
-      })
-      .catch((err) => console.error(err));
+
+  const handleDelete = async (userId, cvInfoId) => {
+    if (!userId || !cvInfoId) return;
+    const ok = window.confirm("Are you sure you want to delete this CV?");
+    if (!ok) return;
+    setDeletingCvId(cvInfoId);
+    try {
+      // axios.delete with body: pass data in config
+      const res = await axios.delete(`${apiUrl}/deleteCvInfoSet`, {
+        data: { userId, cvInfoId },
+      });
+      console.log("delete response:", res.data);
+      // remove the deleted card from UI
+      setUsers((prev) => prev.filter((u) => u.cvInfoId !== cvInfoId));
+      // optional: if server returns updated list, you can use setUsers(res.data.updatedList)
+    } catch (err) {
+      console.error("Delete failed:", err);
+    } finally {
+      setDeletingCvId(null);
+    }
   };
 
   const handleAddNew = () => {
-    alert("Add Group / Add Info button clicked!");
-    // yaha tu apna modal ya form open kara sakta hai
+    navigate(`add-group`);
+    // alert("Add Group / Add Info button clicked!");
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(5, 1fr)", // 5 cards per row
-          gap: 2
-        }}
-      >
-        {users.map((user) => (
-          <Card key={user.id} sx={{ p: 2, height: "100%" }}>
-            <CardContent>
-              {/* User Details */}
-              <Typography variant="h6" gutterBottom noWrap>
-                {user.designation}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                Email: {user.email}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                Phone: {user.phoneNo}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                City: {user.address?.city}
-              </Typography>
+      <Grid container spacing={2}>
+        {loading ? (
+          // Skeletons while loading
+          Array.from(new Array(4)).map((_, index) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+              <Card sx={{ p: 2, height: "100%" }}>
+                <Skeleton variant="text" height={32} width="70%" sx={{ mb: 1, ml: 2 }} />
+                <CardContent>
+                  <Skeleton height={20} width="50%" sx={{ mb: 0.5 }} />
+                  <Skeleton height={20} width="85%" sx={{ mb: 0.5 }} />
+                  <Skeleton height={20} width="95%" sx={{ mb: 1 }} />
+                  <Box
+                    mt={2}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      width: "100%",
+                    }}
+                  >
+                    <Skeleton variant="circular" width={20} height={30} />
+                    <Skeleton width={140} height={32} sx={{ ml: 0.5, mr: 0.5 }} />
+                    <Skeleton variant="circular" width={20} height={30} />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))
+        ) : (
+          <>
+            {users.map((user) => {
+              console.log("inside", user);
 
-              {/* Action Row: Left Icon | Default Button | Right Icon */}
-              <Box
-                mt={2}
+              const key = user.cvInfoId ?? userid;
+              const isDefault = defaultUser?.cvInfoId === user.cvInfoId;
+              return (
+                <Grid item xs={12} sm={6} md={3} key={key}>
+                  <Card sx={{ p: 2, height: "100%" }}>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom noWrap>
+                        {user.designation}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" noWrap>
+                        Email: {user.email}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" noWrap>
+                        Phone: {user.phoneNo}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" noWrap>
+                        City: {user.address?.city}
+                      </Typography>
+
+                      <Box
+                        mt={2}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <IconButton
+                          color="primary"
+                          size="small"
+                          onClick={() => handleEdit(user.id)}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+
+                        <Button
+                          variant={isDefault ? "contained" : "outlined"}
+                          color="primary"
+                          size="small"
+                          onClick={() => handleSetDefault(userid, user.cvInfoId)}
+                          disabled={updatingCvId === user.cvInfoId || isDefault}
+                        >
+                          {updatingCvId === user.cvInfoId
+                            ? "Updating..."
+                            : isDefault
+                              ? "Default"
+                              : "Set as Default"}
+                        </Button>
+
+                        {users.length > 1 && (
+                          <IconButton
+                            color="error"
+                            size="small"
+                            onClick={() => handleDelete(userid, user.cvInfoId)}
+                            disabled={deletingCvId === user.cvInfoId}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        )}
+
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
+
+            {/* Add New card */}
+            <Grid item xs={12} sm={6} md={3}>
+              <Card
                 sx={{
+                  p: 2,
+                  height: "100%",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "space-between"
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  border: "2px dashed #aaa",
                 }}
+                onClick={handleAddNew}
               >
-                {/* Left Icon */}
-                <IconButton
-                  color="primary"
-                  size="small"
-                  onClick={() => handleEdit(user.id)}
-                >
-                  <Edit fontSize="small" />
-                </IconButton>
-
-                {/* Center Button */}
-                <Button
-                  variant={defaultUser.cvInfoId === user.cvInfoId ? "contained" : "outlined"}
-                  color="primary"
-                  size="small"
-                  onClick={() => handleSetDefault(userid, user.cvInfoId)}
-                >
-                  {defaultUser.cvInfoId === user.cvInfoId ? "Default" : "Set as Default"}
-                </Button>
-
-                {/* Right Icon */}
-                <IconButton
-                  color="error"
-                  size="small"
-                  onClick={() => handleDelete(user.id)}
-                >
-                  <Delete fontSize="small" />
-                </IconButton>
-              </Box>
-            </CardContent>
-          </Card>
-        ))}
-
-        {/* Extra Card for Add New */}
-        <Card
-          sx={{
-            p: 2,
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            border: "2px dashed #aaa"
-          }}
-          onClick={handleAddNew}
-        >
-          <CardContent sx={{ textAlign: "center" }}>
-            <Add sx={{ fontSize: 40, color: "primary.main" }} />
-            <Typography variant="body1" color="primary">
-              Add Group / Add Info
-            </Typography>
-          </CardContent>
-        </Card>
-      </Box>
+                <CardContent sx={{ textAlign: "center" }}>
+                  <Add sx={{ fontSize: 40, color: "primary.main" }} />
+                  <Typography variant="body1" color="primary">
+                    Add Group / Add Info
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </>
+        )}
+      </Grid>
     </Box>
   );
 }
 
 export default UserInfo;
+// ...existing code...
