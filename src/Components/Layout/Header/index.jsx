@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../../../store/features/userSlice';
 import { setUserProfile } from '../../../store/features/userProfileSlice';
 import { apiUrl } from '../../../utils/common';
+import { persistor } from "../../../store"; 
 
 const Header = ({ onNavigate, onToggleSidebar }) => {
   const user = useSelector(state => state.user);
@@ -116,6 +117,7 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
     setDecodedToken(null);
+    persistor.purge();
     alert("logout successful");
     const url = new URL(window.location);
     url.searchParams.delete("token");

@@ -41,13 +41,10 @@ const ItemType = 'SECTION';
 
 // Component for a draggable section (e.g., Education, Project)
 const DraggableSection = ({ section, index, moveSection, toggleSection, expandedSections, handleSectionChange, removeSection, removeEntry, addSectionEntry }) => {
-  // Drag-and-drop setup
   const [{ isDragging }, drag] = useDrag({
     type: ItemType,
     item: { index },
-    collect: monitor => ({
-      isDragging: monitor.isDragging(),
-    }),
+    collect: monitor => ({ isDragging: monitor.isDragging() }),
   });
 
   const [, drop] = useDrop({
@@ -62,7 +59,6 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
 
   return (
     <Card ref={node => drag(drop(node))} sx={{ mb: 1, borderRadius: 4, opacity: isDragging ? 0.5 : 1 }}>
-      {/* Section header with title, remove button, and expand/collapse button */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1, bgcolor: '#f5f5f5' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DragIndicator sx={{ color: '#666', fontSize: 20 }} />
@@ -77,52 +73,75 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
           </IconButton>
         </Box>
       </Box>
-      {/* Collapsible section content */}
+
       <Collapse in={expandedSections[section.name]}>
         <CardContent sx={{ p: 2 }}>
-          {(sectionTypes[section.name].single ? [section.data] : section.data).map((entry, entryIndex) => (
-            <Box key={entryIndex} sx={{ border: '1px solid #e0e0e0', borderRadius: 4, p: 2, mb: 1 }}>
-              {sectionTypes[section.name].fields.map(field => (
-                <Box key={field} sx={{ mb: 1 }}>
-                  <TextField
-                    fullWidth
-                    label={field.charAt(0).toUpperCase() + field.slice(1)}
-                    type={field.includes('Date') ? 'date' : field === 'rating' ? 'number' : 'text'}
-                    multiline={field === 'summary' || field === 'description'}
-                    rows={field === 'summary' || field === 'description' ? 4 : 1}
-                    value={
-                      field === 'technologies' || field === 'projectImages'
-                        ? Array.isArray(entry[field]) ? entry[field].join(', ') : entry[field] || ''
-                        : entry[field] || ''
-                    }
-                    onChange={e => {
-                      const value =
-                        field === 'technologies' || field === 'projectImages'
-                          ? e.target.value.split(',').map(item => item.trim()).filter(item => item)
-                          : e.target.value;
-                      handleSectionChange(section.name, index, entryIndex, field, value);
-                    }}
-                    variant="outlined"
-                    InputLabelProps={field.includes('Date') ? { shrink: true } : undefined}
-                    error={sectionTypes[section.name].required.includes(field) && !entry[field]}
-                    helperText={
-                      sectionTypes[section.name].required.includes(field) && !entry[field]
-                        ? `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
-                        : (field === 'technologies' || field === 'projectImages') && entry[field] && !Array.isArray(entry[field])
-                          ? 'Enter a comma-separated list'
-                          : ''
-                    }
-                    inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
-                  />
-                </Box>
-              ))}
-              {!sectionTypes[section.name].single && (
-                <Button sx={{ color: '#d32f2f', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => removeEntry(section.name, entryIndex)}>
-                  Remove Entry
-                </Button>
-              )}
+          {sectionTypes[section.name].single ? (
+            // Single-section UI (Summary as a string)
+            <Box sx={{ mb: 1 }}>
+              <TextField
+                fullWidth
+                label={sectionTypes[section.name].fields[0].charAt(0).toUpperCase() + sectionTypes[section.name].fields[0].slice(1)}
+                multiline
+                rows={4}
+                value={section.data ?? ''}
+                onChange={e => handleSectionChange(section.name, index, 0, sectionTypes[section.name].fields[0], e.target.value)}
+                variant="outlined"
+                error={sectionTypes[section.name].required.includes(sectionTypes[section.name].fields[0]) && !section.data}
+                helperText={
+                  sectionTypes[section.name].required.includes(sectionTypes[section.name].fields[0]) && !section.data
+                    ? `${sectionTypes[section.name].fields[0].charAt(0).toUpperCase() + sectionTypes[section.name].fields[0].slice(1)} is required`
+                    : ''
+                }
+              />
             </Box>
-          ))}
+          ) : (
+            // Existing multi-entry UI (unchanged)
+            (section.data || []).map((entry, entryIndex) => (
+              <Box key={entryIndex} sx={{ border: '1px solid #e0e0e0', borderRadius: 4, p: 2, mb: 1 }}>
+                {sectionTypes[section.name].fields.map(field => (
+                  <Box key={field} sx={{ mb: 1 }}>
+                    <TextField
+                      fullWidth
+                      label={field.charAt(0).toUpperCase() + field.slice(1)}
+                      type={field.includes('Date') ? 'date' : field === 'rating' ? 'number' : 'text'}
+                      multiline={field === 'summary' || field === 'description'}
+                      rows={field === 'summary' || field === 'description' ? 4 : 1}
+                      value={
+                        field === 'technologies' || field === 'projectImages'
+                          ? Array.isArray(entry[field]) ? entry[field].join(', ') : entry[field] || ''
+                          : entry[field] || ''
+                      }
+                      onChange={e => {
+                        const value =
+                          field === 'technologies' || field === 'projectImages'
+                            ? e.target.value.split(',').map(item => item.trim()).filter(item => item)
+                            : e.target.value;
+                        handleSectionChange(section.name, index, entryIndex, field, value);
+                      }}
+                      variant="outlined"
+                      InputLabelProps={field.includes('Date') ? { shrink: true } : undefined}
+                      error={sectionTypes[section.name].required.includes(field) && !entry[field]}
+                      helperText={
+                        sectionTypes[section.name].required.includes(field) && !entry[field]
+                          ? `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
+                          : (field === 'technologies' || field === 'projectImages') && entry[field] && !Array.isArray(entry[field])
+                            ? 'Enter a comma-separated list'
+                            : ''
+                      }
+                      inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
+                    />
+                  </Box>
+                ))}
+                {!sectionTypes[section.name].single && (
+                  <Button sx={{ color: '#d32f2f', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => removeEntry(section.name, entryIndex)}>
+                    Remove Entry
+                  </Button>
+                )}
+              </Box>
+            ))
+          )}
+
           {!sectionTypes[section.name].single && (
             <Button sx={{ bgcolor: '#388e3c', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => addSectionEntry(section.name)}>
               Add Entry
@@ -133,6 +152,7 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
     </Card>
   );
 };
+
 
 // Main form component
 const GroupForm = () => {
@@ -230,18 +250,27 @@ const GroupForm = () => {
 
   // Update section fields
   const handleSectionChange = (sectionName, sectionIndex, entryIndex, field, value) => {
-    setGroup(prev => {
-      const updatedSections = [...prev.sections];
-      const targetSection = updatedSections[sectionIndex];
-      if (!targetSection) return prev;
-      const updatedData = sectionTypes[sectionName].single
-        ? { ...targetSection.data, [field]: value }
-        : targetSection.data.map((item, i) => (i === entryIndex ? { ...item, [field]: field === 'rating' ? Number(value) : value } : item));
+  setGroup(prev => {
+    const updatedSections = [...prev.sections];
+    const targetSection = updatedSections[sectionIndex];
+    if (!targetSection) return prev;
+
+    if (sectionTypes[sectionName].single) {
+      // store a string directly for single sections (e.g., Summary)
+      updatedSections[sectionIndex] = { ...targetSection, data: value };
+    } else {
+      const updatedData = targetSection.data.map((item, i) =>
+        i === entryIndex ? { ...item, [field]: field === 'rating' ? Number(value) : value } : item
+      );
       updatedSections[sectionIndex] = { ...targetSection, data: updatedData };
-      return { ...prev, sections: updatedSections };
-    });
-    setErrors(prev => ({ ...prev, [`${sectionName}_${entryIndex}_${field}`]: '' }));
-  };
+    }
+    return { ...prev, sections: updatedSections };
+  });
+
+  // keep same error key pattern (use entryIndex 0 for single sections)
+  setErrors(prev => ({ ...prev, [`${sectionName}_${entryIndex}_${field}`]: '' }));
+};
+
 
   // Add a new section or entry
   const addSectionEntry = (sectionName) => {
@@ -257,7 +286,9 @@ const GroupForm = () => {
       if (sectionTypes[sectionName].single) {
         return {
           ...prev,
-          sections: [...prev.sections.filter(s => s.name !== sectionName), { name: sectionName, data: fields }],
+          sections: [
+            ...prev.sections.filter(s => s.name !== sectionName),
+            { name: sectionName, data: "" }],
         };
       }
       return {
@@ -340,12 +371,24 @@ const GroupForm = () => {
 
   // Validate form
   const validateForm = () => {
-    const newErrors = {};
-    let isValid = true;
+  const newErrors = {};
+  let isValid = true;
 
-    group.sections.forEach((section, sectionIndex) => {
-      const sectionConfig = sectionTypes[section.name];
-      const data = sectionConfig.single ? [section.data] : section.data;
+  group.sections.forEach((section, sectionIndex) => {
+    const sectionConfig = sectionTypes[section.name];
+
+    if (sectionConfig.single) {
+      // section.data is a string for single sections (e.g., Summary)
+      sectionConfig.required.forEach(field => {
+        const value = section.data;
+        if (!value || (Array.isArray(value) && value.length === 0)) {
+          newErrors[`${section.name}_0_${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+          isValid = false;
+        }
+      });
+    } else {
+      // existing multi-entry validation
+      const data = section.data || [];
       data.forEach((entry, entryIndex) => {
         sectionConfig.required.forEach(field => {
           if (!entry[field] || (Array.isArray(entry[field]) && entry[field].length === 0)) {
@@ -353,24 +396,26 @@ const GroupForm = () => {
             isValid = false;
           }
         });
-        if (section.name === 'skill' && entry.rating && (entry.rating < 1 || entry.rating > 5)) {
+        if (section.name.toLowerCase() === 'skill' && entry.rating && (entry.rating < 1 || entry.rating > 5)) {
           newErrors[`${section.name}_${entryIndex}_rating`] = 'Rating must be between 1 and 5';
           isValid = false;
         }
-        if (section.name === 'project' && entry.technologies && !Array.isArray(entry.technologies)) {
+        if (section.name.toLowerCase() === 'project' && entry.technologies && !Array.isArray(entry.technologies)) {
           newErrors[`${section.name}_${entryIndex}_technologies`] = 'Technologies must be a comma-separated list';
           isValid = false;
         }
-        if (section.name === 'project' && entry.projectImages && !Array.isArray(entry.projectImages)) {
+        if (section.name.toLowerCase() === 'project' && entry.projectImages && !Array.isArray(entry.projectImages)) {
           newErrors[`${section.name}_${entryIndex}_projectImages`] = 'Project images must be a comma-separated list';
           isValid = false;
         }
       });
-    });
+    }
+  });
 
-    setErrors(newErrors);
-    return isValid;
-  };
+  setErrors(newErrors);
+  return isValid;
+};
+
 
   // Submit form to API
   const handleSubmit = async (e) => {
