@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-// ...existing code...
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -69,7 +67,7 @@ function UserInfo() {
 
   const handleEdit = (cvInfoId) => {
     // navigate(`/edit/add-group`)
-     navigate(`/edit/add-group?groupId=${cvInfoId}`)
+    navigate(`/edit/add-group?groupId=${cvInfoId}`)
   };
 
   const handleDelete = async (userId, cvInfoId) => {
@@ -230,4 +228,3 @@ function UserInfo() {
 }
 
 export default UserInfo;
-// ...existing code...
