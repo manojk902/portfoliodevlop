@@ -12,8 +12,7 @@ import {
   LinearProgress,
   Button,
   Container,
-  List,
-  ListItem
+ 
 } from "@mui/material";
 import { LinkedIn, GitHub, Email, Print as PrintIcon, PictureAsPdf, Edit, Delete } from "@mui/icons-material";
 import styled from "@emotion/styled";

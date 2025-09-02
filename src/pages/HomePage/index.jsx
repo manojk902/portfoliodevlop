@@ -22,6 +22,7 @@ import {
   Work
 } from '@mui/icons-material';
 import { Link } from "react-router-dom";
+import { apiUrl } from '../../utils/common';
 
 const HomePage = () => {
   const [users, setUsers] = useState([]);   // API se aane wala data
@@ -34,7 +35,7 @@ const HomePage = () => {
   // 🔹 API call
   useEffect(() => {
     setLoading(true);
-    fetch(`http://192.168.0.2:9000/api/v1/portfolio/search-user?name=${search}`)
+    fetch(`${apiUrl}/search-user?name=${search}`)
       .then((res) => res.json())
       .then((data) => {
         console.log("API Response:", data.searchedUser?.[0]);
@@ -120,8 +121,8 @@ const HomePage = () => {
                 <CardContent sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <Avatar
-                      src={user.image}
-                      alt={user.name}
+                      src={user?.profilePhoto}
+                      alt={user.profilePhoto}
                       sx={{
                         width: 80,
                         height: 80,

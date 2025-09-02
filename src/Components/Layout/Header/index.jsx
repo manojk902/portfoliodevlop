@@ -45,13 +45,12 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
         try {
           setLoading(true); // start loading
           const user = await axios.get(`${apiUrl}/user-details/${decodedToken?.userName}`);
-// <<<<<<< HEAD
           dispatch(setUserProfile(user.data));
           setHasPortfolio(!!user.data); // true if data exists
           dispatch(setUserProfile(user.data));
           setHasPortfolio(!!user.data); // true if data exists
           dispatch(setUserProfile(user.data)); // store all payload data in redux
-          console.log(user);
+          // console.log(user);
 
 
           if (user) {
@@ -72,18 +71,18 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
     };
   }, [isLoggedIn, decodedToken?.userName, dispatch]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}all-users-details`);
-        // console.log(response.data);
-        setData(response.data); // Uncomment if you want to store the data
-      } catch (error) {
-        console.error("Error fetching user details:", error);
-      }
-    };
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await axios.get(`${apiUrl}all-users-details`);
+  //       // console.log(response.data);
+  //       setData(response.data); // Uncomment if you want to store the data
+  //     } catch (error) {
+  //       console.error("Error fetching user details:", error);
+  //     }
+  //   };
+  //   fetchData();
+  // }, []);
 
   useEffect(() => {
     let token = searchParams.get("token") || localStorage.getItem("token");

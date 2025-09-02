@@ -139,74 +139,93 @@ const GroupForm = () => {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const [group, setGroup] = useState({
-    id: crypto.randomUUID(),
-    groupName: '',
-    firstName: '',
-    lastName: '',
-    email: 'manojkumar6448@gmail.com',
-    phoneNo: 8858585857,
-    address: { city: '', pinCode: 122001, state: '', country: '' },
-    sections: [],
-    isDefault: false,
-  });
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNo: "",
+    dob: "",
+    gender: "",
+    designation: "",
+    socialLinks: [
+      "https://linkedin.com/in/johndoe",
+      "https://github.com/johndoe"
+    ],
+    street: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
+    sections: []
+  })
+  console.log(group);
+
   const [showModal, setShowModal] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
   const [errors, setErrors] = useState({});
 
   // Load existing group data if editing
   useEffect(() => {
-    if (groupId) {
-      const fetchGroup = async () => {
-        const { groups } = await getGroups();
-        const existingGroup = groups.find(g => g.id === groupId);
-        if (existingGroup) {
-          // Normalize data formats when loading
-          const updatedSections = existingGroup.sections.map(section => {
-            if (section.name === 'summary') {
-              return { name: 'summary', data: section.data.summary || section.data || '' };
+    const fetchGroup = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}/cv-details/mukesh_277`);
+        console.log("pppr", response);
+
+        const cvData = response.data?.fetchedCv?.cvInfo; // pehla CV record
+        console.log("ppp", cvData);
+
+
+        if (cvData) {
+          const updatedSections = cvData.sections.map(section => {
+            if (section.name.toLowerCase() === 'summary') {
+              return { name: 'Summary', data: '' };
             }
-            if (section.name === 'achievement') {
-              return { name: 'achievement', data: section.data.map(entry => ({ title: entry.title || entry })) };
+            if (section.name.toLowerCase() === 'achievement') {
+              return { name: 'Achievement', data: section.data.map(entry => ({ title: entry })) };
             }
-            if (section.name === 'interest') {
-              return { name: 'interest', data: section.data.map(entry => ({ interest: entry.interest || entry })) };
-            }
-            if (section.name === 'project') {
-              return {
-                ...section,
-                data: section.data.map(entry => ({
-                  ...entry,
-                  technologies: Array.isArray(entry.technologies) ? entry.technologies : (entry.technologies || '').split(',').map(item => item.trim()).filter(item => item),
-                  projectImages: Array.isArray(entry.projectImages) ? entry.projectImages : (entry.projectImages || '').split(',').map(item => item.trim()).filter(item => item),
-                })),
-              };
+            if (section.name.toLowerCase() === 'interest') {
+              return { name: 'Interest', data: section.data.map(entry => ({ interest: entry })) };
             }
             return section;
           });
-          setGroup({ ...existingGroup, sections: updatedSections });
+
+          setGroup({
+            userId: 4,
+            cvInfoId: cvData?.cvInfoId,
+            firstName: cvData?.firstName || "",
+            lastName: cvData?.lastName || "",
+            email: cvData?.email || "",
+            phoneNo: cvData?.phoneNo || "",
+            dob: cvData?.dob || "",
+            gender: cvData?.gender || "",
+            designation: cvData?.designation || "",
+            socialLinks: [
+              "https://linkedin.com/in/johndoe",
+              "https://github.com/johndoe"
+            ],
+            street: cvData?.street || "",
+            city: cvData?.city || "",
+            state: cvData?.state || "",
+            zip: cvData?.zip || "",
+            country: cvData?.country || "",
+            sections: updatedSections,
+          });
+
           setExpandedSections(
-            updatedSections.reduce((acc, section) => ({
-              ...acc,
-              [section.name]: false,
-            }), {})
+            updatedSections.reduce((acc, section) => ({ ...acc, [section.name]: false }), {})
           );
         }
-      };
-      fetchGroup();
-    }
-  }, [groupId]);
+      } catch (err) {
+        console.error('Error fetching group:', err);
+      }
+    };
+    fetchGroup();
+  }
+    , []);
+
 
   // Update personal info fields
   const handleInputChange = (field, value) => {
-    if (field.includes('address.')) {
-      const addressField = field.split('.')[1];
-      setGroup(prev => ({
-        ...prev,
-        address: { ...prev.address, [addressField]: value },
-      }));
-    } else {
-      setGroup(prev => ({ ...prev, [field]: value }));
-    }
+    setGroup(prev => ({ ...prev, [field]: value }));
   };
 
   // Update section fields
@@ -361,57 +380,105 @@ const GroupForm = () => {
       return;
     }
 
-    // Format sections for API
     const formattedSections = group.sections.map(section => {
-      if (section.name === 'summary') {
-        return { name: section.name, data: section.data.summary || '' };
+      if (section.name === 'Summary') {
+        return { name: section.name, data: section.data };
       }
-      if (section.name === 'achievement') {
+      if (section.name === 'Achievement') {
         return { name: section.name, data: section.data.map(entry => entry.title) };
       }
-      if (section.name === 'interest') {
+      if (section.name === 'Interest') {
         return { name: section.name, data: section.data.map(entry => entry.interest) };
       }
       return section;
     });
+    // for create 
 
-    try {
-      const response = await axios.post(`${apiUrl}/create-cv`, {
-        userId: 2,
-        userName: 'manoj_804',
-        cvInfo: [
-          {
-            // isDefault: group.isDefault,
-            firstName: group.firstName,
-            lastName: group.lastName,
-            email: group.email,
-            phoneNo: group.phoneNo,
-            dob: '1998-05-10',
-            gender: 'Male',
-            profilePhoto: 'https://example.com/photo.jpg',
-            designation: 'Software Engineer',
-            socialLink: ['https://linkedin.com/in/mukesh', 'https://github.com/mukesh'],
-            address: group.address,
-            sections: formattedSections,
+
+
+
+    const payloadCreateCv = {
+      userId: 4,
+      userName: "mukesh_277",
+      cvInfo: [
+        {
+          firstName: group.firstName,
+          lastName: group.lastName,
+          email: group.email,
+          phoneNo: Number(group.phoneNo),
+          dob: Date(group.dob),
+          gender: group.gender,
+          profilePhoto: "https://example.com/photo.jpg",
+          designation: group.designation,
+          socialLinks: [
+            "https://linkedin.com/in/mukesh",
+            "https://github.com/mukesh"
+          ],
+          address: {
+            city: group.city,
+            pinCode: Number(group.zip),
+            state: group.state,
+            country: group.country
           },
-        ],
-      });
-      console.log('API response:', formattedSections);
-
-
-      // Update local storage (fallback)
-      const { groups } = await getGroups();
-      const updatedGroups = groupId
-        ? groups.map(g => (g.id === groupId ? { ...group, sections: formattedSections } : g))
-        : [...groups, { ...group, sections: formattedSections }];
-      await saveGroups({ groups: updatedGroups });
-
-      navigate('/edit/userinfo', { state: { newGroup: group } });
-    } catch (error) {
-      console.error('API error:', error);
+          sections: formattedSections
+        }
+      ]
+    }
+    try {
+      const response = await axios.post(`${apiUrl}/create-cv`, payloadCreateCv);
+      console.log(response, "this from cv");
+      navigate('/edit/');
+    }
+    catch {
       alert('Failed to save CV. Please try again.');
     }
+
+
+
+
+    // try {
+    //   const payloadCvCreate = {
+    //     userName: "mukesh_277",
+    //     userId: 2,
+    //     cvInfoId: group.id,
+    //     updateCvInfoSet: {
+    //       firstName: group.firstName,
+    //       lastName: group.lastName,
+    //       email: group.email,
+    //       phoneNo: group.phoneNo,
+    //       dob: group.dob,
+    //       gender: group.gender,
+    //       designation: group.designation,
+    //       socialLinks: [
+    //         "https://linkedin.com/in/johndoe",
+    //         "https://github.com/johndoe"
+    //       ],
+    //       address: {
+    //         street: group.street,
+    //         city: group.city,
+    //         state: group.state,
+    //         zip: group.zip
+    //       },
+    //       sections: formattedSections,
+    //     },
+    //   };
+
+    //   // let response;
+    //   // if (groupId) {
+    //   //   response = await axios.post(`${apiUrl}/create-cv`, payload);
+    //   // } else {
+    //   //   response = await axios.put(`${apiUrl}/updateCvInfoSet`, payload);
+
+    //   // }
+
+    //   console.log('API response:', response.data);
+    //   navigate('/edit/userinfo');
+    // } catch (error) {
+    //   console.error('API error:', error);
+    //   alert('Failed to save CV. Please try again.');
+    // }
   };
+
 
   // Cancel form
   const handleCancel = () => {
@@ -431,23 +498,26 @@ const GroupForm = () => {
               <Typography sx={{ fontSize: '1rem', fontWeight: 500, mb: 1 }}>Personal Information</Typography>
               <Grid container spacing={2}>
                 {[
-                  // { label: 'Group Name', field: 'groupName', type: 'text', required: true },
                   { label: 'First Name', field: 'firstName', type: 'text' },
                   { label: 'Last Name', field: 'lastName', type: 'text' },
                   { label: 'Email', field: 'email', type: 'email' },
                   { label: 'Phone', field: 'phoneNo', type: 'tel' },
-                  { label: 'City', field: 'address.city', type: 'text' },
-                  { label: 'Pin Code', field: 'address.pinCode', type: 'number' },
-                  { label: 'State', field: 'address.state', type: 'text' },
-                  { label: 'Country', field: 'address.country', type: 'text' },
-                  { label: 'gender', field: 'address.country', type: 'text' },
+                  { label: 'designation', field: 'designation', type: 'text' },
+                  { label: 'dob', field: 'dob', type: 'text' },
+                  { label: 'street', field: 'street', type: 'text' },
+                  { label: 'City', field: 'city', type: 'text' },
+                  { label: 'PinCode', field: 'zip', type: 'number' },
+                  { label: 'State', field: 'state', type: 'text' },
+                  { label: 'Country', field: 'country', type: 'text' },
+                  { label: 'gender', field: 'gender', type: 'text' },
                 ].map(({ label, field, type, required }) => (
                   <Grid item xs={12} sm={6} key={field} >
                     <TextField
                       fullWidth
                       label={label}
                       type={type}
-                      value={field.includes('address.') ? group.address[field.split('.')[1]] || '' : group[field] || ''}
+                      // value={field ? group?.address[field.split('.')[1]] || '' : group[field] || ''}
+                      value={group[field] ?? ''}
                       onChange={e => handleInputChange(field, e.target.value)}
                       variant="outlined"
                     // required={required}
@@ -458,7 +528,7 @@ const GroupForm = () => {
             </CardContent>
           </Card>
           {/* Sections */}
-          {group.sections.map((section, index) => (
+          {(group.sections || []).map((section, index) => (
             <DraggableSection
               key={section.name}
               section={section}

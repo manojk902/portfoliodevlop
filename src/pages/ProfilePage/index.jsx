@@ -25,7 +25,7 @@ import { apiUrl } from '../../utils/common';
 
 
 const user1 = {
-  profilePhoto: 'dummy data', // Add image URL or leave blank
+  profilePhoto: '', // Add image URL or leave blank
   firstName: 'dummy data',
   lastName: 'dummy data',
   designation: 'dummy data',
@@ -50,7 +50,7 @@ export default function ProfilePage() {
   const userProfile = useSelector(state => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName
 
-console.log(username,"mm");
+console.log(userProfile,"mm");
 
   // console.log("ttttttt", userProfile.fetchedUsed.profilePhoto);
 

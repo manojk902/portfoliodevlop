@@ -26,7 +26,9 @@ function UserInfo() {
   const [updatingCvId, setUpdatingCvId] = useState(null);
   const [deletingCvId, setDeletingCvId] = useState(null);
   const userProfile = useSelector((state) => state.userProfile.data);
-  const username = userProfile?.fetchedUsed?.userName || "mukesh_277";
+  const username = userProfile?.fetchedUsed?.userNamEe || "mukesh_277";
+  // const username = userProfile?.fetchedUsed?.userNamEe || "mukesh_277";
+  // const username = userProfile?.fetchedUsed?.userNamEe || "mukesh_277";
   const navigate = useNavigate();
 
   const fetchUsers = async () => {
@@ -65,18 +67,10 @@ function UserInfo() {
     }
   };
 
-  const handleEdit = (id) => {
-    axios
-      .put(`https://jsonplaceholder.typicode.com/users/${id}`, {
-        name: "Updated Name",
-      })
-      .then((res) => {
-        console.log("Edit API response:", res.data);
-        alert(`Edited user with id ${id}`);
-      })
-      .catch((err) => console.error(err));
+  const handleEdit = (cvInfoId) => {
+    // navigate(`/edit/add-group`)
+     navigate(`/edit/add-group?groupId=${cvInfoId}`)
   };
-
 
   const handleDelete = async (userId, cvInfoId) => {
     if (!userId || !cvInfoId) return;
@@ -137,7 +131,7 @@ function UserInfo() {
         ) : (
           <>
             {users.map((user) => {
-              console.log("inside", user);
+              // console.log("inside", user);
 
               const key = user.cvInfoId ?? userid;
               const isDefault = defaultUser?.cvInfoId === user.cvInfoId;
@@ -169,7 +163,7 @@ function UserInfo() {
                         <IconButton
                           color="primary"
                           size="small"
-                          onClick={() => handleEdit(user.id)}
+                          onClick={() => handleEdit(user.cvInfoId)}
                         >
                           <Edit fontSize="small" />
                         </IconButton>

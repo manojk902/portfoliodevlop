@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Box, Typography, Divider, Avatar } from "@mui/material";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { apiUrl } from "../../utils/common";
 
 
 
@@ -16,7 +17,7 @@ const Cv1 = () => {
     const fetchCvData = async () => {
       try {
         const res = await axios.get(
-          `http://192.168.0.2:9000/api/v1/portfolio/defaultCv/${username}`
+          `${apiUrl}/defaultCv/${username}`
         );
         console.log("📌 API Response:", res.data.fetchedCvInfo.defaultCvInfo);
         setCvData(res.data.fetchedCvInfo.defaultCvInfo);

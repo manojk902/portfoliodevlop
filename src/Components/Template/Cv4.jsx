@@ -13,11 +13,8 @@ import {
   CardContent,
   Button,
   Container,
-  LinearProgress,
   List,
   ListItem,
-  Divider,
-  TextField,
   Tooltip
 } from "@mui/material";
 import {
@@ -28,7 +25,6 @@ import {
   LightMode,
   DarkMode,
   Star,
-  EmojiEvents,
   Print,
   Edit,
   Delete,
@@ -226,12 +222,12 @@ const EditableImage = styled(Box)`
   }
 `;
 
-const EditableText = styled(Box)`
-  position: relative;
-  &:hover .edit-controls {
-    opacity: 1;
-  }
-`;
+// const EditableText = styled(Box)`
+//   position: relative;
+//   &:hover .edit-controls {
+//     opacity: 1;
+//   }
+// `;
 
 export default function ProfessionalCV() {
   const [themeIndex, setThemeIndex] = useState(1); // Default to light theme
@@ -368,22 +364,22 @@ export default function ProfessionalCV() {
   };
 
   // Handle array item editing
-  const handleArrayItemChange = (path, index, value) => {
-    setCvData(prev => {
-      const newData = { ...prev };
-      let target = newData;
-      const segments = path.split('.');
+  // const handleArrayItemChange = (path, index, value) => {
+  //   setCvData(prev => {
+  //     const newData = { ...prev };
+  //     let target = newData;
+  //     const segments = path.split('.');
 
-      segments.slice(0, -1).forEach(segment => {
-        target = target[segment];
-      });
+  //     segments.slice(0, -1).forEach(segment => {
+  //       target = target[segment];
+  //     });
 
-      const lastSegment = segments[segments.length - 1];
-      target[lastSegment][index] = value;
+  //     const lastSegment = segments[segments.length - 1];
+  //     target[lastSegment][index] = value;
 
-      return newData;
-    });
-  };
+  //     return newData;
+  //   });
+  // };
 
   // Handle object item editing
   const handleObjectItemChange = (path, id, field, value) => {
