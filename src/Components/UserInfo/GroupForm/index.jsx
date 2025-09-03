@@ -198,7 +198,9 @@ const GroupForm = () => {
         if (cvData) {
           const updatedSections = cvData.sections.map(section => {
             if (section.name.toLowerCase() === 'summary') {
-              return { name: 'Summary', data: '' };
+              // return { name: 'Summary', data: '' };
+              const data = Array.isArray(section.data) ? (section.data[0] || '') : (section.data || '');
+              return { name: 'Summary', data };
             }
             if (section.name.toLowerCase() === 'achievement') {
               return { name: 'Achievement', data: section.data.map(entry => ({ title: entry })) };
@@ -223,11 +225,11 @@ const GroupForm = () => {
               "https://linkedin.com/in/johndoe",
               "https://github.com/johndoe"
             ],
-            street: cvData?.street || "",
-            city: cvData?.city || "",
-            state: cvData?.state || "",
-            zip: cvData?.zip || "",
-            country: cvData?.country || "",
+            street: cvData?.address?.street || "",
+            city: cvData?.address?.city || "",
+            state: cvData?.address?.state || "",
+            zip: cvData?.address?.pinCode || "",
+            country: cvData?.address?.country || "",
             sections: updatedSections,
           });
 
@@ -475,33 +477,33 @@ const GroupForm = () => {
     //   alert('Failed to save CV. Please try again.');
     // }
 
-    
-      const payloadCvCreate = {
-        userName: "mukesh_277",
-        userId: 4,
-        cvInfoId: groupId,
-        updateCvInfoSet: {
-          firstName: group.firstName,
-          lastName: group.lastName,
-          email: group.email,
-          phoneNo: group.phoneNo,
-          dob: group.dob,
-          gender: group.gender,
-          designation: group.designation,
-          socialLinks: [
-            "https://linkedin.com/in/johndoe",
-            "https://github.com/johndoe"
-          ],
-          address: {
-            street: group.street,
-            city: group.city,
-            state: group.state,
-            pinCode:Number(group.zip),
-            country: group.country
-          },
-          sections: formattedSections,
+
+    const payloadCvCreate = {
+      userName: "mukesh_277",
+      userId: 4,
+      cvInfoId: groupId,
+      updateCvInfoSet: {
+        firstName: group.firstName,
+        lastName: group.lastName,
+        email: group.email,
+        phoneNo: group.phoneNo,
+        dob: group.dob,
+        gender: group.gender,
+        designation: group.designation,
+        socialLinks: [
+          "https://linkedin.com/in/johndoe",
+          "https://github.com/johndoe"
+        ],
+        address: {
+          street: group.street,
+          city: group.city,
+          state: group.state,
+          pinCode: Number(group.zip),
+          country: group.country
         },
-      }
+        sections: formattedSections,
+      },
+    }
 
     let response;
     if (groupId) {
