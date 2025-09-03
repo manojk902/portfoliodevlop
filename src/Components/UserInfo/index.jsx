@@ -129,8 +129,6 @@ function UserInfo() {
         ) : (
           <>
             {users.map((user) => {
-              // console.log("inside", user);
-
               const key = user.cvInfoId ?? userid;
               const isDefault = defaultUser?.cvInfoId === user.cvInfoId;
               return (

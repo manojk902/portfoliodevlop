@@ -33,7 +33,7 @@ const user1 = {
   gender: 'dummy data',
   phoneNo: 'dummy data',
   email: 'john@example.com',
-  socialLink: 'https://linkedin.com/in/johndeo',
+  socialLink: ['https://linkedin.com/in/johndeo'],
   city: 'New York',
   state: 'NY',
   pincode: '10001',
@@ -50,7 +50,7 @@ export default function ProfilePage() {
   const userProfile = useSelector(state => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName
 
-console.log(userProfile,"mm");
+  console.log(userProfile, "mm");
 
   // console.log("ttttttt", userProfile.fetchedUsed.profilePhoto);
 
@@ -332,7 +332,7 @@ console.log(userProfile,"mm");
                 ['Gender', userProfile?.fetchedUsed?.gender || user1.gender],
                 ['Phone', userProfile?.fetchedUsed?.phoneNo || user1.phoneNo],
                 ['Email', userProfile?.fetchedUsed?.email || user1.email],
-                ['Social Link', userProfile?.socialLink || user1.socialLink],
+                ['socialLink', userProfile?.fetchedUsed?.socialLink || user1.socialLink],
                 ['City', userProfile?.fetchedUsed?.city || user1.city],
                 ['State', userProfile?.fetchedUsed?.state || user1.state],
                 ['Pincode', userProfile?.fetchedUsed?.pinCode || user1.pincode],
@@ -342,7 +342,28 @@ console.log(userProfile,"mm");
                     {label}
                   </Typography>
                   <Typography variant="body1" fontWeight={500} sx={{ color: 'white' }}>
-                    {value}
+                    {label === 'socialLink' ? (
+                      Array.isArray(value) ? (
+                        value.map((link, i) => (
+                          <a
+                            key={i}
+                            href={link}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ color: 'white', display: 'block', textDecoration: 'underline', marginBottom: 4 }}
+                          >
+                            {link}
+                          </a>
+                        ))
+                      ) : (
+                        // plain string fallback
+                        <a href={value} target="_blank" rel="noreferrer" style={{ color: 'white', textDecoration: 'underline' }}>
+                          {value}
+                        </a>
+                      )
+                    ) : (
+                      value
+                    )}
                   </Typography>
                 </Grid>
               ))}

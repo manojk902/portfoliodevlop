@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Paper, Typography, TextField, Grid, Button, Avatar, Stack,
-  Radio, RadioGroup, FormControlLabel, LinearProgress, Snackbar, Alert
+  Radio, RadioGroup, FormControlLabel, LinearProgress, Snackbar, Alert,
+  Tooltip,
+  IconButton
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
@@ -36,17 +39,17 @@ function UserForm() {
   const [success, setSuccess] = useState(false);
   const user = useSelector(state => state.user);
   const fetchedUser = useSelector(state => state.userProfile?.data?.fetchedUsed);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [info, setInfo] = useState();
-  const [profileEmail,setProfileEmail]=useState("")
- 
-useEffect(()=>{
-   setProfileEmail(user?.email)
-},[user?.email])
+  const [profileEmail, setProfileEmail] = useState("")
 
   useEffect(() => {
-    console.log("Editing mode:", !!fetchedUser);
+    setProfileEmail(user?.email)
+  }, [user?.email])
+
+  useEffect(() => {
     setInfo(!!fetchedUser ? "Update" : "Create");
   }, [fetchedUser]);
 
@@ -59,7 +62,7 @@ useEffect(()=>{
   const isEdit = !!fetchedUser;
 
   const initialValues = {
-    profilePhoto: '',
+    profilePhoto: fetchedUser.profilePhoto || '',
     firstName: fetchedUser?.firstName || '',
     lastName: fetchedUser?.lastName || '',
     dob: fetchedUser?.dob || '',
@@ -67,7 +70,10 @@ useEffect(()=>{
     designation: fetchedUser?.designation || '',
     email: fetchedUser?.email || '',
     phoneNo: fetchedUser?.phoneNo || '',
-    socialLink: fetchedUser?.socialLinks || 's',
+    // socialLink: fetchedUser?.socialLinks || '',
+    socialLink: Array.isArray(fetchedUser?.socialLinks)
+      ? fetchedUser.socialLinks.join(', ')
+      : (fetchedUser?.socialLinks || ''),
     city: fetchedUser?.city || '',
     state: fetchedUser?.state || '',
     pinCode: fetchedUser?.pinCode || '',
@@ -76,7 +82,18 @@ useEffect(()=>{
 
   // 3. Handle form submission
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
-    console.log("sss", fetchedUser);
+    const socialArray = (() => {
+      // if the value is already an array (unlikely here) use it
+      if (Array.isArray(values.socialLink)) return values.socialLink;
+      // if empty/string => create empty array
+      if (!values.socialLink || !values.socialLink.trim()) return [];
+      // split by comma, trim, and remove empty items
+      return values.socialLink
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+    })();
+    // console.log("sss", fetchedUser);
     try {
       const data = new FormData();
       data.append('firstName', values?.firstName);
@@ -86,7 +103,8 @@ useEffect(()=>{
       data.append('designation', values.designation);
       data.append('email', values?.email);
       data.append('phoneNo', Number(values.phoneNo));
-      data.append('socialLink', values.socialLink);
+      // data.append('socialLink', values.socialLink);
+      socialArray.forEach(link => data.append('socialLinks[]', link));
       data.append('city', values.city);
       data.append('state', values.state);
       data.append('pinCode', Number(values.pinCode));
@@ -107,22 +125,19 @@ useEffect(()=>{
       const res = await axios[method](url, data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      if (res.data.status==="success") {
+      if (res.data.status === "success") {
         alert("doneer")
-        console.log("this is1 ",res.data.user.userName , user.userName);
+        // console.log("this is1 ",res.data.user.userName , user.userName);
         const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
         dispatch(setUserProfile(updated.data));
-        navigate('/profile');
+        navigate('/edit');
       }
       if (isEdit) {
-        // alert("here")
         const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
         dispatch(setUserProfile(updated.data));
-        // console.log("kkk",updated.data);/
         navigate('/profile');
       }
-      // dispatch(setUserProfile(res.data));
-      console.log("this is ressssssssssss", res.data);
+
       navigate('/profile');
       setSuccess(true);
       setError('');
@@ -181,10 +196,29 @@ useEffect(()=>{
                   {step === 1 && (
                     <>
                       <Stack spacing={3} alignItems="center" mb={4}>
-                        <Avatar
-                          src={values.profilePhoto ? URL.createObjectURL(values.profilePhoto) : ''}
-                          sx={{ width: 140, height: 140 }}
-                        />
+                        <Box sx={{ position: 'relative' }}>
+                          <Avatar
+                            src={values.profilePhoto}
+                            sx={{ width: 140, height: 140 }}
+                          />
+                          {values.profilePhoto && (
+                            <Tooltip title="Remove photo">
+                              <IconButton
+                                size="small"
+                                onClick={() => setFieldValue('profilePhoto', '')}
+                                sx={{
+                                  position: 'absolute',
+                                  top: -6,
+                                  right: -6,
+                                  bgcolor: 'background.paper',
+                                  boxShadow: 1,
+                                }}
+                              >
+                                <CloseIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </Box>
                         <Button variant="outlined" component="label">
                           Upload Photo
                           <input
@@ -289,7 +323,7 @@ useEffect(()=>{
                             value={profileEmail}
                             onChange={handleChange}
                             // onBlur={handleBlur}
-                            error={touched.email &&- Boolean(errors.email)}
+                            error={touched.email && - Boolean(errors.email)}
                             helperText={touched.email && errors.email}
                           />
                         </Grid>

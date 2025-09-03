@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getGroups, saveGroups } from '../DummyData';
 import {
   Box,
@@ -156,7 +156,8 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
 
 // Main form component
 const GroupForm = () => {
-  const { groupId } = useParams();
+  const [searchParams] = useSearchParams();
+  const groupId = searchParams.get("groupId");
   const navigate = useNavigate();
   const [group, setGroup] = useState({
     firstName: "",
@@ -187,10 +188,10 @@ const GroupForm = () => {
   useEffect(() => {
     const fetchGroup = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/cv-details/mukesh_277`);
-        console.log("pppr", response);
+        const response = await axios.get(`${apiUrl}/getSingleCv/mukesh_277/${groupId}`);
+        console.log("pppr", response.data.singleCv);
 
-        const cvData = response.data?.fetchedCv?.cvInfo; // pehla CV record
+        const cvData = response.data.singleCv; // pehla CV record
         console.log("ppp", cvData);
 
 
@@ -250,26 +251,26 @@ const GroupForm = () => {
 
   // Update section fields
   const handleSectionChange = (sectionName, sectionIndex, entryIndex, field, value) => {
-  setGroup(prev => {
-    const updatedSections = [...prev.sections];
-    const targetSection = updatedSections[sectionIndex];
-    if (!targetSection) return prev;
+    setGroup(prev => {
+      const updatedSections = [...prev.sections];
+      const targetSection = updatedSections[sectionIndex];
+      if (!targetSection) return prev;
 
-    if (sectionTypes[sectionName].single) {
-      // store a string directly for single sections (e.g., Summary)
-      updatedSections[sectionIndex] = { ...targetSection, data: value };
-    } else {
-      const updatedData = targetSection.data.map((item, i) =>
-        i === entryIndex ? { ...item, [field]: field === 'rating' ? Number(value) : value } : item
-      );
-      updatedSections[sectionIndex] = { ...targetSection, data: updatedData };
-    }
-    return { ...prev, sections: updatedSections };
-  });
+      if (sectionTypes[sectionName].single) {
+        // store a string directly for single sections (e.g., Summary)
+        updatedSections[sectionIndex] = { ...targetSection, data: value };
+      } else {
+        const updatedData = targetSection.data.map((item, i) =>
+          i === entryIndex ? { ...item, [field]: field === 'rating' ? Number(value) : value } : item
+        );
+        updatedSections[sectionIndex] = { ...targetSection, data: updatedData };
+      }
+      return { ...prev, sections: updatedSections };
+    });
 
-  // keep same error key pattern (use entryIndex 0 for single sections)
-  setErrors(prev => ({ ...prev, [`${sectionName}_${entryIndex}_${field}`]: '' }));
-};
+    // keep same error key pattern (use entryIndex 0 for single sections)
+    setErrors(prev => ({ ...prev, [`${sectionName}_${entryIndex}_${field}`]: '' }));
+  };
 
 
   // Add a new section or entry
@@ -371,50 +372,50 @@ const GroupForm = () => {
 
   // Validate form
   const validateForm = () => {
-  const newErrors = {};
-  let isValid = true;
+    const newErrors = {};
+    let isValid = true;
 
-  group.sections.forEach((section, sectionIndex) => {
-    const sectionConfig = sectionTypes[section.name];
+    group.sections.forEach((section, sectionIndex) => {
+      const sectionConfig = sectionTypes[section.name];
 
-    if (sectionConfig.single) {
-      // section.data is a string for single sections (e.g., Summary)
-      sectionConfig.required.forEach(field => {
-        const value = section.data;
-        if (!value || (Array.isArray(value) && value.length === 0)) {
-          newErrors[`${section.name}_0_${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
-          isValid = false;
-        }
-      });
-    } else {
-      // existing multi-entry validation
-      const data = section.data || [];
-      data.forEach((entry, entryIndex) => {
+      if (sectionConfig.single) {
+        // section.data is a string for single sections (e.g., Summary)
         sectionConfig.required.forEach(field => {
-          if (!entry[field] || (Array.isArray(entry[field]) && entry[field].length === 0)) {
-            newErrors[`${section.name}_${entryIndex}_${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+          const value = section.data;
+          if (!value || (Array.isArray(value) && value.length === 0)) {
+            newErrors[`${section.name}_0_${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
             isValid = false;
           }
         });
-        if (section.name.toLowerCase() === 'skill' && entry.rating && (entry.rating < 1 || entry.rating > 5)) {
-          newErrors[`${section.name}_${entryIndex}_rating`] = 'Rating must be between 1 and 5';
-          isValid = false;
-        }
-        if (section.name.toLowerCase() === 'project' && entry.technologies && !Array.isArray(entry.technologies)) {
-          newErrors[`${section.name}_${entryIndex}_technologies`] = 'Technologies must be a comma-separated list';
-          isValid = false;
-        }
-        if (section.name.toLowerCase() === 'project' && entry.projectImages && !Array.isArray(entry.projectImages)) {
-          newErrors[`${section.name}_${entryIndex}_projectImages`] = 'Project images must be a comma-separated list';
-          isValid = false;
-        }
-      });
-    }
-  });
+      } else {
+        // existing multi-entry validation
+        const data = section.data || [];
+        data.forEach((entry, entryIndex) => {
+          sectionConfig.required.forEach(field => {
+            if (!entry[field] || (Array.isArray(entry[field]) && entry[field].length === 0)) {
+              newErrors[`${section.name}_${entryIndex}_${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+              isValid = false;
+            }
+          });
+          if (section.name.toLowerCase() === 'skill' && entry.rating && (entry.rating < 1 || entry.rating > 5)) {
+            newErrors[`${section.name}_${entryIndex}_rating`] = 'Rating must be between 1 and 5';
+            isValid = false;
+          }
+          if (section.name.toLowerCase() === 'project' && entry.technologies && !Array.isArray(entry.technologies)) {
+            newErrors[`${section.name}_${entryIndex}_technologies`] = 'Technologies must be a comma-separated list';
+            isValid = false;
+          }
+          if (section.name.toLowerCase() === 'project' && entry.projectImages && !Array.isArray(entry.projectImages)) {
+            newErrors[`${section.name}_${entryIndex}_projectImages`] = 'Project images must be a comma-separated list';
+            isValid = false;
+          }
+        });
+      }
+    });
 
-  setErrors(newErrors);
-  return isValid;
-};
+    setErrors(newErrors);
+    return isValid;
+  };
 
 
   // Submit form to API
@@ -438,10 +439,6 @@ const GroupForm = () => {
       return section;
     });
     // for create 
-
-
-
-
     const payloadCreateCv = {
       userId: 4,
       userName: "mukesh_277",
@@ -470,7 +467,7 @@ const GroupForm = () => {
       ]
     }
     try {
-      const response = await axios.post(`${apiUrl}/create-cv`, payloadCreateCv);
+      const response = await axios.post(`${apiUrl}/create-cv`,payloadCreateCv);
       console.log(response, "this from cv");
       navigate('/edit/');
     }
