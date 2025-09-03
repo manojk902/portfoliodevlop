@@ -60,6 +60,8 @@ function UserForm() {
   };
 
   const isEdit = !!fetchedUser;
+  console.log(fetchedUser, "isEdit");
+  
 
   const initialValues = {
     profilePhoto: fetchedUser.profilePhoto || '',
@@ -126,17 +128,17 @@ function UserForm() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       if (res.data.status === "success") {
-        alert("doneer")
-        // console.log("this is1 ",res.data.user.userName , user.userName);
         const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
         dispatch(setUserProfile(updated.data));
         navigate('/edit');
+        alert("doneer")
       }
-      if (isEdit) {
-        const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
-        dispatch(setUserProfile(updated.data));
-        navigate('/profile');
-      }
+      // if (isEdit) {
+      //   const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
+      //   alert("doneernew")
+      //   dispatch(setUserProfile(updated.data));
+      //   navigate('/edit');
+      // }
 
       navigate('/profile');
       setSuccess(true);

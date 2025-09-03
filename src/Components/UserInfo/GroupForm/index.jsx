@@ -174,7 +174,7 @@ const GroupForm = () => {
     street: "",
     city: "",
     state: "",
-    zip: "",
+    pinCode: "",
     country: "",
     sections: []
   })
@@ -439,86 +439,85 @@ const GroupForm = () => {
       return section;
     });
     // for create 
-    const payloadCreateCv = {
-      userId: 4,
-      userName: "mukesh_277",
-      cvInfo: [
-        {
-          firstName: group.firstName,
-          lastName: group.lastName,
-          email: group.email,
-          phoneNo: Number(group.phoneNo),
-          dob: Date(group.dob),
-          gender: group.gender,
-          profilePhoto: "https://example.com/photo.jpg",
-          designation: group.designation,
-          socialLinks: [
-            "https://linkedin.com/in/mukesh",
-            "https://github.com/mukesh"
-          ],
-          address: {
-            city: group.city,
-            pinCode: Number(group.zip),
-            state: group.state,
-            country: group.country
-          },
-          sections: formattedSections
-        }
-      ]
-    }
-    try {
-      const response = await axios.post(`${apiUrl}/create-cv`,payloadCreateCv);
-      console.log(response, "this from cv");
-      navigate('/edit/');
-    }
-    catch {
-      alert('Failed to save CV. Please try again.');
-    }
-
-
-
-
-    // try {
-    //   const payloadCvCreate = {
-    //     userName: "mukesh_277",
-    //     userId: 2,
-    //     cvInfoId: group.id,
-    //     updateCvInfoSet: {
+    // const payloadCreateCv = {
+    //   userId: 4,
+    //   userName: "mukesh_277",
+    //   cvInfo: [
+    //     {
     //       firstName: group.firstName,
     //       lastName: group.lastName,
     //       email: group.email,
-    //       phoneNo: group.phoneNo,
-    //       dob: group.dob,
+    //       phoneNo: Number(group.phoneNo),
+    //       dob: Date(group.dob),
     //       gender: group.gender,
+    //       profilePhoto: "https://example.com/photo.jpg",
     //       designation: group.designation,
     //       socialLinks: [
-    //         "https://linkedin.com/in/johndoe",
-    //         "https://github.com/johndoe"
+    //         "https://linkedin.com/in/mukesh",
+    //         "https://github.com/mukesh"
     //       ],
     //       address: {
-    //         street: group.street,
     //         city: group.city,
+    //         pinCode: Number(group.zip),
     //         state: group.state,
-    //         zip: group.zip
+    //         country: group.country
     //       },
-    //       sections: formattedSections,
-    //     },
-    //   };
+    //       sections: formattedSections
+    //     }
+    //   ]
+    // }
+    // try {
+    //   const response = await axios.post(`${apiUrl}/create-cv`, payloadCreateCv);
+    //   console.log(response, "this from cv");
+    //   navigate('/edit/');
+    // }
+    // catch {
+    //   alert('Failed to save CV. Please try again.');
+    // }
 
-    //   // let response;
-    //   // if (groupId) {
-    //   //   response = await axios.post(`${apiUrl}/create-cv`, payload);
-    //   // } else {
-    //   //   response = await axios.put(`${apiUrl}/updateCvInfoSet`, payload);
+    
+      const payloadCvCreate = {
+        userName: "mukesh_277",
+        userId: 4,
+        cvInfoId: groupId,
+        updateCvInfoSet: {
+          firstName: group.firstName,
+          lastName: group.lastName,
+          email: group.email,
+          phoneNo: group.phoneNo,
+          dob: group.dob,
+          gender: group.gender,
+          designation: group.designation,
+          socialLinks: [
+            "https://linkedin.com/in/johndoe",
+            "https://github.com/johndoe"
+          ],
+          address: {
+            street: group.street,
+            city: group.city,
+            state: group.state,
+            pinCode:Number(group.zip),
+            country: group.country
+          },
+          sections: formattedSections,
+        },
+      }
 
-    //   // }
+    let response;
+    if (groupId) {
+      response = await axios.put(`${apiUrl}/updateCvInfoSet`, payloadCvCreate);
+      navigate('/edit/userinfo');
+
+    } else {
+      //  response = await axios.post(`${apiUrl}/create-cv`, payload);
+    }
+
+    // }
 
     //   console.log('API response:', response.data);
     //   navigate('/edit/userinfo');
-    // } catch (error) {
-    //   console.error('API error:', error);
-    //   alert('Failed to save CV. Please try again.');
     // }
+
   };
 
 
