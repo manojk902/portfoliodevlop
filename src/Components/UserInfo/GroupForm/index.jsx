@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -178,7 +179,7 @@ const GroupForm = () => {
     country: "",
     sections: []
   })
-  console.log(group);
+  // console.log(group);
 
   const [showModal, setShowModal] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
@@ -189,10 +190,10 @@ const GroupForm = () => {
     const fetchGroup = async () => {
       try {
         const response = await axios.get(`${apiUrl}/getSingleCv/mukesh_277/${groupId}`);
-        console.log("pppr", response.data.singleCv);
+        // console.log("pppr", response.data.singleCv);
 
         const cvData = response.data.singleCv; // pehla CV record
-        console.log("ppp", cvData);
+        // console.log("ppp", cvData);
 
 
         if (cvData) {
@@ -441,78 +442,78 @@ const GroupForm = () => {
       return section;
     });
     // for create 
-    // const payloadCreateCv = {
-    //   userId: 4,
-    //   userName: "mukesh_277",
-    //   cvInfo: [
-    //     {
-    //       firstName: group.firstName,
-    //       lastName: group.lastName,
-    //       email: group.email,
-    //       phoneNo: Number(group.phoneNo),
-    //       dob: Date(group.dob),
-    //       gender: group.gender,
-    //       profilePhoto: "https://example.com/photo.jpg",
-    //       designation: group.designation,
-    //       socialLinks: [
-    //         "https://linkedin.com/in/mukesh",
-    //         "https://github.com/mukesh"
-    //       ],
-    //       address: {
-    //         city: group.city,
-    //         pinCode: Number(group.zip),
-    //         state: group.state,
-    //         country: group.country
-    //       },
-    //       sections: formattedSections
-    //     }
-    //   ]
-    // }
-    // try {
-    //   const response = await axios.post(`${apiUrl}/create-cv`, payloadCreateCv);
-    //   console.log(response, "this from cv");
-    //   navigate('/edit/');
-    // }
-    // catch {
-    //   alert('Failed to save CV. Please try again.');
-    // }
-
-
-    const payloadCvCreate = {
-      userName: "mukesh_277",
+    const payloadCreateCv = {
       userId: 4,
-      cvInfoId: groupId,
-      updateCvInfoSet: {
-        firstName: group.firstName,
-        lastName: group.lastName,
-        email: group.email,
-        phoneNo: group.phoneNo,
-        dob: group.dob,
-        gender: group.gender,
-        designation: group.designation,
-        socialLinks: [
-          "https://linkedin.com/in/johndoe",
-          "https://github.com/johndoe"
-        ],
-        address: {
-          street: group.street,
-          city: group.city,
-          state: group.state,
-          pinCode: Number(group.zip),
-          country: group.country
-        },
-        sections: formattedSections,
-      },
+      userName: "mukesh_277",
+      cvInfo: [
+        {
+          firstName: group.firstName,
+          lastName: group.lastName,
+          email: group.email,
+          phoneNo: Number(group.phoneNo),
+          dob: Date(group.dob),
+          gender: group.gender,
+          profilePhoto: "https://example.com/photo.jpg",
+          designation: group.designation,
+          socialLinks: [
+            "https://linkedin.com/in/mukesh",
+            "https://github.com/mukesh"
+          ],
+          address: {
+            city: group.city,
+            pinCode: Number(group.zip),
+            state: group.state,
+            country: group.country
+          },
+          sections: formattedSections
+        }
+      ]
+    }
+    try {
+      const response = await axios.post(`${apiUrl}/create-cv`, payloadCreateCv);
+      console.log(response, "this from cv");
+      navigate('/edit/');
+    }
+    catch {
+      alert('Failed to save CV. Please try again.');
     }
 
-    let response;
-    if (groupId) {
-      response = await axios.put(`${apiUrl}/updateCvInfoSet`, payloadCvCreate);
-      navigate('/edit/userinfo');
 
-    } else {
-      //  response = await axios.post(`${apiUrl}/create-cv`, payload);
-    }
+    // const payloadCvCreate = {
+    //   userName: "mukesh_277",
+    //   userId: 4,
+    //   cvInfoId: groupId,
+    //   updateCvInfoSet: {
+    //     firstName: group.firstName,
+    //     lastName: group.lastName,
+    //     email: group.email,
+    //     phoneNo: group.phoneNo,
+    //     dob: group.dob,
+    //     gender: group.gender,
+    //     designation: group.designation,
+    //     socialLinks: [
+    //       "https://linkedin.com/in/johndoe",
+    //       "https://github.com/johndoe"
+    //     ],
+    //     address: {
+    //       street: group.street,
+    //       city: group.city,
+    //       state: group.state,
+    //       pinCode: Number(group.zip),
+    //       country: group.country
+    //     },
+    //     sections: formattedSections,
+    //   },
+    // }
+
+    // let response;
+    // if (groupId) {
+    //   response = await axios.put(`${apiUrl}/updateCvInfoSet`, payloadCvCreate);
+    //   navigate('/edit/userinfo');
+
+    // } else {
+    //   //  response = await axios.post(`${apiUrl}/create-cv`, payload);
+    // }
 
     // }
 

@@ -33,7 +33,7 @@ const user1 = {
   gender: 'dummy data',
   phoneNo: 'dummy data',
   email: 'john@example.com',
-  socialLink: ['https://linkedin.com/in/johndeo'],
+  socialLinks: ['https://linkedin.com/in/johndeo'],
   city: 'New York',
   state: 'NY',
   pincode: '10001',
@@ -98,13 +98,15 @@ export default function ProfilePage() {
         `${apiUrl}/cv-details/${username}`
       );
       // CV exists — navigate to edit mode using userName
-      navigate('/create-cv?edit=true&user=testing_user', {
-        state: { existingData: res.data }
-      });
+      // navigate('/create-cv?edit=true&user=testing_user', {
+      //   state: { existingData: res.data }
+      navigate('/edit');
+
+      // });
 
     } catch (error) {
       // No CV — navigate to create mode
-      navigate('/create-cv');
+      navigate('/edit');
     }
   };
   // console.log("this is from  ", user.userName);
@@ -332,7 +334,7 @@ export default function ProfilePage() {
                 ['Gender', userProfile?.fetchedUsed?.gender || user1.gender],
                 ['Phone', userProfile?.fetchedUsed?.phoneNo || user1.phoneNo],
                 ['Email', userProfile?.fetchedUsed?.email || user1.email],
-                ['socialLink', userProfile?.fetchedUsed?.socialLink || user1.socialLink],
+                ['socialLinks', userProfile?.fetchedUsed?.socialLinks || user1.socialLinks],
                 ['City', userProfile?.fetchedUsed?.city || user1.city],
                 ['State', userProfile?.fetchedUsed?.state || user1.state],
                 ['Pincode', userProfile?.fetchedUsed?.pinCode || user1.pincode],
@@ -342,7 +344,7 @@ export default function ProfilePage() {
                     {label}
                   </Typography>
                   <Typography variant="body1" fontWeight={500} sx={{ color: 'white' }}>
-                    {label === 'socialLink' ? (
+                    {label === 'socialLinks' ? (
                       Array.isArray(value) ? (
                         value.map((link, i) => (
                           <a
@@ -389,7 +391,7 @@ export default function ProfilePage() {
                   },
                 }}
               >
-                {hasCV ? 'Update CV' : 'Create10CV'}
+                {hasCV ? 'Update CV' : 'CreateCV'}
               </Button>
               <Button
                 variant="contained"

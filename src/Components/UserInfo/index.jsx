@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -25,6 +26,8 @@ function UserInfo() {
   const [deletingCvId, setDeletingCvId] = useState(null);
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userNamEe || "mukesh_277";
+  console.log(userProfile, "userProfile from userinfo");
+
   // const username = userProfile?.fetchedUsed?.userNamEe || "mukesh_277";
   // const username = userProfile?.fetchedUsed?.userNamEe || "mukesh_277";
   const navigate = useNavigate();
@@ -37,7 +40,7 @@ function UserInfo() {
       setUsers(response.data.fetchedCv.cvInfo || []);
       setUserId(response.data.fetchedCv.userId);
       setDefaultUser(response.data.fetchedCv.templateInfo || {});
-      console.log("===== ", response.data);
+      // console.log("===== ", response.data);
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -178,7 +181,7 @@ function UserInfo() {
                               : "Set as Default"}
                         </Button>
 
-                        {users.length > 1 && (
+                        {users.length > 1 && !isDefault && (
                           <IconButton
                             color="error"
                             size="small"

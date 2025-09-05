@@ -39,7 +39,6 @@ function UserForm() {
   const [success, setSuccess] = useState(false);
   const user = useSelector(state => state.user);
   const fetchedUser = useSelector(state => state.userProfile?.data?.fetchedUsed);
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [info, setInfo] = useState();
@@ -61,7 +60,7 @@ function UserForm() {
 
   const isEdit = !!fetchedUser;
   console.log(fetchedUser, "isEdit");
-  
+
 
   const initialValues = {
     profilePhoto: fetchedUser.profilePhoto || '',
@@ -131,7 +130,7 @@ function UserForm() {
         const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
         dispatch(setUserProfile(updated.data));
         navigate('/edit');
-        alert("doneer")
+        alert("done")
       }
       // if (isEdit) {
       //   const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
@@ -262,7 +261,7 @@ function UserForm() {
                             fullWidth
                             label="Date of Birth"
                             name="dob"
-                            type="date"
+                            type="text"
                             InputLabelProps={{ shrink: true }}
                             value={values.dob}
                             onChange={handleChange}

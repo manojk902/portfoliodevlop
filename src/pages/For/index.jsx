@@ -4,7 +4,7 @@ function For() {
   // state for multiple inputs
   const [education, setEducation] = useState([""]);
   console.log(education);
-  
+
   const [work, setWork] = useState([""]);
 
   // handle input change
