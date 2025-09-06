@@ -3,29 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Collapse,
-  IconButton,
+  Box, Button, TextField, Typography, Grid, Card, CardContent, Dialog, DialogTitle, DialogContent, DialogActions, Collapse, IconButton,
 } from '@mui/material';
 import { ExpandMore, ExpandLess, DragIndicator } from '@mui/icons-material';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import axios from 'axios';
 import { apiUrl } from '../../../utils/common';
+import { useSelector } from 'react-redux';
 
 // Define section types with fields, required fields, and whether they allow multiple entries
 const sectionTypes = {
-  Education: { title: 'Education', fields: ['college', 'course', 'fieldOfStudy', 'startDate', 'endDate', 'grade', 'location'], required: ['college', 'course'], single: false },
+  Education: { title: 'Education', fields: ['institutionName', 'course', 'fieldOfStudy', 'startDate', 'endDate', 'grade', 'location'], required: ['institutionName'], single: false },
   Experience: { title: 'Experience', fields: ['jobTitle', 'company', 'location', 'startDate', 'endDate', 'description'], required: ['jobTitle', 'company'], single: false },
   Skill: { title: 'Skill', fields: ['skill', 'rating'], required: ['skill', 'rating'], single: false },
   Certification: { title: 'Certification', fields: ['name', 'institute', 'issueDate'], required: ['name'], single: false },
@@ -156,8 +145,12 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
 
 // Main form component
 const GroupForm = () => {
+  const userProfile = useSelector(state => state.userProfile.data);
+  const username = userProfile?.fetchedUsed?.userName
+  const userId = userProfile?.fetchedUsed?.userId
   const [searchParams] = useSearchParams();
-  const groupId = searchParams.get("groupId");
+  const groupId = searchParams.get("groupId",);
+  const isEdit = searchParams.get("edit") === "true";
   const navigate = useNavigate();
   const [group, setGroup] = useState({
     firstName: "",
@@ -178,8 +171,6 @@ const GroupForm = () => {
     country: "",
     sections: []
   })
-  // console.log(group);
-
   const [showModal, setShowModal] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
   const [errors, setErrors] = useState({});
@@ -188,13 +179,8 @@ const GroupForm = () => {
   useEffect(() => {
     const fetchGroup = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/getSingleCv/mukesh_277/${groupId}`);
-        // console.log("pppr", response.data.singleCv);
-
-        const cvData = response.data.singleCv; // pehla CV record
-        // console.log("ppp", cvData);
-
-
+        const response = await axios.get(`${apiUrl}/getSingleCv/${username}/${groupId}`);
+        const cvData = response.data.singleCv;
         if (cvData) {
           const updatedSections = cvData.sections.map(section => {
             if (section.name.toLowerCase() === 'summary') {
@@ -212,7 +198,7 @@ const GroupForm = () => {
           });
 
           setGroup({
-            userId: 4,
+            userId: userId,
             cvInfoId: cvData?.cvInfoId,
             firstName: cvData?.firstName || "",
             lastName: cvData?.lastName || "",
@@ -440,88 +426,85 @@ const GroupForm = () => {
       }
       return section;
     });
-    // for create 
-    const payloadCreateCv = {
-      userId: 4,
-      userName: "mukesh_277",
-      cvInfo: [
-        {
-          firstName: group.firstName,
-          lastName: group.lastName,
-          email: group.email,
-          phoneNo: Number(group.phoneNo),
-          dob: Date(group.dob),
-          gender: group.gender,
-          profilePhoto: "https://example.com/photo.jpg",
-          designation: group.designation,
-          socialLinks: [
-            "https://linkedin.com/in/mukesh",
-            "https://github.com/mukesh"
-          ],
-          address: {
-            city: group.city,
-            pinCode: Number(group.zip),
-            state: group.state,
-            country: group.country
-          },
-          sections: formattedSections
-        }
-      ]
-    }
+
     try {
-      const response = await axios.post(`${apiUrl}/create-cv`, payloadCreateCv);
-      console.log(response, "this from cv");
-      navigate('/edit/');
-    }
-    catch {
+      if (isEdit && groupId) {
+        const payloadCvupdate = {
+          userName: username,
+          userId: userId,
+          cvInfoId: groupId,
+          updateCvInfoSet: {
+            firstName: group.firstName,
+            lastName: group.lastName,
+            email: group.email,
+            phoneNo: group.phoneNo,
+            dob: group.dob,
+            gender: group.gender,
+            designation: group.designation,
+            socialLinks: [
+              "https://linkedin.com/in/johndoe",
+              "https://github.com/johndoe"
+            ],
+            address: {
+              street: group.street,
+              city: group.city,
+              state: group.state,
+              pinCode: Number(group.zip),
+              country: group.country
+            },
+            sections: formattedSections,
+          },
+        }
+        let response;
+        if (groupId) {
+          response = await axios.put(`${apiUrl}/updateCvInfoSet`, payloadCvupdate);
+          navigate('/edit');
+          console.log("update");
+        }
+      } else {
+        // for create 
+        const payloadCreateCv = {
+          userId: userId,
+          userName: username,
+          cvInfo: [
+            {
+              firstName: group.firstName,
+              lastName: group.lastName,
+              email: group.email,
+              phoneNo: Number(group.phoneNo),
+              dob: Date(group.dob),
+              gender: group.gender,
+              profilePhoto: "https://example.com/photo.jpg",
+              designation: group.designation,
+              socialLinks: [
+                "https://linkedin.com/in/mukesh",
+                "https://github.com/mukesh"
+              ],
+              address: {
+                city: group.city,
+                pinCode: Number(group.zip),
+                state: group.state,
+                country: group.country
+              },
+              sections: formattedSections
+            }
+          ]
+        }
+        try {
+          const response = await axios.post(`${apiUrl}/create-cv`, payloadCreateCv);
+          console.log(response, "this from cv");
+          navigate('/edit');
+        }
+        catch {
+          alert('Failed to save CV. Please try again.');
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
       alert('Failed to save CV. Please try again.');
+      return;
     }
-
-
-    // const payloadCvCreate = {
-    //   userName: "mukesh_277",
-    //   userId: 4,
-    //   cvInfoId: groupId,
-    //   updateCvInfoSet: {
-    //     firstName: group.firstName,
-    //     lastName: group.lastName,
-    //     email: group.email,
-    //     phoneNo: group.phoneNo,
-    //     dob: group.dob,
-    //     gender: group.gender,
-    //     designation: group.designation,
-    //     socialLinks: [
-    //       "https://linkedin.com/in/johndoe",
-    //       "https://github.com/johndoe"
-    //     ],
-    //     address: {
-    //       street: group.street,
-    //       city: group.city,
-    //       state: group.state,
-    //       pinCode: Number(group.zip),
-    //       country: group.country
-    //     },
-    //     sections: formattedSections,
-    //   },
-    // }
-
-    // let response;
-    // if (groupId) {
-    //   response = await axios.put(`${apiUrl}/updateCvInfoSet`, payloadCvCreate);
-    //   navigate('/edit/userinfo');
-
-    // } else {
-    //   //  response = await axios.post(`${apiUrl}/create-cv`, payload);
-    // }
-
-    // }
-
-    //   console.log('API response:', response.data);
-    //   navigate('/edit/userinfo');
-    // }
-
   };
-
 
   // Cancel form
   const handleCancel = () => {
@@ -532,7 +515,7 @@ const GroupForm = () => {
     <DndProvider backend={HTML5Backend}>
       <Box sx={{ fullWidth: true, mx: 'auto', p: 2, bgcolor: '#fff', borderRadius: 4 }}>
         <Typography sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2 }}>
-          {groupId ? 'Edit Profile' : 'Add New Profile'}
+          {groupId ? `Update Info of ${groupId}` : 'Add New Info'}
         </Typography>
         <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* Personal Information */}

@@ -94,7 +94,7 @@ export default function ProfilePage() {
   }, [username]); /*this*/
   const handleCVAction = async () => {
     try {
-      const res = await axios.get(
+       await axios.get(
         `${apiUrl}/cv-details/${username}`
       );
       // CV exists — navigate to edit mode using userName
@@ -391,7 +391,7 @@ export default function ProfilePage() {
                   },
                 }}
               >
-                {hasCV ? 'Update CV' : 'CreateCV'}
+                {hasCV ? 'UpdateInfo' : 'CreateInfo'}
               </Button>
               <Button
                 variant="contained"

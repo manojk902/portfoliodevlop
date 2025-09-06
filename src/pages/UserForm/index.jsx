@@ -59,7 +59,7 @@ function UserForm() {
   };
 
   const isEdit = !!fetchedUser;
-  console.log(fetchedUser, "isEdit");
+  console.log(isEdit, "isEdit");
 
 
   const initialValues = {
@@ -112,8 +112,6 @@ function UserForm() {
       data.append('country', values.country);
       data.append('userName', user.userName);
       data.append('userId', user.id);
-      // console.log("getting", user.id);
-
       if (values.profilePhoto) {
         data.append('profilePhoto', values?.profilePhoto);
       }

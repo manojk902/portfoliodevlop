@@ -25,7 +25,7 @@ function UserInfo() {
   const [updatingCvId, setUpdatingCvId] = useState(null);
   const [deletingCvId, setDeletingCvId] = useState(null);
   const userProfile = useSelector((state) => state.userProfile.data);
-  const username = userProfile?.fetchedUsed?.userNamEe || "mukesh_277";
+  const username = userProfile?.fetchedUsed?.userName;
   console.log(userProfile, "userProfile from userinfo");
 
   // const username = userProfile?.fetchedUsed?.userNamEe || "mukesh_277";
@@ -70,7 +70,7 @@ function UserInfo() {
 
   const handleEdit = (cvInfoId) => {
     // navigate(`/edit/add-group`)
-    navigate(`/edit/add-group?groupId=${cvInfoId}`)
+    navigate(`/edit/add-group?groupId=${cvInfoId}&edit=true`);
   };
 
   const handleDelete = async (userId, cvInfoId) => {
@@ -95,8 +95,7 @@ function UserInfo() {
   };
 
   const handleAddNew = () => {
-    navigate(`add-group`);
-    // alert("Add Group / Add Info button clicked!");
+    navigate("/edit/add-group?edit=false");
   };
 
   return (
