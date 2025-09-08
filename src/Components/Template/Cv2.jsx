@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ThemeProvider,
   createTheme,
@@ -10,7 +10,9 @@ import {
   ListItem,
   Button,
   Container,
-  IconButton
+  IconButton,
+  CircularProgress,
+  Alert
 } from "@mui/material";
 import { Print, PictureAsPdf, Edit, Delete } from "@mui/icons-material";
 import styled from "@emotion/styled";
@@ -144,105 +146,197 @@ const EditableImage = styled(Box)`
   }
 `;
 
-export default function ProfessionalCV() {
+export default function Cv2() {
   const cvRef = useRef();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [cvData, setCvData] = useState({
     personal: {
-      name: "Simran Kaur",
-      title: "Content Strategist & Brand Storyteller",
-      initial: "SK"
+      name: "",
+      title: "",
+      initial: ""
     },
     contact: {
-      items: [
-        { id: 1, content: "+91 9123456789" },
-        { id: 2, content: "simran.kaur@email.com" },
-        { id: 3, content: "Chandigarh, Punjab, India" },
-        { id: 4, content: "LinkedIn: /simrankaur" },
-        { id: 5, content: "Behance: /simrankaurs" },
-      ]
+      items: []
     },
     skills: {
-      items: [
-        { id: 1, content: "Content Strategy" },
-        { id: 2, content: "Brand Storytelling" },
-        { id: 3, content: "SEO Optimization" },
-        { id: 4, content: "Copywriting" },
-        { id: 5, content: "Social Media Marketing" },
-        { id: 6, content: "Data Analytics" }
-      ]
+      items: []
     },
     languages: {
-      items: [
-        { id: 1, content: "English (Fluent)" },
-        { id: 2, content: "Punjabi (Native)" },
-        { id: 3, content: "Hindi (Fluent)" }
-      ]
+      items: []
     },
     awards: {
-      items: [
-        {
-          id: 1,
-          title: "Top Marketer Award 2021",
-          subtitle: "Marketing Excellence Forum"
-        },
-        {
-          id: 2,
-          title: "Best Content Campaign",
-          subtitle: "Digital India Summit 2020"
-        }
-      ]
+      items: []
+    },
+    achievements: {
+      items: []
+    },
+    interests: {
+      items: []
     },
     profile: {
-      content: "Results-driven Content Strategist with 5+ years of experience crafting compelling brand narratives. Specialized in developing data-backed content ecosystems that drive engagement, enhance brand visibility, and increase conversion. Passionate about creating human-centered stories that resonate across digital platforms."
+      content: ""
     },
-    experience: [
-      {
-        id: 1,
-        title: "Senior Content Lead",
-        company: "ABC Marketing | 2020–Present",
-        description: "• Revitalized brand content strategy resulting in 40% engagement increase\n• Managed 12-member content team across 4 product verticals\n• Developed award-winning \"Authentic Voices\" campaign"
-      },
-      {
-        id: 2,
-        title: "Content Specialist",
-        company: "XYZ Agency | 2018–2020",
-        description: "• Created SEO-optimized content for 20+ clients across industries\n• Increased average client organic traffic by 65% YOY\n• Implemented content analytics framework still in use today"
-      }
-    ],
-    education: [
-      {
-        id: 1,
-        degree: "MA Digital Marketing",
-        institution: "MICA, Ahmedabad | 2020"
-      },
-      {
-        id: 2,
-        degree: "BA English Literature",
-        institution: "Delhi University | 2018"
-      }
-    ],
+    experience: [],
+    education: [],
     certifications: {
-      items: [
-        { id: 1, content: "• HubSpot Content Marketing" },
-        { id: 2, content: "• Google Analytics Professional" },
-        { id: 3, content: "• SEMrush Content Marketing" },
-        { id: 4, content: "• Brand Storytelling (Berkeley)" }
-      ]
+      items: []
     },
-    projects: [
-      {
-        id: 1,
-        title: "Heritage Brands Revival",
-        description: "Content strategy for 5 traditional Indian brands transitioning to digital platforms. Developed multilingual content frameworks that increased market reach by 200%."
-      },
-      {
-        id: 2,
-        title: "Sustainable Fashion Campaign",
-        description: "Led content creation for eco-fashion startup. Campaign generated 500K+ engagements and increased sales conversion by 35% through storytelling."
-      }
-    ],
+    projects: [],
     profileImage: null
   });
+
+  // Fetch data from API
+  useEffect(() => {
+    const fetchCVData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://192.168.0.3:9000/api/v1/portfolio/defaultCv/mukesh_277');
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Log the API response to console
+        console.log("API Response:", data);
+
+        // Check if the API response has the expected structure
+        if (data.status === 'success' && data.fetchedCvInfo) {
+          // Transform API data to match our component structure
+          const transformedData = transformAPIData(data.fetchedCvInfo);
+          setCvData(transformedData);
+        } else {
+          throw new Error("Invalid API response structure");
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching CV data:", err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchCVData();
+  }, []);
+
+  // Function to transform API data to our component structure
+  const transformAPIData = (apiData) => {
+    // Create initials from first and last name
+    const firstName = apiData.firstName || '';
+    const lastName = apiData.lastName || '';
+    const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`;
+
+    // Create address string
+    const address = apiData.defaultCvInfo?.address
+      ? `${apiData.defaultCvInfo.address.city || ''}, ${apiData.defaultCvInfo.address.state || ''}, ${apiData.defaultCvInfo.address.country || ''}`
+      : '';
+
+    // Format date of birth
+    const dob = apiData.dob ? new Date(apiData.dob).toLocaleDateString() : '';
+
+    // Create contact items
+    const contactItems = [
+      { id: 1, content: apiData.phoneNo || '' },
+      { id: 2, content: apiData.email || '' },
+      { id: 3, content: address },
+      { id: 4, content: `DOB: ${dob}` },
+      { id: 5, content: `Gender: ${apiData.gender || ''}` },
+      ...(apiData.socialLinks?.map((link, index) => ({ id: 6 + index, content: link })) || [])
+    ].filter(item => item.content && item.content !== 'DOB: ' && item.content !== 'Gender: '); // Remove empty items
+
+    // Extract sections from API data
+    const sections = {};
+    if (apiData.sections && Array.isArray(apiData.sections)) {
+      apiData.sections.forEach(section => {
+        sections[section.name] = section.data;
+      });
+    }
+
+    return {
+      personal: {
+        name: `${firstName} ${lastName}`.trim(),
+        title: apiData.designation || '',
+        initial: initials
+      },
+      contact: {
+        items: contactItems
+      },
+      skills: {
+        items: (sections.Skill || []).map((skill, index) => ({
+          id: index + 1,
+          content: `${skill.skill}${skill.rating ? ` (${skill.rating}/10)` : ''}`
+        }))
+      },
+      languages: {
+        items: (sections.Language || []).map((lang, index) => ({
+          id: index + 1,
+          content: `${lang.language} (${lang.proficiency})`
+        }))
+      },
+      awards: {
+        items: (sections.Award || []).map((award, index) => ({
+          id: index + 1,
+          title: award.title || '',
+          subtitle: `${award.issuer || ''}${award.date ? `, ${new Date(award.date).getFullYear()}` : ''}`
+        }))
+      },
+      achievements: {
+        items: (sections.Achievement || []).map((achievement, index) => ({
+          id: index + 1,
+          content: achievement
+        }))
+      },
+      interests: {
+        items: (sections.Interest || []).map((interest, index) => ({
+          id: index + 1,
+          content: interest
+        }))
+      },
+      profile: {
+        content: sections.Summary || ''
+      },
+      experience: (sections.Experience || []).map((exp, index) => ({
+        id: index + 1,
+        title: exp.jobTitle || '',
+        company: `${exp.company || ''}${exp.location ? `, ${exp.location}` : ''} | ${formatDateRange(exp.startDate, exp.endDate)}`,
+        description: exp.description || ''
+      })),
+      education: (sections.Education || []).map((edu, index) => ({
+        id: index + 1,
+        degree: `${edu.course || ''}${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''}`,
+        institution: `${edu.college || ''}${edu.location ? `, ${edu.location}` : ''} | ${formatDateRange(edu.startDate, edu.endDate)}${edu.grade ? `, Grade: ${edu.grade}` : ''}`
+      })),
+      certifications: {
+        items: (sections.Certification || []).map((cert, index) => ({
+          id: index + 1,
+          content: `${cert.name || ''}${cert.institute ? `, ${cert.institute}` : ''}${cert.issueDate ? `, ${new Date(cert.issueDate).getFullYear()}` : ''}`
+        }))
+      },
+      projects: (sections.Project || []).map((proj, index) => ({
+        id: index + 1,
+        title: proj.name || '',
+        description: proj.description || ''
+      })),
+      profileImage: apiData.profilePhoto || null
+    };
+  };
+
+  // Helper function to format date range
+  const formatDateRange = (startDate, endDate) => {
+    const formatDate = (dateString) => {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.getFullYear();
+    };
+
+    const start = formatDate(startDate);
+    const end = endDate ? formatDate(endDate) : 'Present';
+
+    return start && end ? `${start}-${end}` : start || end;
+  };
 
   const theme = createTheme({
     palette: {
@@ -373,7 +467,7 @@ export default function ProfessionalCV() {
   // Print functionality
   const handlePrint = useReactToPrint({
     content: () => cvRef.current,
-    documentTitle: "Simran_Kaur_CV",
+    documentTitle: "Professional_CV",
     pageStyle: `
       @page {
         size: A4;
@@ -434,8 +528,26 @@ export default function ProfessionalCV() {
     const imgY = 5;
 
     pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-    pdf.save('Simran_Kaur_CV.pdf');
+    pdf.save('Professional_CV.pdf');
   };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert severity="error">
+          Error loading CV data: {error}
+        </Alert>
+      </Container>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -591,330 +703,407 @@ export default function ProfessionalCV() {
                   </Box>
                 </Section>
 
-                <Section>
-                  <SectionTitle variant="h5" color="primary">
-                    Skills
-                  </SectionTitle>
-                  <List dense sx={{ py: 0 }}>
-                    {cvData.skills.items.map((skill) => (
-                      <ListItem key={skill.id} sx={{ py: 0.25, px: 0, position: 'relative' }}>
-                        <EditableText>
-                          • {skill.content}
-                          <EditControls className="edit-controls">
-                            <IconButton size="small" onClick={() => {
-                              const newValue = prompt("Edit skill", skill.content);
-                              if (newValue !== null) {
-                                handleTextChange('skills.items', skill.id, newValue);
-                              }
-                            }}>
-                              <Edit fontSize="small" />
-                            </IconButton>
-                            <IconButton size="small" onClick={() => handleDeleteItem('skills.items', skill.id)}>
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </EditControls>
-                        </EditableText>
-                      </ListItem>
-                    ))}
-                  </List>
-                </Section>
-
-                <Section>
-                  <SectionTitle variant="h5" color="primary">
-                    Languages
-                  </SectionTitle>
-                  {cvData.languages.items.map((lang) => (
-                    <EditableText key={lang.id} sx={{ position: 'relative' }}>
-                      <Typography>{lang.content}</Typography>
-                      <EditControls className="edit-controls">
-                        <IconButton size="small" onClick={() => {
-                          const newValue = prompt("Edit language", lang.content);
-                          if (newValue !== null) {
-                            handleTextChange('languages.items', lang.id, newValue);
-                          }
-                        }}>
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" onClick={() => handleDeleteItem('languages.items', lang.id)}>
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </EditControls>
-                    </EditableText>
-                  ))}
-                </Section>
-
-                <Section>
-                  <SectionTitle variant="h5" color="primary">
-                    Awards
-                  </SectionTitle>
-                  <Box>
-                    {cvData.awards.items.map((award) => (
-                      <Box key={award.id} sx={{ position: 'relative', mb: 1 }}>
-                        <EditableText>
-                          <Typography fontWeight={500}>{award.title}</Typography>
-                          <EditControls className="edit-controls">
-                            <IconButton size="small" onClick={() => {
-                              const newValue = prompt("Edit award title", award.title);
-                              if (newValue !== null) {
-                                setCvData(prev => {
-                                  const newItems = prev.awards.items.map(item =>
-                                    item.id === award.id ? { ...item, title: newValue } : item
-                                  );
-                                  return {
-                                    ...prev,
-                                    awards: { ...prev.awards, items: newItems }
-                                  };
-                                });
-                              }
-                            }}>
-                              <Edit fontSize="small" />
-                            </IconButton>
-                            <IconButton size="small" onClick={() => {
-                              setCvData(prev => ({
-                                ...prev,
-                                awards: {
-                                  ...prev.awards,
-                                  items: prev.awards.items.filter(item => item.id !== award.id)
-                                }
-                              }));
-                            }}>
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </EditControls>
-                        </EditableText>
-                        <EditableText>
-                          <Typography variant="body2">{award.subtitle}</Typography>
-                          <EditControls className="edit-controls">
-                            <IconButton size="small" onClick={() => {
-                              const newValue = prompt("Edit award subtitle", award.subtitle);
-                              if (newValue !== null) {
-                                setCvData(prev => {
-                                  const newItems = prev.awards.items.map(item =>
-                                    item.id === award.id ? { ...item, subtitle: newValue } : item
-                                  );
-                                  return {
-                                    ...prev,
-                                    awards: { ...prev.awards, items: newItems }
-                                  };
-                                });
-                              }
-                            }}>
-                              <Edit fontSize="small" />
-                            </IconButton>
-                          </EditControls>
-                        </EditableText>
-                      </Box>
-                    ))}
-                  </Box>
-                </Section>
-              </Grid>
-
-              <Grid item xs={12} md={8}>
-                <Section>
-                  <SectionTitle variant="h5" color="primary">
-                    Profile
-                  </SectionTitle>
-                  <EditableText sx={{ position: 'relative' }}>
-                    <Typography>{cvData.profile.content}</Typography>
-                    <EditControls className="edit-controls">
-                      <IconButton size="small" onClick={() => {
-                        const newValue = prompt("Edit profile", cvData.profile.content);
-                        if (newValue !== null) {
-                          setCvData(prev => ({
-                            ...prev,
-                            profile: { content: newValue }
-                          }));
-                        }
-                      }}>
-                        <Edit fontSize="small" />
-                      </IconButton>
-                      <IconButton size="small" onClick={() => {
-                        setCvData(prev => ({
-                          ...prev,
-                          profile: { content: "" }
-                        }));
-                      }}>
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </EditControls>
-                  </EditableText>
-                </Section>
-
-                <Section>
-                  <SectionTitle variant="h5" color="primary">
-                    Experience
-                  </SectionTitle>
-                  {cvData.experience.map((exp) => (
-                    <Box key={exp.id} mb={3} sx={{ position: 'relative' }}>
-                      <EditControls className="edit-controls" sx={{ top: -8, right: -8 }}>
-                        <IconButton size="small" onClick={() => {
-                          const newTitle = prompt("Edit position", exp.title);
-                          if (newTitle !== null) {
-                            handleObjectFieldChange('experience', exp.id, 'title', newTitle);
-                          }
-                        }}>
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" onClick={() => handleDeleteItem('experience', exp.id)}>
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </EditControls>
-
-                      <EditableText>
-                        <Typography fontWeight={600}>{exp.title}</Typography>
-                      </EditableText>
-
-                      <EditableText>
-                        <Typography color="primary" fontStyle="italic">{exp.company}</Typography>
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit company", exp.company);
-                            if (newValue !== null) {
-                              handleObjectFieldChange('experience', exp.id, 'company', newValue);
-                            }
-                          }}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </EditControls>
-                      </EditableText>
-
-                      <EditableText sx={{ mt: 1 }}>
-                        <Typography variant="body2" whiteSpace="pre-line">
-                          {exp.description}
-                        </Typography>
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit description", exp.description);
-                            if (newValue !== null) {
-                              handleObjectFieldChange('experience', exp.id, 'description', newValue);
-                            }
-                          }}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </EditControls>
-                      </EditableText>
-                    </Box>
-                  ))}
-                </Section>
-
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <Section>
-                      <SectionTitle variant="h5" color="primary">
-                        Education
-                      </SectionTitle>
-                      <Box>
-                        {cvData.education.map((edu) => (
-                          <Box key={edu.id} sx={{ position: 'relative', mb: 1.5 }}>
-                            <EditControls className="edit-controls" sx={{ top: -8, right: -8 }}>
-                              <IconButton size="small" onClick={() => handleDeleteItem('education', edu.id)}>
-                                <Delete fontSize="small" />
-                              </IconButton>
-                            </EditControls>
-
-                            <EditableText>
-                              <Typography fontWeight={600}>{edu.degree}</Typography>
-                              <EditControls className="edit-controls">
-                                <IconButton size="small" onClick={() => {
-                                  const newValue = prompt("Edit degree", edu.degree);
-                                  if (newValue !== null) {
-                                    handleObjectFieldChange('education', edu.id, 'degree', newValue);
-                                  }
-                                }}>
-                                  <Edit fontSize="small" />
-                                </IconButton>
-                              </EditControls>
-                            </EditableText>
-
-                            <EditableText>
-                              <Typography variant="body2">{edu.institution}</Typography>
-                              <EditControls className="edit-controls">
-                                <IconButton size="small" onClick={() => {
-                                  const newValue = prompt("Edit institution", edu.institution);
-                                  if (newValue !== null) {
-                                    handleObjectFieldChange('education', edu.id, 'institution', newValue);
-                                  }
-                                }}>
-                                  <Edit fontSize="small" />
-                                </IconButton>
-                              </EditControls>
-                            </EditableText>
-                          </Box>
-                        ))}
-                      </Box>
-                    </Section>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Section>
-                      <SectionTitle variant="h5" color="primary">
-                        Certifications
-                      </SectionTitle>
-                      <Box>
-                        {cvData.certifications.items.map((cert) => (
-                          <EditableText key={cert.id} sx={{ position: 'relative' }}>
-                            <Typography variant="body2">{cert.content}</Typography>
+                {cvData.skills.items.length > 0 && (
+                  <Section>
+                    <SectionTitle variant="h5" color="primary">
+                      Skills
+                    </SectionTitle>
+                    <List dense sx={{ py: 0 }}>
+                      {cvData.skills.items.map((skill) => (
+                        <ListItem key={skill.id} sx={{ py: 0.25, px: 0, position: 'relative' }}>
+                          <EditableText>
+                            • {skill.content}
                             <EditControls className="edit-controls">
                               <IconButton size="small" onClick={() => {
-                                const newValue = prompt("Edit certification", cert.content);
+                                const newValue = prompt("Edit skill", skill.content);
                                 if (newValue !== null) {
-                                  handleTextChange('certifications.items', cert.id, newValue);
+                                  handleTextChange('skills.items', skill.id, newValue);
                                 }
                               }}>
                                 <Edit fontSize="small" />
                               </IconButton>
-                              <IconButton size="small" onClick={() => handleDeleteItem('certifications.items', cert.id)}>
+                              <IconButton size="small" onClick={() => handleDeleteItem('skills.items', skill.id)}>
                                 <Delete fontSize="small" />
                               </IconButton>
                             </EditControls>
                           </EditableText>
-                        ))}
-                      </Box>
-                    </Section>
-                  </Grid>
-                </Grid>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Section>
+                )}
 
-                <Section>
-                  <SectionTitle variant="h5" color="primary">
-                    Projects
-                  </SectionTitle>
-                  {cvData.projects.map((project) => (
-                    <Box key={project.id} mb={2} sx={{ position: 'relative' }}>
-                      <EditControls className="edit-controls" sx={{ top: -8, right: -8 }}>
-                        <IconButton size="small" onClick={() => handleDeleteItem('projects', project.id)}>
+                {cvData.languages.items.length > 0 && (
+                  <Section>
+                    <SectionTitle variant="h5" color="primary">
+                      Languages
+                    </SectionTitle>
+                    {cvData.languages.items.map((lang) => (
+                      <EditableText key={lang.id} sx={{ position: 'relative' }}>
+                        <Typography>{lang.content}</Typography>
+                        <EditControls className="edit-controls">
+                          <IconButton size="small" onClick={() => {
+                            const newValue = prompt("Edit language", lang.content);
+                            if (newValue !== null) {
+                              handleTextChange('languages.items', lang.id, newValue);
+                            }
+                          }}>
+                            <Edit fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => handleDeleteItem('languages.items', lang.id)}>
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </EditControls>
+                      </EditableText>
+                    ))}
+                  </Section>
+                )}
+
+                {cvData.awards.items.length > 0 && (
+                  <Section>
+                    <SectionTitle variant="h5" color="primary">
+                      Awards
+                    </SectionTitle>
+                    <Box>
+                      {cvData.awards.items.map((award) => (
+                        <Box key={award.id} sx={{ position: 'relative', mb: 1 }}>
+                          <EditableText>
+                            <Typography fontWeight={500}>{award.title}</Typography>
+                            <EditControls className="edit-controls">
+                              <IconButton size="small" onClick={() => {
+                                const newValue = prompt("Edit award title", award.title);
+                                if (newValue !== null) {
+                                  setCvData(prev => {
+                                    const newItems = prev.awards.items.map(item =>
+                                      item.id === award.id ? { ...item, title: newValue } : item
+                                    );
+                                    return {
+                                      ...prev,
+                                      awards: { ...prev.awards, items: newItems }
+                                    };
+                                  });
+                                }
+                              }}>
+                                <Edit fontSize="small" />
+                              </IconButton>
+                              <IconButton size="small" onClick={() => {
+                                setCvData(prev => ({
+                                  ...prev,
+                                  awards: {
+                                    ...prev.awards,
+                                    items: prev.awards.items.filter(item => item.id !== award.id)
+                                  }
+                                }));
+                              }}>
+                                <Delete fontSize="small" />
+                              </IconButton>
+                            </EditControls>
+                          </EditableText>
+                          <EditableText>
+                            <Typography variant="body2">{award.subtitle}</Typography>
+                            <EditControls className="edit-controls">
+                              <IconButton size="small" onClick={() => {
+                                const newValue = prompt("Edit award subtitle", award.subtitle);
+                                if (newValue !== null) {
+                                  setCvData(prev => {
+                                    const newItems = prev.awards.items.map(item =>
+                                      item.id === award.id ? { ...item, subtitle: newValue } : item
+                                    );
+                                    return {
+                                      ...prev,
+                                      awards: { ...prev.awards, items: newItems }
+                                    };
+                                  });
+                                }
+                              }}>
+                                <Edit fontSize="small" />
+                              </IconButton>
+                            </EditControls>
+                          </EditableText>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Section>
+                )}
+
+                {cvData.achievements.items.length > 0 && (
+                  <Section>
+                    <SectionTitle variant="h5" color="primary">
+                      Achievements
+                    </SectionTitle>
+                    <List dense sx={{ py: 0 }}>
+                      {cvData.achievements.items.map((achievement) => (
+                        <ListItem key={achievement.id} sx={{ py: 0.25, px: 0, position: 'relative' }}>
+                          <EditableText>
+                            • {achievement.content}
+                            <EditControls className="edit-controls">
+                              <IconButton size="small" onClick={() => {
+                                const newValue = prompt("Edit achievement", achievement.content);
+                                if (newValue !== null) {
+                                  handleTextChange('achievements.items', achievement.id, newValue);
+                                }
+                              }}>
+                                <Edit fontSize="small" />
+                              </IconButton>
+                              <IconButton size="small" onClick={() => handleDeleteItem('achievements.items', achievement.id)}>
+                                <Delete fontSize="small" />
+                              </IconButton>
+                            </EditControls>
+                          </EditableText>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Section>
+                )}
+
+                {cvData.interests.items.length > 0 && (
+                  <Section>
+                    <SectionTitle variant="h5" color="primary">
+                      Interests
+                    </SectionTitle>
+                    <List dense sx={{ py: 0 }}>
+                      {cvData.interests.items.map((interest) => (
+                        <ListItem key={interest.id} sx={{ py: 0.25, px: 0, position: 'relative' }}>
+                          <EditableText>
+                            • {interest.content}
+                            <EditControls className="edit-controls">
+                              <IconButton size="small" onClick={() => {
+                                const newValue = prompt("Edit interest", interest.content);
+                                if (newValue !== null) {
+                                  handleTextChange('interests.items', interest.id, newValue);
+                                }
+                              }}>
+                                <Edit fontSize="small" />
+                              </IconButton>
+                              <IconButton size="small" onClick={() => handleDeleteItem('interests.items', interest.id)}>
+                                <Delete fontSize="small" />
+                              </IconButton>
+                            </EditControls>
+                          </EditableText>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Section>
+                )}
+              </Grid>
+
+              <Grid item xs={12} md={8}>
+                {cvData.profile.content && (
+                  <Section>
+                    <SectionTitle variant="h5" color="primary">
+                      Profile
+                    </SectionTitle>
+                    <EditableText sx={{ position: 'relative' }}>
+                      <Typography>{cvData.profile.content}</Typography>
+                      <EditControls className="edit-controls">
+                        <IconButton size="small" onClick={() => {
+                          const newValue = prompt("Edit profile", cvData.profile.content);
+                          if (newValue !== null) {
+                            setCvData(prev => ({
+                              ...prev,
+                              profile: { content: newValue }
+                            }));
+                          }
+                        }}>
+                          <Edit fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small" onClick={() => {
+                          setCvData(prev => ({
+                            ...prev,
+                            profile: { content: "" }
+                          }));
+                        }}>
                           <Delete fontSize="small" />
                         </IconButton>
                       </EditControls>
+                    </EditableText>
+                  </Section>
+                )}
 
-                      <EditableText>
-                        <Typography fontWeight={600}>{project.title}</Typography>
-                        <EditControls className="edit-controls">
+                {cvData.experience.length > 0 && (
+                  <Section>
+                    <SectionTitle variant="h5" color="primary">
+                      Experience
+                    </SectionTitle>
+                    {cvData.experience.map((exp) => (
+                      <Box key={exp.id} mb={3} sx={{ position: 'relative' }}>
+                        <EditControls className="edit-controls" sx={{ top: -8, right: -8 }}>
                           <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit project title", project.title);
-                            if (newValue !== null) {
-                              handleObjectFieldChange('projects', project.id, 'title', newValue);
+                            const newTitle = prompt("Edit position", exp.title);
+                            if (newTitle !== null) {
+                              handleObjectFieldChange('experience', exp.id, 'title', newTitle);
                             }
                           }}>
                             <Edit fontSize="small" />
                           </IconButton>
-                        </EditControls>
-                      </EditableText>
-
-                      <EditableText>
-                        <Typography variant="body2">{project.description}</Typography>
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit project description", project.description);
-                            if (newValue !== null) {
-                              handleObjectFieldChange('projects', project.id, 'description', newValue);
-                            }
-                          }}>
-                            <Edit fontSize="small" />
+                          <IconButton size="small" onClick={() => handleDeleteItem('experience', exp.id)}>
+                            <Delete fontSize="small" />
                           </IconButton>
                         </EditControls>
-                      </EditableText>
-                    </Box>
-                  ))}
-                </Section>
+
+                        <EditableText>
+                          <Typography fontWeight={600}>{exp.title}</Typography>
+                        </EditableText>
+
+                        <EditableText>
+                          <Typography color="primary" fontStyle="italic">{exp.company}</Typography>
+                          <EditControls className="edit-controls">
+                            <IconButton size="small" onClick={() => {
+                              const newValue = prompt("Edit company", exp.company);
+                              if (newValue !== null) {
+                                handleObjectFieldChange('experience', exp.id, 'company', newValue);
+                              }
+                            }}>
+                              <Edit fontSize="small" />
+                            </IconButton>
+                          </EditControls>
+                        </EditableText>
+
+                        <EditableText sx={{ mt: 1 }}>
+                          <Typography variant="body2" whiteSpace="pre-line">
+                            {exp.description}
+                          </Typography>
+                          <EditControls className="edit-controls">
+                            <IconButton size="small" onClick={() => {
+                              const newValue = prompt("Edit description", exp.description);
+                              if (newValue !== null) {
+                                handleObjectFieldChange('experience', exp.id, 'description', newValue);
+                              }
+                            }}>
+                              <Edit fontSize="small" />
+                            </IconButton>
+                          </EditControls>
+                        </EditableText>
+                      </Box>
+                    ))}
+                  </Section>
+                )}
+
+                <Grid container spacing={2}>
+                  {cvData.education.length > 0 && (
+                    <Grid item xs={12} sm={6}>
+                      <Section>
+                        <SectionTitle variant="h5" color="primary">
+                          Education
+                        </SectionTitle>
+                        <Box>
+                          {cvData.education.map((edu) => (
+                            <Box key={edu.id} sx={{ position: 'relative', mb: 1.5 }}>
+                              <EditControls className="edit-controls" sx={{ top: -8, right: -8 }}>
+                                <IconButton size="small" onClick={() => handleDeleteItem('education', edu.id)}>
+                                  <Delete fontSize="small" />
+                                </IconButton>
+                              </EditControls>
+
+                              <EditableText>
+                                <Typography fontWeight={600}>{edu.degree}</Typography>
+                                <EditControls className="edit-controls">
+                                  <IconButton size="small" onClick={() => {
+                                    const newValue = prompt("Edit degree", edu.degree);
+                                    if (newValue !== null) {
+                                      handleObjectFieldChange('education', edu.id, 'degree', newValue);
+                                    }
+                                  }}>
+                                    <Edit fontSize="small" />
+                                  </IconButton>
+                                </EditControls>
+                              </EditableText>
+
+                              <EditableText>
+                                <Typography variant="body2">{edu.institution}</Typography>
+                                <EditControls className="edit-controls">
+                                  <IconButton size="small" onClick={() => {
+                                    const newValue = prompt("Edit institution", edu.institution);
+                                    if (newValue !== null) {
+                                      handleObjectFieldChange('education', edu.id, 'institution', newValue);
+                                    }
+                                  }}>
+                                    <Edit fontSize="small" />
+                                  </IconButton>
+                                </EditControls>
+                              </EditableText>
+                            </Box>
+                          ))}
+                        </Box>
+                      </Section>
+                    </Grid>
+                  )}
+
+                  {cvData.certifications.items.length > 0 && (
+                    <Grid item xs={12} sm={6}>
+                      <Section>
+                        <SectionTitle variant="h5" color="primary">
+                          Certifications
+                        </SectionTitle>
+                        <Box>
+                          {cvData.certifications.items.map((cert) => (
+                            <EditableText key={cert.id} sx={{ position: 'relative' }}>
+                              <Typography variant="body2">{cert.content}</Typography>
+                              <EditControls className="edit-controls">
+                                <IconButton size="small" onClick={() => {
+                                  const newValue = prompt("Edit certification", cert.content);
+                                  if (newValue !== null) {
+                                    handleTextChange('certifications.items', cert.id, newValue);
+                                  }
+                                }}>
+                                  <Edit fontSize="small" />
+                                </IconButton>
+                                <IconButton size="small" onClick={() => handleDeleteItem('certifications.items', cert.id)}>
+                                  <Delete fontSize="small" />
+                                </IconButton>
+                              </EditControls>
+                            </EditableText>
+                          ))}
+                        </Box>
+                      </Section>
+                    </Grid>
+                  )}
+                </Grid>
+
+                {cvData.projects.length > 0 && (
+                  <Section>
+                    <SectionTitle variant="h5" color="primary">
+                      Projects
+                    </SectionTitle>
+                    {cvData.projects.map((project) => (
+                      <Box key={project.id} mb={2} sx={{ position: 'relative' }}>
+                        <EditControls className="edit-controls" sx={{ top: -8, right: -8 }}>
+                          <IconButton size="small" onClick={() => handleDeleteItem('projects', project.id)}>
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </EditControls>
+
+                        <EditableText>
+                          <Typography fontWeight={600}>{project.title}</Typography>
+                          <EditControls className="edit-controls">
+                            <IconButton size="small" onClick={() => {
+                              const newValue = prompt("Edit project title", project.title);
+                              if (newValue !== null) {
+                                handleObjectFieldChange('projects', project.id, 'title', newValue);
+                              }
+                            }}>
+                              <Edit fontSize="small" />
+                            </IconButton>
+                          </EditControls>
+                        </EditableText>
+
+                        <EditableText>
+                          <Typography variant="body2">{project.description}</Typography>
+                          <EditControls className="edit-controls">
+                            <IconButton size="small" onClick={() => {
+                              const newValue = prompt("Edit project description", project.description);
+                              if (newValue !== null) {
+                                handleObjectFieldChange('projects', project.id, 'description', newValue);
+                              }
+                            }}>
+                              <Edit fontSize="small" />
+                            </IconButton>
+                          </EditControls>
+                        </EditableText>
+                      </Box>
+                    ))}
+                  </Section>
+                )}
               </Grid>
             </Grid>
           </CVContainer>

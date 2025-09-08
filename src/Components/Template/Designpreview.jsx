@@ -10,7 +10,7 @@ import CV5 from "./Cv5";
 import CV6 from "./Cv6";
 
 export default function Designpreview() {
-  const { type, id } = useParams();
+  const { id } = useParams();
 
   const cvDesigns = [
     { id: 1, Component: CV1 },
@@ -20,6 +20,7 @@ export default function Designpreview() {
     { id: 5, Component: CV5 },
     { id: 6, Component: CV6 },
   ];
+
 
   // Only using CV designs
   const designsToShow = cvDesigns;
