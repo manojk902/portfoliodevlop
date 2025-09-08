@@ -7,20 +7,29 @@ import ProfilePage from '../../pages/ProfilePage';
 import CreatePortfolioPage from '../../pages/CreatePortfolioPage';
 import UserForm from '../../pages/UserForm';
 import CreateCvPage from '../../pages/CreateCvPage';
-import Cv1 from '../../pages/HomePage/Cv1'; // <-- yahan se import kar (kyunki tu bol raha tha Cv1 HomePage ke folder me hai)
+import Cv1 from '../../Components/Template/Cv1'; // <-- yahan se import kar (kyunki tu bol raha tha Cv1 HomePage ke folder me hai)
+
 import BuilderPage from '../../pages/BuilderPage';
 import UserInfo from '../../Components/UserInfo';
 import Template from '../../Components/Template';
+import Cv3 from '../../Components/Template/Cv3';
+
 import GroupForm from '../../Components/UserInfo/GroupForm';
 import Designpreview from '../../Components/Template/Designpreview';
 import Designpage from '../../Components/Template/Designpage';
+import DefaultCv from '../../Components/DefaultCv';
+// import Cv2 from '../../Components/Template/Cv2';
+import Learn from '../../Learn'
 
-const AppRoutes = () => {
+const AppRoutes = (defaultCvTemplate) => {
   return (
     <Routes>
       {/* Public Routes */}
+      <Route path="/learn" element={<Learn/>} />
       <Route path="/" element={<HomePage />} />
-      <Route path="/:username" element={<Cv1 />} />   {/* ✅ Static CV route */}
+      {/* <Route path="/:username" element={<ViewCVPage />} />   ✅ Static CV route */}
+      <Route path="/:username" element={<DefaultCv />} />   ✅ Static CV route
+
 
       {/* Design Routes */}
       <Route path="/Designpage" element={<Designpage />} />

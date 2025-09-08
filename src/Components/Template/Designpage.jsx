@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -17,9 +17,11 @@ import {
   Alert,
   Snackbar,
 } from "@mui/material";
-import { Link } from "react-router-dom";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import axios from "axios"; // ✅ ADD THIS
+
+import DefaultCv from "../DefaultCv";
 
 // Import all your CVs
 import CV1 from "./Cv1";
@@ -28,15 +30,22 @@ import CV3 from "./Cv3";
 import CV4 from "./Cv4";
 import CV5 from "./Cv5";
 import CV6 from "./Cv6";
+import { apiUrl } from "../../utils/common";
 
 export default function DesignPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectedCategory, setSelectedCategory] = useState("cv");
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [defaultTemplate, setDefaultTemplate] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState({});
+  const [defaultTemplate, setDefaultTemplate] = useState(1);
   const [showSnackbar, setShowSnackbar] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("defaultCvTemplate", selectedTemplate?.name);
+  });
+
+  const templateFromStorage = localStorage.getItem("defaultCvTemplate");
 
   const handleCategoryChange = (event, newValue) => {
     setSelectedCategory(newValue);
@@ -52,52 +61,39 @@ export default function DesignPage() {
     setSelectedTemplate(null);
   };
 
-  const handleSetDefault = (templateId) => {
-    setDefaultTemplate(templateId);
-    setShowSnackbar(true);
+  // ✅ UPDATED FUNCTION WITH API CALL
+  const handleSetDefault = async (cvid) => {
+    try {
+      // 1️⃣ API CALL
+      const response = await axios.put(
+        `${apiUrl}/updateDefaultCvId`,
+        {
+            userId: 4,
+            templateName: "Cv4",
+            cvInfoId: "555668be-02d0-476d-b3b9-58c11a23a159" 
+        }
+      );
+
+      console.log("✅ API Response:", response.data);
+
+      // 2️⃣ Local + State Update
+      localStorage.setItem("defaultCv", cvid);
+      setDefaultTemplate(cvid);
+      setShowSnackbar(true);
+    } catch (error) {
+      console.error("❌ Error setting default CV:", error);
+      alert("Failed to set default CV. Please try again.");
+    }
   };
 
   const cvDesigns = [
-    {
-      id: 1,
-      name: "Professional Classic",
-      Component: CV1,
-      scale: 0.25,
-      baseWidth: 800,
-    },
-    {
-      id: 2,
-      name: "Modern Minimalist",
-      Component: CV2,
-      scale: 0.25,
-      baseWidth: 800,
-    },
-    {
-      id: 3,
-      name: "Executive Style",
-      Component: CV3,
-      scale: 0.25,
-      baseWidth: 800,
-    },
-    {
-      id: 4,
-      name: "Creative Edge",
-      Component: CV4,
-      scale: 0.25,
-      baseWidth: 800,
-    },
-    {
-      id: 5,
-      name: "Clean Layout",
-      Component: CV5,
-      scale: 0.25,
-      baseWidth: 800,
-    },
-    { id: 6, name: "Bold Look", Component: CV6, scale: 0.25, baseWidth: 800 },
+    { id: 1, name: "defaultCv", Component: CV1, scale: 0.25, baseWidth: 800 },
+    { id: 2, name: "defaultCv", Component: CV2, scale: 0.25, baseWidth: 800 },
+    { id: 3, name: "defaultCv", Component: CV3, scale: 0.25, baseWidth: 800 },
+    { id: 4, name: "defaultCv", Component: CV4, scale: 0.25, baseWidth: 800 },
+    { id: 5, name: "defaultCv", Component: CV5, scale: 0.25, baseWidth: 800 },
+    { id: 6, name: "defaultCv", Component: CV6, scale: 0.25, baseWidth: 800 },
   ];
-
-  // Only show CV designs
-  const designsToShow = cvDesigns;
 
   return (
     <Box
@@ -173,339 +169,154 @@ export default function DesignPage() {
         </Box>
 
         <Grid container spacing={3} justifyContent="flex-start">
-          {designsToShow.map(({ id, name, Component, scale, baseWidth }, index) => {
-            // const isPortfolio = false; // Only CV templates now
-            const itemProps = { xs: 12, sm: 6, md: 4, lg: 3 }; // Adjusted layout for better spacing
+          <DefaultCv template={templateFromStorage} />
 
-            const cardMaxWidth = 320;
-            const previewHeight = 260;
-            const isDefault = defaultTemplate === id;
-
-            return (
-              <Grid
-                item
-                key={`${selectedCategory}-${id}`}
-                {...itemProps}
-                sx={{ display: "flex", justifyContent: "center" }}
-              >
-                <Card
-                  sx={{
-                    position: "relative",
-                    display: "flex",
-                    flexDirection: "column",
-                    height: "100%",
-                    width: "100%",
-                    maxWidth: cardMaxWidth,
-                    borderRadius: 3,
-                    overflow: "hidden",
-                    border: "none",
-                    background: "#ffffff",
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      transform: "translateY(-8px)",
-                      boxShadow: "0 12px 30px rgba(0,0,0,0.12)",
-                    },
-                  }}
+          {cvDesigns.map(
+            ({ id, name, Component, scale, baseWidth }, index) => {
+              const isDefault = defaultTemplate === id;
+              return (
+                <Grid
+                  item
+                  key={id}
+                  xs={12}
+                  sm={6}
+                  md={4}
+                  lg={3}
+                  sx={{ display: "flex", justifyContent: "center" }}
                 >
-                  {/* Default Badge */}
-                  {isDefault && (
-                    <Chip
-                      icon={<CheckCircleIcon />}
-                      label="Default"
-                      size="small"
+                  <Card
+                    sx={{
+                      position: "relative",
+                      display: "flex",
+                      flexDirection: "column",
+                      maxWidth: 320,
+                      borderRadius: 3,
+                      overflow: "hidden",
+                      background: "#fff",
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+                      "&:hover": {
+                        transform: "translateY(-8px)",
+                        boxShadow: "0 12px 30px rgba(0,0,0,0.12)",
+                      },
+                    }}
+                  >
+                    {isDefault && (
+                      <Chip
+                        icon={<CheckCircleIcon />}
+                        label="Default"
+                        size="small"
+                        sx={{
+                          position: "absolute",
+                          top: 10,
+                          right: 10,
+                          background:
+                            "linear-gradient(to right, #4c6fff, #7e5cff)",
+                          color: "white",
+                        }}
+                      />
+                    )}
+
+                    <Box
                       sx={{
                         position: "absolute",
                         top: 10,
-                        right: 10,
-                        zIndex: 2,
-                        background: "linear-gradient(to right, #4c6fff, #7e5cff)",
-                        color: "white",
-                        fontWeight: "bold",
-                        fontSize: "0.7rem",
-                        height: 24,
-                        "& .MuiChip-icon": {
-                          color: "white",
-                          fontSize: "1rem",
-                        },
-                      }}
-                    />
-                  )}
-
-                  {/* Template Number Badge */}
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 10,
-                      left: 10,
-                      zIndex: 2,
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      background: "linear-gradient(to right, #4c6fff, #7e5cff)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      fontWeight: "bold",
-                      fontSize: "0.9rem",
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                    }}
-                  >
-                    {index + 1}
-                  </Box>
-
-                  {/* Preview */}
-                  <Box
-                    sx={{
-                      background: "#f8fafc",
-                      height: previewHeight,
-                      width: "100%",
-                      display: "flex",
-                      alignItems: "flex-start",
-                      justifyContent: "center",
-                      overflow: "hidden",
-                      position: "relative",
-                      borderTop: "1px solid #edf2f7",
-                      borderBottom: "1px solid #edf2f7",
-                      cursor: "pointer",
-                      "&:hover": {
-                        "& .preview-overlay": {
-                          opacity: 1,
-                        },
-                      },
-                      "&:before": {
-                        content: '""',
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: 8,
+                        left: 10,
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
                         background:
                           "linear-gradient(to right, #4c6fff, #7e5cff)",
-                        opacity: 0.2,
-                      },
-                    }}
-                    onClick={() => handlePreviewOpen({ id, name, Component })}
-                  >
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 0,
-                        transform: `scale(${scale})`,
-                        transformOrigin: "top center",
-                        pointerEvents: "none",
-                        width: `${baseWidth}px`,
-                      }}
-                    >
-                      <Component />
-                    </Box>
-
-                    {/* Preview Overlay */}
-                    <Box
-                      className="preview-overlay"
-                      sx={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: "rgba(0,0,0,0.7)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        opacity: 0,
-                        transition: "opacity 0.3s ease",
+                        color: "white",
+                        fontWeight: "bold",
                       }}
                     >
+                      {index + 1}
+                    </Box>
+
+                    <Box
+                      sx={{
+                        background: "#f8fafc",
+                        height: 260,
+                        display: "flex",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                        cursor: "pointer",
+                      }}
+                      onClick={() =>
+                        handlePreviewOpen({ id, name, Component })
+                      }
+                    >
+                      <Box
+                        sx={{
+                          transform: `scale(${scale})`,
+                          transformOrigin: "top center",
+                          pointerEvents: "none",
+                          width: `${baseWidth}px`,
+                        }}
+                      >
+                        <Component />
+                      </Box>
+                    </Box>
+
+                    <Box sx={{ p: 2 }}>
                       <Typography
                         variant="h6"
                         sx={{
-                          color: "white",
-                          fontWeight: 600,
                           textAlign: "center",
+                          mb: 2,
+                          fontWeight: 600,
                         }}
                       >
-                        Click to Preview
+                        {name}
                       </Typography>
-                    </Box>
-                  </Box>
 
-                  <Box sx={{ p: 2 }}>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 600,
-                        textAlign: "center",
-                        mb: 2,
-                        color: "#2d3748",
-                      }}
-                    >
-                      {name}
-                    </Typography>
-
-                    <Button
-                      component={Link}
-                      to={`/Designpreview/${selectedCategory}/${id}`}
-                      fullWidth
-                      variant="contained"
-                      disableElevation
-                      sx={{
-                        fontWeight: 700,
-                        textTransform: "none",
-                        fontSize: "0.9rem",
-                        py: 1,
-                        borderRadius: 2,
-                        background:
-                          "linear-gradient(to right, #4c6fff, #7e5cff)",
-                        mb: 1,
-                        "&:hover": {
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        disableElevation
+                        sx={{
+                          fontWeight: 700,
                           background:
-                            "linear-gradient(to right, #3a5bff, #6a4cff)",
-                        },
-                      }}
-                    >
-                      Use This Template
-                    </Button>
+                            "linear-gradient(to right, #4c6fff, #7e5cff)",
+                          mb: 1,
+                        }}
+                      >
+                        Use This Template
+                      </Button>
 
-                    {isDefault ? (
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        startIcon={<CheckCircleIcon />}
-                        sx={{
-                          textTransform: "none",
-                          fontWeight: 600,
-                          color: "#4c6fff",
-                          borderColor: "#4c6fff",
-                          "&:hover": {
-                            borderColor: "#3a5bff",
-                            background: "rgba(76, 111, 255, 0.04)",
-                          },
-                        }}
-                      >
-                        Selected
-                      </Button>
-                    ) : (
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        onClick={() => handleSetDefault(id)}
-                        sx={{
-                          textTransform: "none",
-                          fontWeight: 600,
-                          color: "#4a5568",
-                          borderColor: "#e2e8f0",
-                          "&:hover": {
-                            borderColor: "#cbd5e0",
-                            background: "#f7fafc",
-                          },
-                        }}
-                      >
-                        Set as Default
-                      </Button>
-                    )}
-                  </Box>
-                </Card>
-              </Grid>
-            );
-          })}
+                      {isDefault ? (
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          startIcon={<CheckCircleIcon />}
+                        >
+                          Selected
+                        </Button>
+                      ) : (
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          onClick={() => handleSetDefault(id)}
+                        >
+                          Set as Default
+                        </Button>
+                      )}
+                    </Box>
+                  </Card>
+                </Grid>
+              );
+            }
+          )}
         </Grid>
       </Container>
 
-      {/* Preview Dialog */}
-      <Dialog
-        open={previewOpen}
-        onClose={handlePreviewClose}
-        maxWidth="lg"
-        fullWidth
-        fullScreen={isMobile}
-        sx={{
-          "& .MuiDialog-paper": {
-            borderRadius: 3,
-            overflow: "hidden",
-          },
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            p: 2,
-            borderBottom: "1px solid #e2e8f0",
-            background: "linear-gradient(to right, #4c6fff, #7e5cff)",
-            color: "white",
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            {selectedTemplate?.name} - Full Preview
-          </Typography>
-          <IconButton
-            onClick={handlePreviewClose}
-            sx={{ color: "white" }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-
-        <DialogContent sx={{ p: 0, background: "#f8fafc" }}>
-          {selectedTemplate && (
-            <Box sx={{
-              p: isMobile ? 1 : 4,
-              display: "flex",
-              justifyContent: "center",
-              overflow: "auto",
-              maxHeight: "70vh"
-            }}>
-              <Box sx={{
-                width: "100%",
-                maxWidth: 800,
-                boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-                background: "white"
-              }}>
-                <selectedTemplate.Component />
-              </Box>
-            </Box>
-          )}
+      <Dialog open={previewOpen} onClose={handlePreviewClose} maxWidth="lg">
+        <DialogContent>
+          {selectedTemplate && <selectedTemplate.Component />}
         </DialogContent>
-
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "flex-end",
-            p: 2,
-            borderTop: "1px solid #e2e8f0",
-            gap: 1,
-          }}
-        >
-          <Button
-            onClick={handlePreviewClose}
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              color: "#4a5568",
-            }}
-          >
-            Close
-          </Button>
-          <Button
-            component={Link}
-            to={`/Designpreview/${selectedCategory}/${selectedTemplate?.id}`}
-            variant="contained"
-            disableElevation
-            sx={{
-              fontWeight: 700,
-              textTransform: "none",
-              background: "linear-gradient(to right, #4c6fff, #7e5cff)",
-              "&:hover": {
-                background: "linear-gradient(to right, #3a5bff, #6a4cff)",
-              },
-            }}
-          >
-            Use This Template
-          </Button>
-        </Box>
       </Dialog>
 
       <Snackbar

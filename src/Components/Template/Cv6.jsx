@@ -153,7 +153,7 @@ const PrintHide = styled(Box)`
   }
 `;
 
-export default function PortfolioCVHybrid() {
+export default function Cv6() {
   const [themeIndex, setThemeIndex] = useState(0);
   const active = themes[themeIndex];
   const cvRef = useRef();

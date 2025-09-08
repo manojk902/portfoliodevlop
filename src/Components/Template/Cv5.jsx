@@ -132,7 +132,7 @@ const ExperienceItem = styled(Box)`
   }
 `;
 
-export default function EditorialMagazineCV() {
+export default function Cv5() {
   const [themeIndex, setThemeIndex] = useState(0);
   const active = themes[themeIndex];
   const cvRef = useRef();
