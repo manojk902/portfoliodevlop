@@ -12,12 +12,12 @@ import {
   useMediaQuery,
   Dialog,
   DialogContent,
-  IconButton,
+  // IconButton,
   Chip,
   Alert,
   Snackbar,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+// import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import axios from "axios"; // ✅ ADD THIS
 
@@ -336,3 +336,4 @@ import { apiUrl } from "../../utils/common";
     </Box>
   );
 }
+export default DesignPage;

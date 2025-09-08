@@ -23,7 +23,7 @@ import {
 } from '@mui/icons-material';
 import { Link } from "react-router-dom";
 import { apiUrl } from '../../utils/common';
-import { apiUrl } from '../../utils/common';
+// import { apiUrl } from '../../utils/common';
 
 const HomePage = () => {
   const [users, setUsers] = useState([]);   // API se aane wala data
@@ -31,7 +31,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  // const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // 🔹 API call
   useEffect(() => {
