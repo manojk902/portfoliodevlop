@@ -9,7 +9,7 @@ const Sidebar = () => {
   const [cvOpen, setCvOpen] = useState(true); // Default open for CV dropdown
 
   const menuItems = [
-    { label: 'User Info', path: '/edit/userinfo' },
+    { label: 'User Info', path: '/edit' },
     { label: 'Templates', path: '/edit/template' },
   ];
 

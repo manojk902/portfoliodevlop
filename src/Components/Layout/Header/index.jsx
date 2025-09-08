@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../../../store/features/userSlice';
 import { setUserProfile } from '../../../store/features/userProfileSlice';
 import { apiUrl } from '../../../utils/common';
+import { persistor } from "../../../store"; 
 
 const Header = ({ onNavigate, onToggleSidebar }) => {
   const user = useSelector(state => state.user);
@@ -45,13 +46,12 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
         try {
           setLoading(true); // start loading
           const user = await axios.get(`${apiUrl}/user-details/${decodedToken?.userName}`);
-// <<<<<<< HEAD
+          // dispatch(setUserProfile(user.data));
+          // setHasPortfolio(!!user.data); // true if data exists
           dispatch(setUserProfile(user.data));
           setHasPortfolio(!!user.data); // true if data exists
-          dispatch(setUserProfile(user.data));
-          setHasPortfolio(!!user.data); // true if data exists
-          dispatch(setUserProfile(user.data)); // store all payload data in redux
-          console.log(user);
+          // dispatch(setUserProfile(user.data)); // store all payload data in redux
+          // console.log(user);
 
 
           if (user) {
@@ -72,18 +72,18 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
     };
   }, [isLoggedIn, decodedToken?.userName, dispatch]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}all-users-details`);
-        // console.log(response.data);
-        setData(response.data); // Uncomment if you want to store the data
-      } catch (error) {
-        console.error("Error fetching user details:", error);
-      }
-    };
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await axios.get(`${apiUrl}all-users-details`);
+  //       // console.log(response.data);
+  //       setData(response.data); // Uncomment if you want to store the data
+  //     } catch (error) {
+  //       console.error("Error fetching user details:", error);
+  //     }
+  //   };
+  //   fetchData();
+  // }, []);
 
   useEffect(() => {
     let token = searchParams.get("token") || localStorage.getItem("token");
@@ -117,6 +117,7 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
     setDecodedToken(null);
+    persistor.purge();
     alert("logout successful");
     const url = new URL(window.location);
     url.searchParams.delete("token");
@@ -270,7 +271,7 @@ return (
                     color="primary"
                     sx={{ px: 2, py: 1 }}
                   >
-                    Create Portfolio
+                    Create Profile
                   </Button>
                 </>
               )

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import Cv1 from "../Template/Cv1";
+// import Cv1 from "../Template/Cv1";
 import Cv2 from "../Template/Cv2";
 import Cv3 from "../Template/Cv3";
 import Cv4 from "../Template/Cv4";
 import Cv5 from "../Template/Cv5";
 import Cv6 from "../Template/Cv6";
-import { X } from "@mui/icons-material";
+// import { X } from "@mui/icons-material";
 import axios from "axios";
 import { apiUrl } from "../../utils/common";
 // import jsPDF from "jspdf";

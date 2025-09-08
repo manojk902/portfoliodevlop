@@ -25,7 +25,7 @@ import { apiUrl } from '../../utils/common';
 
 
 const user1 = {
-  profilePhoto: 'dummy data', // Add image URL or leave blank
+  profilePhoto: '',
   firstName: 'dummy data',
   lastName: 'dummy data',
   designation: 'dummy data',
@@ -33,7 +33,7 @@ const user1 = {
   gender: 'dummy data',
   phoneNo: 'dummy data',
   email: 'john@example.com',
-  socialLink: 'https://linkedin.com/in/johndeo',
+  socialLinks: ['https://linkedin.com/in/johndeo'],
   city: 'New York',
   state: 'NY',
   pincode: '10001',
@@ -43,15 +43,10 @@ export default function ProfilePage() {
   const [hasCV, setHasCV] = useState(false)
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
-  console.log("ddd", apiUrl)
 
   const navigate = useNavigate();
-  // const user = useSelector(state => state.user);
   const userProfile = useSelector(state => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName
-
-  // console.log("ttttttt", userProfile.fetchedUsed.profilePhoto);
-
   const editProfile = () => {
     navigate("/editprofile", { state: { isUpdate: true } });
   };
@@ -92,20 +87,15 @@ export default function ProfilePage() {
   }, [username]); /*this*/
   const handleCVAction = async () => {
     try {
-      const res = await axios.get(
+      await axios.get(
         `${apiUrl}/cv-details/${username}`
       );
-      // CV exists — navigate to edit mode using userName
-      navigate('/create-cv?edit=true&user=testing_user', {
-        state: { existingData: res.data }
-      });
-
+      navigate('/edit');
     } catch (error) {
       // No CV — navigate to create mode
-      navigate('/create-cv');
+      navigate('/edit');
     }
   };
-  // console.log("this is from  ", user.userName);
   return (
     <Box
       sx={{
@@ -330,7 +320,7 @@ export default function ProfilePage() {
                 ['Gender', userProfile?.fetchedUsed?.gender || user1.gender],
                 ['Phone', userProfile?.fetchedUsed?.phoneNo || user1.phoneNo],
                 ['Email', userProfile?.fetchedUsed?.email || user1.email],
-                ['Social Link', userProfile?.socialLink || user1.socialLink],
+                ['socialLinks', userProfile?.fetchedUsed?.socialLinks || user1.socialLinks],
                 ['City', userProfile?.fetchedUsed?.city || user1.city],
                 ['State', userProfile?.fetchedUsed?.state || user1.state],
                 ['Pincode', userProfile?.fetchedUsed?.pinCode || user1.pincode],
@@ -340,7 +330,28 @@ export default function ProfilePage() {
                     {label}
                   </Typography>
                   <Typography variant="body1" fontWeight={500} sx={{ color: 'white' }}>
-                    {value}
+                    {label === 'socialLinks' ? (
+                      Array.isArray(value) ? (
+                        value.map((link, i) => (
+                          <a
+                            key={i}
+                            href={link}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ color: 'white', display: 'block', textDecoration: 'underline', marginBottom: 4 }}
+                          >
+                            {link}
+                          </a>
+                        ))
+                      ) : (
+                        // plain string fallback
+                        <a href={value} target="_blank" rel="noreferrer" style={{ color: 'white', textDecoration: 'underline' }}>
+                          {value}
+                        </a>
+                      )
+                    ) : (
+                      value
+                    )}
                   </Typography>
                 </Grid>
               ))}
@@ -366,7 +377,7 @@ export default function ProfilePage() {
                   },
                 }}
               >
-                {hasCV ? 'Update CV' : 'Create10CV'}
+                {hasCV ? 'UpdateInfo' : 'CreateInfo'}
               </Button>
               <Button
                 variant="contained"
