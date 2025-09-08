@@ -5,6 +5,10 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Box, Button, TextField, Typography, Grid, Card, CardContent, Dialog, DialogTitle, DialogContent, DialogActions, Collapse, IconButton,
 } from '@mui/material';
+import MDEditor from "@uiw/react-md-editor";
+import "@uiw/react-md-editor/markdown-editor.css";
+import "@uiw/react-markdown-preview/markdown.css";
+
 import { ExpandMore, ExpandLess, DragIndicator } from '@mui/icons-material';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -90,38 +94,53 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
               <Box key={entryIndex} sx={{ border: '1px solid #e0e0e0', borderRadius: 4, p: 2, mb: 1 }}>
                 {sectionTypes[section.name].fields.map(field => (
                   <Box key={field} sx={{ mb: 1 }}>
-                    <TextField
-                      fullWidth
-                      label={field.charAt(0).toUpperCase() + field.slice(1)}
-                      type={field.includes('Date') ? 'date' : field === 'rating' ? 'number' : 'text'}
-                      multiline={field === 'summary' || field === 'description'}
-                      rows={field === 'summary' || field === 'description' ? 4 : 1}
-                      value={
-                        field === 'technologies' || field === 'projectImages'
-                          ? Array.isArray(entry[field]) ? entry[field].join(', ') : entry[field] || ''
-                          : entry[field] || ''
-                      }
-                      onChange={e => {
-                        const value =
+                    {field === "description" ? (
+                      <>
+                        <Typography variant="body2" sx={{ mb: 1 }}>Description</Typography>
+                        <MDEditor
+                          value={entry[field] || ""}
+                          onChange={(val) =>
+                            handleSectionChange(section.name, index, entryIndex, field, val || "")
+                          }
+                          preview="edit"
+                          height={200}
+                        />
+                      </>
+                    ) : (
+                      <TextField
+                        fullWidth
+                        label={field.charAt(0).toUpperCase() + field.slice(1)}
+                        type={field.includes('Date') ? 'date' : field === 'rating' ? 'number' : 'text'}
+                        multiline={field === 'summary'}
+                        rows={field === 'summary' ? 4 : 1}
+                        value={
                           field === 'technologies' || field === 'projectImages'
-                            ? e.target.value.split(',').map(item => item.trim()).filter(item => item)
-                            : e.target.value;
-                        handleSectionChange(section.name, index, entryIndex, field, value);
-                      }}
-                      variant="outlined"
-                      InputLabelProps={field.includes('Date') ? { shrink: true } : undefined}
-                      error={sectionTypes[section.name].required.includes(field) && !entry[field]}
-                      helperText={
-                        sectionTypes[section.name].required.includes(field) && !entry[field]
-                          ? `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
-                          : (field === 'technologies' || field === 'projectImages') && entry[field] && !Array.isArray(entry[field])
-                            ? 'Enter a comma-separated list'
-                            : ''
-                      }
-                      inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
-                    />
+                            ? Array.isArray(entry[field]) ? entry[field].join(', ') : entry[field] || ''
+                            : entry[field] || ''
+                        }
+                        onChange={e => {
+                          const value =
+                            field === 'technologies' || field === 'projectImages'
+                              ? e.target.value.split(',').map(item => item.trim()).filter(item => item)
+                              : e.target.value;
+                          handleSectionChange(section.name, index, entryIndex, field, value);
+                        }}
+                        variant="outlined"
+                        InputLabelProps={field.includes('Date') ? { shrink: true } : undefined}
+                        error={sectionTypes[section.name].required.includes(field) && !entry[field]}
+                        helperText={
+                          sectionTypes[section.name].required.includes(field) && !entry[field]
+                            ? `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
+                            : (field === 'technologies' || field === 'projectImages') && entry[field] && !Array.isArray(entry[field])
+                              ? 'Enter a comma-separated list'
+                              : ''
+                        }
+                        inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
+                      />
+                    )}
                   </Box>
                 ))}
+
                 {!sectionTypes[section.name].single && (
                   <Button sx={{ color: '#d32f2f', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => removeEntry(section.name, entryIndex)}>
                     Remove Entry
@@ -348,7 +367,7 @@ const GroupForm = () => {
     }));
   };
 
-  // Move section for drag-and-drop
+  // Move section for drag-and-drop///
   const moveSection = (fromIndex, toIndex) => {
     setGroup(prev => {
       const reorderedSections = [...prev.sections];
@@ -358,7 +377,7 @@ const GroupForm = () => {
     });
   };
 
-  // Validate form
+  // Validate form//
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
@@ -508,7 +527,7 @@ const GroupForm = () => {
 
   // Cancel form
   const handleCancel = () => {
-    navigate('/edit/userinfo');
+    navigate('/edit');
   };
 
   return (
@@ -542,7 +561,6 @@ const GroupForm = () => {
                       fullWidth
                       label={label}
                       type={type}
-                      // value={field ? group?.address[field.split('.')[1]] || '' : group[field] || ''}
                       value={group[field] ?? ''}
                       onChange={e => handleInputChange(field, e.target.value)}
                       variant="outlined"

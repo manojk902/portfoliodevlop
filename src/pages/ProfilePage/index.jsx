@@ -25,7 +25,7 @@ import { apiUrl } from '../../utils/common';
 
 
 const user1 = {
-  profilePhoto: '', // Add image URL or leave blank
+  profilePhoto: '',
   firstName: 'dummy data',
   lastName: 'dummy data',
   designation: 'dummy data',
@@ -94,7 +94,7 @@ export default function ProfilePage() {
   }, [username]); /*this*/
   const handleCVAction = async () => {
     try {
-       await axios.get(
+      await axios.get(
         `${apiUrl}/cv-details/${username}`
       );
       // CV exists — navigate to edit mode using userName
