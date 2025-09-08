@@ -46,11 +46,11 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
         try {
           setLoading(true); // start loading
           const user = await axios.get(`${apiUrl}/user-details/${decodedToken?.userName}`);
+          // dispatch(setUserProfile(user.data));
+          // setHasPortfolio(!!user.data); // true if data exists
           dispatch(setUserProfile(user.data));
           setHasPortfolio(!!user.data); // true if data exists
-          dispatch(setUserProfile(user.data));
-          setHasPortfolio(!!user.data); // true if data exists
-          dispatch(setUserProfile(user.data)); // store all payload data in redux
+          // dispatch(setUserProfile(user.data)); // store all payload data in redux
           // console.log(user);
 
 
@@ -271,7 +271,7 @@ return (
                     color="primary"
                     sx={{ px: 2, py: 1 }}
                   >
-                    Create Portfolio
+                    Create Profile
                   </Button>
                 </>
               )
