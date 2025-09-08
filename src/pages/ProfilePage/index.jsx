@@ -43,17 +43,10 @@ export default function ProfilePage() {
   const [hasCV, setHasCV] = useState(false)
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
-  console.log("ddd", apiUrl)
 
   const navigate = useNavigate();
-  // const user = useSelector(state => state.user);
   const userProfile = useSelector(state => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName
-
-  console.log(userProfile, "mm");
-
-  // console.log("ttttttt", userProfile.fetchedUsed.profilePhoto);
-
   const editProfile = () => {
     navigate("/editprofile", { state: { isUpdate: true } });
   };
@@ -97,19 +90,12 @@ export default function ProfilePage() {
       await axios.get(
         `${apiUrl}/cv-details/${username}`
       );
-      // CV exists — navigate to edit mode using userName
-      // navigate('/create-cv?edit=true&user=testing_user', {
-      //   state: { existingData: res.data }
       navigate('/edit');
-
-      // });
-
     } catch (error) {
       // No CV — navigate to create mode
       navigate('/edit');
     }
   };
-  // console.log("this is from  ", user.userName);
   return (
     <Box
       sx={{

@@ -55,13 +55,11 @@ function UserForm() {
   // 2. Handle file upload
   const handleFileChange = (e, setFieldValue) => {
     setFieldValue('profilePhoto', e.target.files[0]);
-    console.log(`=>=>${e.target.files[0]}`);
+    // console.log(`=>=>${e.target.files[0]}`);
   };
 
   const isEdit = !!fetchedUser;
-  console.log(isEdit, "isEdit");
-
-
+  // console.log(isEdit, "isEdit");
   const initialValues = {
     profilePhoto: fetchedUser.profilePhoto || '',
     firstName: fetchedUser?.firstName || '',

@@ -8,13 +8,15 @@ import {
 import MDEditor from "@uiw/react-md-editor";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
-
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import { ExpandMore, ExpandLess, DragIndicator } from '@mui/icons-material';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import axios from 'axios';
 import { apiUrl } from '../../../utils/common';
 import { useSelector } from 'react-redux';
+import UserBreadcrumb from '../../Common/UserBreadcrumb';
 
 // Define section types with fields, required fields, and whether they allow multiple entries
 const sectionTypes = {
@@ -161,14 +163,13 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
   );
 };
 
-
 // Main form component
 const GroupForm = () => {
   const userProfile = useSelector(state => state.userProfile.data);
-  const username = userProfile?.fetchedUsed?.userName
-  const userId = userProfile?.fetchedUsed?.userId
+  const username = userProfile?.fetchedUsed?.userName;
+  const userId = userProfile?.fetchedUsed?.userId;
   const [searchParams] = useSearchParams();
-  const groupId = searchParams.get("groupId",);
+  const groupId = searchParams.get("groupId");
   const isEdit = searchParams.get("edit") === "true";
   const navigate = useNavigate();
   const [group, setGroup] = useState({
@@ -189,10 +190,36 @@ const GroupForm = () => {
     pinCode: "",
     country: "",
     sections: []
-  })
+  });
   const [showModal, setShowModal] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
   const [errors, setErrors] = useState({});
+
+  // Yup validation schema for personal information
+  const personalInfoSchema = Yup.object({
+    firstName: Yup.string()
+      .matches(/^[A-Za-z]+$/, "First name can only contain letters")
+      .required("First name is required"),
+    lastName: Yup.string()
+      .matches(/^[A-Za-z]+$/, "Last name can only contain letters")
+      .required("Last name is required"),
+    email: Yup.string()
+      .email("Invalid email format")
+      .required("Email is required"),
+    phoneNo: Yup.string()
+      .matches(/^\d{10,15}$/, "Phone must be 10–15 digits")
+      .required("Phone is required"),
+    designation: Yup.string(),
+    dob: Yup.string(),
+    street: Yup.string(),
+    city: Yup.string(),
+    pinCode: Yup.string()
+      .matches(/^\d*$/, "Pin code must be numeric")
+      .max(10, "Pin code cannot exceed 10 digits"),
+    state: Yup.string(),
+    country: Yup.string(),
+    gender: Yup.string(),
+  });
 
   // Load existing group data if editing
   useEffect(() => {
@@ -203,7 +230,6 @@ const GroupForm = () => {
         if (cvData) {
           const updatedSections = cvData.sections.map(section => {
             if (section.name.toLowerCase() === 'summary') {
-              // return { name: 'Summary', data: '' };
               const data = Array.isArray(section.data) ? (section.data[0] || '') : (section.data || '');
               return { name: 'Summary', data };
             }
@@ -233,7 +259,7 @@ const GroupForm = () => {
             street: cvData?.address?.street || "",
             city: cvData?.address?.city || "",
             state: cvData?.address?.state || "",
-            zip: cvData?.address?.pinCode || "",
+            pinCode: cvData?.address?.pinCode || "",
             country: cvData?.address?.country || "",
             sections: updatedSections,
           });
@@ -246,15 +272,10 @@ const GroupForm = () => {
         console.error('Error fetching group:', err);
       }
     };
-    fetchGroup();
-  }
-    , []);
-
-
-  // Update personal info fields
-  const handleInputChange = (field, value) => {
-    setGroup(prev => ({ ...prev, [field]: value }));
-  };
+    if (isEdit && groupId) {
+      fetchGroup();
+    }
+  }, [groupId, isEdit, username, userId]);
 
   // Update section fields
   const handleSectionChange = (sectionName, sectionIndex, entryIndex, field, value) => {
@@ -264,7 +285,6 @@ const GroupForm = () => {
       if (!targetSection) return prev;
 
       if (sectionTypes[sectionName].single) {
-        // store a string directly for single sections (e.g., Summary)
         updatedSections[sectionIndex] = { ...targetSection, data: value };
       } else {
         const updatedData = targetSection.data.map((item, i) =>
@@ -275,10 +295,8 @@ const GroupForm = () => {
       return { ...prev, sections: updatedSections };
     });
 
-    // keep same error key pattern (use entryIndex 0 for single sections)
     setErrors(prev => ({ ...prev, [`${sectionName}_${entryIndex}_${field}`]: '' }));
   };
-
 
   // Add a new section or entry
   const addSectionEntry = (sectionName) => {
@@ -367,7 +385,7 @@ const GroupForm = () => {
     }));
   };
 
-  // Move section for drag-and-drop///
+  // Move section for drag-and-drop
   const moveSection = (fromIndex, toIndex) => {
     setGroup(prev => {
       const reorderedSections = [...prev.sections];
@@ -377,7 +395,7 @@ const GroupForm = () => {
     });
   };
 
-  // Validate form//
+  // Validate sections
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
@@ -386,7 +404,6 @@ const GroupForm = () => {
       const sectionConfig = sectionTypes[section.name];
 
       if (sectionConfig.single) {
-        // section.data is a string for single sections (e.g., Summary)
         sectionConfig.required.forEach(field => {
           const value = section.data;
           if (!value || (Array.isArray(value) && value.length === 0)) {
@@ -395,7 +412,6 @@ const GroupForm = () => {
           }
         });
       } else {
-        // existing multi-entry validation
         const data = section.data || [];
         data.forEach((entry, entryIndex) => {
           sectionConfig.required.forEach(field => {
@@ -424,12 +440,15 @@ const GroupForm = () => {
     return isValid;
   };
 
-
   // Submit form to API
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, formikHelpers) => {
     e.preventDefault();
-    if (!validateForm()) {
+    const { setSubmitting, validateForm } = formikHelpers;
+
+    const personalInfoErrors = await validateForm();
+    if (Object.keys(personalInfoErrors).length > 0 || !validateForm()) {
       alert('Please fill all required fields correctly.');
+      setSubmitting(false);
       return;
     }
 
@@ -468,20 +487,16 @@ const GroupForm = () => {
               street: group.street,
               city: group.city,
               state: group.state,
-              pinCode: Number(group.zip),
+              pinCode: Number(group.pinCode),
               country: group.country
             },
             sections: formattedSections,
           },
-        }
-        let response;
-        if (groupId) {
-          response = await axios.put(`${apiUrl}/updateCvInfoSet`, payloadCvupdate);
-          navigate('/edit');
-          console.log("update");
-        }
+        };
+        await axios.put(`${apiUrl}/updateCvInfoSet`, payloadCvupdate);
+        navigate('/edit');
+        console.log("update");
       } else {
-        // for create 
         const payloadCreateCv = {
           userId: userId,
           userName: username,
@@ -501,27 +516,22 @@ const GroupForm = () => {
               ],
               address: {
                 city: group.city,
-                pinCode: Number(group.zip),
+                pinCode: Number(group.pinCode),
                 state: group.state,
                 country: group.country
               },
               sections: formattedSections
             }
           ]
-        }
-        try {
-          const response = await axios.post(`${apiUrl}/create-cv`, payloadCreateCv);
-          console.log(response, "this from cv");
-          navigate('/edit');
-        }
-        catch {
-          alert('Failed to save CV. Please try again.');
-        }
+        };
+        await axios.post(`${apiUrl}/create-cv`, payloadCreateCv);
+        navigate('/edit');
       }
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('Failed to save CV. Please try again.');
-      return;
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -532,99 +542,130 @@ const GroupForm = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Box sx={{ fullWidth: true, mx: 'auto', p: 2, bgcolor: '#fff', borderRadius: 4 }}>
+      <UserBreadcrumb current={groupId ? 'Edit' : 'Add'} />
+      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 2, bgcolor: '#fff', borderRadius: 4 }}>
         <Typography sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2 }}>
           {groupId ? `Update Info of ${groupId}` : 'Add New Info'}
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {/* Personal Information */}
-          <Card sx={{ borderRadius: 4 }}>
-            <CardContent>
-              <Typography sx={{ fontSize: '1rem', fontWeight: 500, mb: 1 }}>Personal Information</Typography>
-              <Grid container spacing={2}>
-                {[
-                  { label: 'First Name', field: 'firstName', type: 'text' },
-                  { label: 'Last Name', field: 'lastName', type: 'text' },
-                  { label: 'Email', field: 'email', type: 'email' },
-                  { label: 'Phone', field: 'phoneNo', type: 'tel' },
-                  { label: 'designation', field: 'designation', type: 'text' },
-                  { label: 'dob', field: 'dob', type: 'text' },
-                  { label: 'street', field: 'street', type: 'text' },
-                  { label: 'City', field: 'city', type: 'text' },
-                  { label: 'PinCode', field: 'zip', type: 'number' },
-                  { label: 'State', field: 'state', type: 'text' },
-                  { label: 'Country', field: 'country', type: 'text' },
-                  { label: 'gender', field: 'gender', type: 'text' },
-                ].map(({ label, field, type, required }) => (
-                  <Grid item xs={12} sm={6} key={field} >
-                    <TextField
-                      fullWidth
-                      label={label}
-                      type={type}
-                      value={group[field] ?? ''}
-                      onChange={e => handleInputChange(field, e.target.value)}
-                      variant="outlined"
-                    // required={required}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </CardContent>
-          </Card>
-          {/* Sections */}
-          {(group.sections || []).map((section, index) => (
-            <DraggableSection
-              key={section.name}
-              section={section}
-              index={index}
-              moveSection={moveSection}
-              toggleSection={toggleSection}
-              expandedSections={expandedSections}
-              handleSectionChange={handleSectionChange}
-              removeSection={removeSection}
-              removeEntry={removeEntry}
-              addSectionEntry={addSectionEntry}
-            />
-          ))}
-          {/* Add Section Button */}
-          <Button sx={{ bgcolor: '#388e3c', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => setShowModal(true)}>
-            Add Section
-          </Button>
-          {/* Modal for Adding Sections */}
-          <Dialog open={showModal} onClose={() => setShowModal(false)}>
-            <DialogTitle>Add Section</DialogTitle>
-            <DialogContent>
-              {Object.keys(sectionTypes).map(section => (
-                <Button
-                  key={section}
-                  fullWidth
-                  sx={{ textTransform: 'none', mb: 1 }}
-                  onClick={() => {
-                    addSectionEntry(section);
-                    setShowModal(false);
-                  }}
-                  disabled={group.sections.some(s => (s.name || '').toString().toLowerCase() === section.toLowerCase())}
-                >
-                  {sectionTypes[section].title}
-                </Button>
+        <Formik
+          initialValues={{
+            firstName: group.firstName,
+            lastName: group.lastName,
+            email: group.email,
+            phoneNo: group.phoneNo,
+            dob: group.dob,
+            gender: group.gender,
+            designation: group.designation,
+            street: group.street,
+            city: group.city,
+            pinCode: group.pinCode,
+            state: group.state,
+            country: group.country,
+          }}
+          validationSchema={personalInfoSchema}
+          onSubmit={(values, formikHelpers) => handleSubmit({ preventDefault: () => {} }, formikHelpers)}
+          enableReinitialize
+        >
+          {({ handleChange, values, errors, touched, handleSubmit }) => (
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {/* Personal Information */}
+              <Card sx={{ borderRadius: 4 }}>
+                <CardContent>
+                  <Typography sx={{ fontSize: '1rem', fontWeight: 500, mb: 1 }}>Personal Information</Typography>
+                  <Form>
+                    <Grid container spacing={2}>
+                      {[
+                        { label: 'First Name', field: 'firstName', type: 'text' },
+                        { label: 'Last Name', field: 'lastName', type: 'text' },
+                        { label: 'Email', field: 'email', type: 'email' },
+                        { label: 'Phone', field: 'phoneNo', type: 'tel' },
+                        { label: 'Designation', field: 'designation', type: 'text' },
+                        { label: 'Date of Birth', field: 'dob', type: 'date' },
+                        { label: 'Street', field: 'street', type: 'text' },
+                        { label: 'City', field: 'city', type: 'text' },
+                        { label: 'Pin Code', field: 'pinCode', type: 'text' },
+                        { label: 'State', field: 'state', type: 'text' },
+                        { label: 'Country', field: 'country', type: 'text' },
+                        { label: 'Gender', field: 'gender', type: 'text' },
+                      ].map(({ label, field, type }) => (
+                        <Grid item xs={12} sm={6} key={field}>
+                          <Field
+                            as={TextField}
+                            fullWidth
+                            label={label}
+                            name={field}
+                            type={type}
+                            variant="outlined"
+                            InputLabelProps={type === 'date' ? { shrink: true } : undefined}
+                            error={touched[field] && !!errors[field]}
+                            helperText={touched[field] && errors[field]}
+                            onChange={(e) => {
+                              handleChange(e);
+                              setGroup(prev => ({ ...prev, [field]: e.target.value }));
+                            }}
+                          />
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </Form>
+                </CardContent>
+              </Card>
+              {/* Sections */}
+              {(group.sections || []).map((section, index) => (
+                <DraggableSection
+                  key={section.name}
+                  section={section}
+                  index={index}
+                  moveSection={moveSection}
+                  toggleSection={toggleSection}
+                  expandedSections={expandedSections}
+                  handleSectionChange={handleSectionChange}
+                  removeSection={removeSection}
+                  removeEntry={removeEntry}
+                  addSectionEntry={addSectionEntry}
+                />
               ))}
-            </DialogContent>
-            <DialogActions>
-              <Button sx={{ color: '#666', textTransform: 'none' }} onClick={() => setShowModal(false)}>
-                Cancel
+              {/* Add Section Button */}
+              <Button sx={{ bgcolor: '#388e3c', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => setShowModal(true)}>
+                Add Section
               </Button>
-            </DialogActions>
-          </Dialog>
-          {/* Form Buttons */}
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button sx={{ color: '#666', textTransform: 'none', fontSize: '0.875rem' }} onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button sx={{ bgcolor: '#1976d2', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} type="submit">
-              Save
-            </Button>
-          </Box>
-        </Box>
+              {/* Modal for Adding Sections */}
+              <Dialog open={showModal} onClose={() => setShowModal(false)}>
+                <DialogTitle>Add Section</DialogTitle>
+                <DialogContent>
+                  {Object.keys(sectionTypes).map(section => (
+                    <Button
+                      key={section}
+                      fullWidth
+                      sx={{ textTransform: 'none', mb: 1 }}
+                      onClick={() => {
+                        addSectionEntry(section);
+                        setShowModal(false);
+                      }}
+                      disabled={group.sections.some(s => (s.name || '').toString().toLowerCase() === section.toLowerCase())}
+                    >
+                      {sectionTypes[section].title}
+                    </Button>
+                  ))}
+                </DialogContent>
+                <DialogActions>
+                  <Button sx={{ color: '#666', textTransform: 'none' }} onClick={() => setShowModal(false)}>
+                    Cancel
+                  </Button>
+                </DialogActions>
+              </Dialog>
+              {/* Form Buttons */}
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                <Button sx={{ color: '#666', textTransform: 'none', fontSize: '0.875rem' }} onClick={handleCancel}>
+                  Cancel
+                </Button>
+                <Button sx={{ bgcolor: '#1976d2', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} type="submit">
+                  Save
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </Formik>
       </Box>
     </DndProvider>
   );

@@ -15,7 +15,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { apiUrl } from "../../utils/common";
 import { useNavigate } from "react-router-dom";
-// ...existing code...
+// import UserBreadcrumb from '../Common/UserBreadcrumb';
 
 function UserInfo() {
   const [loading, setLoading] = useState(true);
@@ -24,12 +24,11 @@ function UserInfo() {
   const [userid, setUserId] = useState();
   const [updatingCvId, setUpdatingCvId] = useState(null);
   const [deletingCvId, setDeletingCvId] = useState(null);
+  // const [groupId] = useState(true);
+
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
-  console.log(userProfile, "userProfile from userinfo");
-
-  // const username = userProfile?.fetchedUsed?.userNamEe || "mukesh_277";
-  // const username = userProfile?.fetchedUsed?.userNamEe || "mukesh_277";
+  
   const navigate = useNavigate();
 
   const fetchUsers = async () => {
@@ -40,7 +39,6 @@ function UserInfo() {
       setUsers(response.data.fetchedCv.cvInfo || []);
       setUserId(response.data.fetchedCv.userId);
       setDefaultUser(response.data.fetchedCv.templateInfo || {});
-      // console.log("===== ", response.data);
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -69,7 +67,6 @@ function UserInfo() {
   };
 
   const handleEdit = (cvInfoId) => {
-    // navigate(`/edit/add-group`)
     navigate(`/edit/add-group?groupId=${cvInfoId}&edit=true`);
   };
 
@@ -79,14 +76,11 @@ function UserInfo() {
     if (!ok) return;
     setDeletingCvId(cvInfoId);
     try {
-      // axios.delete with body: pass data in config
       const res = await axios.delete(`${apiUrl}/deleteCvInfoSet`, {
         data: { userId, cvInfoId },
       });
       console.log("delete response:", res.data);
-      // remove the deleted card from UI
       setUsers((prev) => prev.filter((u) => u.cvInfoId !== cvInfoId));
-      // optional: if server returns updated list, you can use setUsers(res.data.updatedList)
     } catch (err) {
       console.error("Delete failed:", err);
     } finally {
@@ -100,6 +94,7 @@ function UserInfo() {
 
   return (
     <Box sx={{ p: 3 }}>
+      {/* <UserBreadcrumb current={groupId ? 'Edit' : 'Add'} /> */}
       <Grid container spacing={2}>
         {loading ? (
           // Skeletons while loading
