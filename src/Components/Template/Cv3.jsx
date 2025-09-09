@@ -23,6 +23,7 @@ import {
   Language
 } from "@mui/icons-material";
 import { apiUrl } from "../../utils/common";
+import { useSelector } from "react-redux";
 
 
 const Cv3 = () => {
@@ -30,12 +31,15 @@ const Cv3 = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const theme = useTheme();
+  const userProfile = useSelector((state) => state.userProfile.data);
+  const username = userProfile?.fetchedUsed?.userName;
+  
 
   useEffect(() => {
     const fetchCV = async () => {
       try {
         const res = await fetch(
-          `${apiUrl}/defaultCv/mukesh_277`
+          `${apiUrl}/defaultCv/${username}`
         );
         const data = await res.json();
         setCvData(data.fetchedCvInfo.defaultCvInfo);

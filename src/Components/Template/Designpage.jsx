@@ -30,21 +30,26 @@ import CV5 from "./Cv5";
 import CV6 from "./Cv6";
 
 import { apiUrl } from "../../utils/common";
+import { useSelector } from "react-redux";
 
  function DesignPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
-
   const [selectedCategory, setSelectedCategory] = useState("cv");
   const [defaultTemplate, setDefaultTemplate] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const userProfile = useSelector((state) => state.userProfile.data);
+  const username = userProfile?.fetchedUsed?.userName;
+  const userId = userProfile?.fetchedUsed?.userId;
 
   useEffect(() => {
     const fetchDefaultCv = async () => {
       try {
-        const res = await axios.get(`${apiUrl}/defaultCv/mukesh_277`);
+        const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
         const templateName = res.data?.fetchedCvInfo?.templateName;
+        console.log("📌 Fetched Default CV Template:", templateName);
+        
         if (templateName) {
           setDefaultTemplate(templateName);
           localStorage.setItem("defaultCvTemplate", templateName);
@@ -64,9 +69,9 @@ import { apiUrl } from "../../utils/common";
   const handleSetDefault = async (templateName) => {
     try {
       const response = await axios.put(`${apiUrl}/updateDefaultCvId`, {
-        userId: 4,
+        userId: userId,
         templateName: templateName,
-        cvInfoId: "555668be-02d0-476d-b3b9-58c11a23a159",
+        cvInfoId: "79a38eec-49ad-444d-9d9a-8c4074adc5f5",
       });
 
       console.log("✅ API Response:", response.data);

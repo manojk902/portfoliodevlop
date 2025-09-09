@@ -36,7 +36,7 @@ const HomePage = () => {
   // 🔹 API call
   useEffect(() => {
     setLoading(true);
-    fetch(`${apiUrl}/search-user?name=${search}`)
+    // fetch(`${apiUrl}/search-user?name=${search}`)
     fetch(`${apiUrl}/search-user?name=${search}`)
       .then((res) => res.json())
       .then((data) => {

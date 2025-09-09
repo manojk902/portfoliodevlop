@@ -34,16 +34,22 @@ import {
   Public
 } from "@mui/icons-material";
 import { apiUrl } from "../../utils/common";
+import { useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 
 const Cv1 = () => {
   const [cvData, setCvData] = useState(null);
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
+  const userProfile = useSelector((state) => state.userProfile.data);
+  const username = userProfile?.fetchedUsed?.userName;
+  const [searchParams] = useSearchParams();
+  const Name = searchParams.get("name",);
 
   useEffect(() => {
     const fetchCv = async () => {
       try {
-        const res = await axios.get(`${apiUrl}/defaultCv/manoj_804`);
+        const res = await axios.get(`${apiUrl}/defaultCv/${Name}`);
         console.log("✅ CV Data Fetched:", res.data);
 
         setCvData(res.data.fetchedCvInfo.defaultCvInfo);

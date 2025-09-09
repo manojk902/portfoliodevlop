@@ -8,27 +8,30 @@ import Cv6 from "../Template/Cv6";
 // import { X } from "@mui/icons-material";
 import axios from "axios";
 import { apiUrl } from "../../utils/common";
+import { useSelector } from "react-redux";
 // import jsPDF from "jspdf";
 
 
 
 
 const DefaultCv = ({ template = 'defaultCv' }) => {
+  const userProfile = useSelector((state) => state.userProfile.data);
+  const username = userProfile?.fetchedUsed?.userName;
   const [cvt, setCvt] = useState();
   useEffect(() => {
     const fetchCv = async () => {
-      const res = await axios.get(`${apiUrl}/defaultCv/mukesh_277`);
+      const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
       // console.log(res,"oip");
 
       setCvt(res.data?.fetchedCvInfo?.templateName)
     }
 
     fetchCv()
-  }, []);
+  }, [username]);
   console.log(cvt, "cvttttt");
 
 const cvOptions = {
-  // "defaultCv": Cv4,
+  "defaultCv": Cv4,
   Cv1: Cv1,
   Cv2: Cv2,
   Cv3: Cv3,
