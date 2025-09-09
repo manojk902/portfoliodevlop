@@ -19,27 +19,28 @@ const DefaultCv = ({ template = 'defaultCv' }) => {
     const fetchCv = async () => {
       const res = await axios.get(`${apiUrl}/defaultCv/mukesh_277`);
       // console.log(res,"oip");
-      
+
       setCvt(res.data?.fetchedCvInfo?.templateName)
     }
 
     fetchCv()
   }, []);
   console.log(cvt, "cvttttt");
-  
-  const cvOptions = {
-    "defaultCv": cvt,
-    Cv2: Cv2,
-    Cv3: Cv3,
-    Cv4: Cv4,
-    Cv5: Cv5,
-    Cv6: Cv6,
-  }
 
-  const Component = cvOptions[template];
+const cvOptions = {
+  // "defaultCv": Cv4,
+  Cv1: Cv1,
+  Cv2: Cv2,
+  Cv3: Cv3,
+  Cv4: Cv4,
+  Cv5: Cv5,
+  Cv6: Cv6,
+}
+
+  const Component = cvOptions[ cvt || template];
 
   if (!Component) {
-    return <div>Design Not Found</div>;
+    return <div>Design Not Foundds</div>;
   }
 
 
