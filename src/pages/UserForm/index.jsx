@@ -61,7 +61,7 @@ function UserForm() {
   const isEdit = !!fetchedUser;
   // console.log(isEdit, "isEdit");
   const initialValues = {
-    profilePhoto: fetchedUser.profilePhoto || '',
+    profilePhoto: fetchedUser?.profilePhoto || '',
     firstName: fetchedUser?.firstName || '',
     lastName: fetchedUser?.lastName || '',
     dob: fetchedUser?.dob || '',
@@ -71,7 +71,7 @@ function UserForm() {
     phoneNo: fetchedUser?.phoneNo || '',
     // socialLink: fetchedUser?.socialLinks || '',
     socialLink: Array.isArray(fetchedUser?.socialLinks)
-      ? fetchedUser.socialLinks.join(', ')
+      ? fetchedUser?.socialLinks.join(', ')
       : (fetchedUser?.socialLinks || ''),
     city: fetchedUser?.city || '',
     state: fetchedUser?.state || '',
@@ -110,7 +110,7 @@ function UserForm() {
       data.append('country', values.country);
       data.append('userName', user.userName);
       data.append('userId', user.id);
-      if (values.profilePhoto) {
+      if (values?.profilePhoto) {
         data.append('profilePhoto', values?.profilePhoto);
       }
       const url = isEdit
@@ -195,10 +195,10 @@ function UserForm() {
                       <Stack spacing={3} alignItems="center" mb={4}>
                         <Box sx={{ position: 'relative' }}>
                           <Avatar
-                            src={values.profilePhoto}
+                            src={values?.profilePhoto}
                             sx={{ width: 140, height: 140 }}
                           />
-                          {values.profilePhoto && (
+                          {values?.profilePhoto && (
                             <Tooltip title="Remove photo">
                               <IconButton
                                 size="small"
