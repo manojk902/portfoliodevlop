@@ -43,7 +43,7 @@ const Cv1 = () => {
   useEffect(() => {
     const fetchCv = async () => {
       try {
-        const res = await axios.get(`${apiUrl}/defaultCv/`);
+        const res = await axios.get(`${apiUrl}/defaultCv/manoj_804`);
         console.log("✅ CV Data Fetched:", res.data);
 
         setCvData(res.data.fetchedCvInfo.defaultCvInfo);

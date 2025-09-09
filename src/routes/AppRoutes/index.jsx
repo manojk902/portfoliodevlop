@@ -27,8 +27,8 @@ const AppRoutes = (defaultCvTemplate) => {
       {/* Public Routes */}
       <Route path="/learn" element={<Learn />} />
       <Route path="/" element={<HomePage />} />
-      {/* <Route path="/:username" element={<ViewCVPage />} />   ✅ Static CV route */}
-      <Route path="/:username" element={<DefaultCv />} />   ✅ Static CV route
+      {/* <Route path="/:username" element={<ViewCVPage />} /> */}
+      <Route path="/:username" element={<DefaultCv />} />  
 
 
       {/* Design Routes */}
