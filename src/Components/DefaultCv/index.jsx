@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-// import Cv1 from "../Template/Cv1";
+import Cv1 from "../Template/Cv1";
 import Cv2 from "../Template/Cv2";
 import Cv3 from "../Template/Cv3";
 import Cv4 from "../Template/Cv4";
