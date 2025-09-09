@@ -23,6 +23,7 @@ import {
 } from '@mui/icons-material';
 import { Link } from "react-router-dom";
 import { apiUrl } from '../../utils/common';
+import { apiUrl } from '../../utils/common';
 
 const HomePage = () => {
   const [users, setUsers] = useState([]);   // API se aane wala data
@@ -35,6 +36,7 @@ const HomePage = () => {
   // 🔹 API call
   useEffect(() => {
     setLoading(true);
+    fetch(`${apiUrl}/search-user?name=${search}`)
     fetch(`${apiUrl}/search-user?name=${search}`)
       .then((res) => res.json())
       .then((data) => {

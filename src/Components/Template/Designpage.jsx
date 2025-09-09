@@ -27,7 +27,7 @@ import CV6 from "./Cv6";
 
 import { apiUrl } from "../../utils/common";
 
-export default function DesignPage() {
+ function DesignPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();

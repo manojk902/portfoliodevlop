@@ -11,7 +11,7 @@ import {
   Divider,
   alpha,
   useTheme,
-  Rating
+  // Rating
 } from "@mui/material";
 import {
   Email,
