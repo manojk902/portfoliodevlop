@@ -1,7 +1,7 @@
-/* eslint-disable no-unused-vars */
-import React from "react";
+
+import React, { useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 
 import CV1 from "./Cv1";
 import CV2 from "./Cv2";
@@ -22,20 +22,28 @@ export default function Designpreview() {
     { id: 6, Component: CV6 },
   ];
 
-
-  // Only using CV designs
-  const designsToShow = cvDesigns;
-  const design = designsToShow.find((d) => d.id === Number(id));
+  // ✅ Safe find with memo + console log
+  const design = useMemo(() => {
+    const found = cvDesigns.find((d) => d.id === Number(id));
+    console.log("🟢 Preview Page ID:", id, "Found Design:", found);
+    return found;
+  }, [id]);
 
   if (!design) {
-    return <div>Design Not Found</div>;
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography variant="h5" color="error">Design Not Found</Typography>
+        <Button component={Link} to="/Designpage" variant="contained" sx={{ mt: 2 }}>
+          ⬅ Back to Designs
+        </Button>
+      </Box>
+    );
   }
 
   const { Component } = design;
 
   return (
     <Box sx={{ width: "100%", my: 2 }}>
-      {/* Better Back Button Toolbar */}
       <Box
         sx={{
           display: "flex",
@@ -48,12 +56,7 @@ export default function Designpreview() {
           },
         }}
       >
-        <Button
-          component={Link}
-          to="/Designpage"
-          variant="contained"
-          color="primary"
-        >
+        <Button component={Link} to="/Designpage" variant="contained" color="primary">
           ⬅ Back to Designs
         </Button>
       </Box>

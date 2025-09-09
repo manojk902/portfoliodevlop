@@ -10,75 +10,65 @@ import {
   Tab,
   useTheme,
   useMediaQuery,
-  Dialog,
-  DialogContent,
-  IconButton,
   Chip,
   Alert,
   Snackbar,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import axios from "axios"; // ✅ ADD THIS
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-import DefaultCv from "../DefaultCv";
-
-// Import all your CVs
 import CV1 from "./Cv1";
 import CV2 from "./Cv2";
 import CV3 from "./Cv3";
 import CV4 from "./Cv4";
 import CV5 from "./Cv5";
 import CV6 from "./Cv6";
+
 import { apiUrl } from "../../utils/common";
 
  function DesignPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const navigate = useNavigate();
+
   const [selectedCategory, setSelectedCategory] = useState("cv");
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState({});
-  const [defaultTemplate, setDefaultTemplate] = useState(1);
+  const [defaultTemplate, setDefaultTemplate] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("defaultCvTemplate", selectedTemplate?.name);
-  });
+    const fetchDefaultCv = async () => {
+      try {
+        const res = await axios.get(`${apiUrl}/defaultCv/mukesh_277`);
+        const templateName = res.data?.fetchedCvInfo?.templateName;
+        if (templateName) {
+          setDefaultTemplate(templateName);
+          localStorage.setItem("defaultCvTemplate", templateName);
+        }
+      } catch (error) {
+        console.error("❌ Failed to fetch default CV:", error);
+      }
+    };
 
-  const templateFromStorage = localStorage.getItem("defaultCvTemplate");
+    fetchDefaultCv();
+  }, []);
 
   const handleCategoryChange = (event, newValue) => {
     setSelectedCategory(newValue);
   };
 
-  const handlePreviewOpen = (template) => {
-    setSelectedTemplate(template);
-    setPreviewOpen(true);
-  };
-
-  const handlePreviewClose = () => {
-    setPreviewOpen(false);
-    setSelectedTemplate(null);
-  };
-
-  // ✅ UPDATED FUNCTION WITH API CALL
-  const handleSetDefault = async (cvid) => {
+  const handleSetDefault = async (templateName) => {
     try {
-      // 1️⃣ API CALL
-      const response = await axios.put(
-        `${apiUrl}/updateDefaultCvId`,
-        {
-            userId: 4,
-            templateName: "Cv4",
-            cvInfoId: "555668be-02d0-476d-b3b9-58c11a23a159" 
-        }
-      );
+      const response = await axios.put(`${apiUrl}/updateDefaultCvId`, {
+        userId: 4,
+        templateName: templateName,
+        cvInfoId: "555668be-02d0-476d-b3b9-58c11a23a159",
+      });
 
       console.log("✅ API Response:", response.data);
 
-      // 2️⃣ Local + State Update
-      localStorage.setItem("defaultCv", cvid);
-      setDefaultTemplate(cvid);
+      setDefaultTemplate(templateName);
+      localStorage.setItem("defaultCvTemplate", templateName);
       setShowSnackbar(true);
     } catch (error) {
       console.error("❌ Error setting default CV:", error);
@@ -86,13 +76,18 @@ import { apiUrl } from "../../utils/common";
     }
   };
 
+  const handlePreviewOpen = (id) => {
+    // Navigate to full-page preview
+    navigate(`/Designpreview/cv/${id}`);
+  };
+
   const cvDesigns = [
-    { id: 1, name: "defaultCv", Component: CV1, scale: 0.25, baseWidth: 800 },
-    { id: 2, name: "defaultCv", Component: CV2, scale: 0.25, baseWidth: 800 },
-    { id: 3, name: "defaultCv", Component: CV3, scale: 0.25, baseWidth: 800 },
-    { id: 4, name: "defaultCv", Component: CV4, scale: 0.25, baseWidth: 800 },
-    { id: 5, name: "defaultCv", Component: CV5, scale: 0.25, baseWidth: 800 },
-    { id: 6, name: "defaultCv", Component: CV6, scale: 0.25, baseWidth: 800 },
+    { id: 1, name: "Cv1", Component: CV1 },
+    { id: 2, name: "Cv2", Component: CV2 },
+    { id: 3, name: "Cv3", Component: CV3 },
+    { id: 4, name: "Cv4", Component: CV4 },
+    { id: 5, name: "Cv5", Component: CV5 },
+    { id: 6, name: "Cv6", Component: CV6 },
   ];
 
   return (
@@ -104,6 +99,7 @@ import { apiUrl } from "../../utils/common";
       }}
     >
       <Container maxWidth="xl" sx={{ px: isMobile ? 1 : 3 }}>
+        {/* Heading */}
         <Box textAlign="center" mb={5}>
           <Typography
             variant="h3"
@@ -126,11 +122,12 @@ import { apiUrl } from "../../utils/common";
               mx: "auto",
             }}
           >
-            Select a professionally designed template to showcase your skills
-            and experience
+            Select a professionally designed template to showcase your skills and
+            experience
           </Typography>
         </Box>
 
+        {/* Tabs */}
         <Box
           sx={{
             display: "flex",
@@ -168,157 +165,145 @@ import { apiUrl } from "../../utils/common";
           </Tabs>
         </Box>
 
-        <Grid container spacing={3} justifyContent="flex-start">
-          <DefaultCv template={templateFromStorage} />
-
-          {cvDesigns.map(
-            ({ id, name, Component, scale, baseWidth }, index) => {
-              const isDefault = defaultTemplate === id;
-              return (
-                <Grid
-                  item
-                  key={id}
-                  xs={12}
-                  sm={6}
-                  md={4}
-                  lg={3}
-                  sx={{ display: "flex", justifyContent: "center" }}
+        {/* CV Gallery */}
+        <Grid container spacing={3} justifyContent="center">
+          {cvDesigns.map(({ id, name, Component }, index) => {
+            const isDefault = defaultTemplate === name;
+            return (
+              <Grid item key={id} xs={12} sm={6} md={4} lg={0}>
+                <Card
+                  sx={{
+                    position: "relative",
+                    height: "560px",
+                    width: "400px",
+                    display: "flex",
+                    flexDirection: "column",
+                    borderRadius: 3,
+                    overflow: "hidden",
+                    background: "#fff",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      transform: "translateY(-6px)",
+                      boxShadow: "0 10px 28px rgba(0,0,0,0.12)",
+                    },
+                  }}
                 >
-                  <Card
-                    sx={{
-                      position: "relative",
-                      display: "flex",
-                      flexDirection: "column",
-                      maxWidth: 320,
-                      borderRadius: 3,
-                      overflow: "hidden",
-                      background: "#fff",
-                      boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-                      "&:hover": {
-                        transform: "translateY(-8px)",
-                        boxShadow: "0 12px 30px rgba(0,0,0,0.12)",
-                      },
-                    }}
-                  >
-                    {isDefault && (
-                      <Chip
-                        icon={<CheckCircleIcon />}
-                        label="Default"
-                        size="small"
-                        sx={{
-                          position: "absolute",
-                          top: 10,
-                          right: 10,
-                          background:
-                            "linear-gradient(to right, #4c6fff, #7e5cff)",
-                          color: "white",
-                        }}
-                      />
-                    )}
-
-                    <Box
+                  {/* Default Label */}
+                  {isDefault && (
+                    <Chip
+                      icon={<CheckCircleIcon />}
+                      label="Default"
+                      size="small"
                       sx={{
                         position: "absolute",
                         top: 10,
-                        left: 10,
-                        width: 32,
-                        height: 32,
-                        borderRadius: "50%",
+                        right: 10,
                         background:
                           "linear-gradient(to right, #4c6fff, #7e5cff)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
                         color: "white",
-                        fontWeight: "bold",
+                        fontWeight: 600,
                       }}
-                    >
-                      {index + 1}
-                    </Box>
+                    />
+                  )}
 
+                  {/* Index Badge */}
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 10,
+                      left: 10,
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      background: "linear-gradient(to right, #4c6fff, #7e5cff)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                      fontSize: "0.8rem",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {index + 1}
+                  </Box>
+
+                  {/* Thumbnail */}
+                  <Box
+                    sx={{
+                      background: "#f8fafc",
+                      minHeight: 350,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "flex-start",
+                      overflow: "hidden",
+                      cursor: "pointer",
+                      p: 1,
+                    }}
+                    onClick={() => handlePreviewOpen(id)}
+                  >
                     <Box
                       sx={{
-                        background: "#f8fafc",
-                        height: 260,
-                        display: "flex",
-                        justifyContent: "center",
-                        overflow: "hidden",
-                        cursor: "pointer",
+                        transform: "scale(0.28)",
+                        transformOrigin: "top center",
+                        pointerEvents: "none",
+                        width: "900px",
                       }}
-                      onClick={() =>
-                        handlePreviewOpen({ id, name, Component })
-                      }
                     >
-                      <Box
-                        sx={{
-                          transform: `scale(${scale})`,
-                          transformOrigin: "top center",
-                          pointerEvents: "none",
-                          width: `${baseWidth}px`,
-                        }}
-                      >
-                        <Component />
-                      </Box>
+                      <Component />
                     </Box>
+                  </Box>
 
-                    <Box sx={{ p: 2 }}>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          textAlign: "center",
-                          mb: 2,
-                          fontWeight: 600,
-                        }}
-                      >
-                        {name}
-                      </Typography>
+                  {/* Actions */}
+                  <Box sx={{ p: 2 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ textAlign: "center", mb: 2, fontWeight: 600 }}
+                    >
+                      {name}
+                    </Typography>
 
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      disableElevation
+                      sx={{
+                        fontWeight: 700,
+                        background:
+                          "linear-gradient(to right, #4c6fff, #7e5cff)",
+                        mb: 1,
+                      }}
+                      onClick={() => handlePreviewOpen(id)}
+                    >
+                      Preview
+                    </Button>
+
+                    {isDefault ? (
                       <Button
                         fullWidth
-                        variant="contained"
-                        disableElevation
-                        sx={{
-                          fontWeight: 700,
-                          background:
-                            "linear-gradient(to right, #4c6fff, #7e5cff)",
-                          mb: 1,
-                        }}
+                        variant="outlined"
+                        startIcon={<CheckCircleIcon />}
                       >
-                        Use This Template
+                        Selected
                       </Button>
-
-                      {isDefault ? (
-                        <Button
-                          fullWidth
-                          variant="outlined"
-                          startIcon={<CheckCircleIcon />}
-                        >
-                          Selected
-                        </Button>
-                      ) : (
-                        <Button
-                          fullWidth
-                          variant="outlined"
-                          onClick={() => handleSetDefault(id)}
-                        >
-                          Set as Default
-                        </Button>
-                      )}
-                    </Box>
-                  </Card>
-                </Grid>
-              );
-            }
-          )}
+                    ) : (
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        onClick={() => handleSetDefault(name)}
+                      >
+                        Set as Default
+                      </Button>
+                    )}
+                  </Box>
+                </Card>
+              </Grid>
+            );
+          })}
         </Grid>
       </Container>
 
-      <Dialog open={previewOpen} onClose={handlePreviewClose} maxWidth="lg">
-        <DialogContent>
-          {selectedTemplate && <selectedTemplate.Component />}
-        </DialogContent>
-      </Dialog>
-
+      {/* Snackbar */}
       <Snackbar
         open={showSnackbar}
         autoHideDuration={3000}
