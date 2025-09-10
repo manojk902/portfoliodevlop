@@ -24,6 +24,7 @@ import {
 } from "@mui/icons-material";
 import { apiUrl } from "../../utils/common";
 import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 
 
 const Cv3 = () => {
@@ -33,13 +34,14 @@ const Cv3 = () => {
   const theme = useTheme();
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
-  
+   const name = useParams()
+  console.log(name, "name");
 
   useEffect(() => {
     const fetchCV = async () => {
       try {
         const res = await fetch(
-          `${apiUrl}/defaultCv/${username}`
+          `${apiUrl}/defaultCv/${name?.username||username}`
         );
         const data = await res.json();
         setCvData(data.fetchedCvInfo.defaultCvInfo);
@@ -51,7 +53,7 @@ const Cv3 = () => {
     };
 
     fetchCV();
-  }, []);
+  }, [name]);
 
   if (loading) return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">

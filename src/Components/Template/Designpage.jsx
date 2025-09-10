@@ -32,13 +32,14 @@ import CV6 from "./Cv6";
 import { apiUrl } from "../../utils/common";
 import { useSelector } from "react-redux";
 
- function DesignPage() {
+function DesignPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState("cv");
   const [defaultTemplate, setDefaultTemplate] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [cvInfoId, setCvInfoId] = useState();
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
   const userId = userProfile?.fetchedUsed?.userId;
@@ -48,8 +49,9 @@ import { useSelector } from "react-redux";
       try {
         const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
         const templateName = res.data?.fetchedCvInfo?.templateName;
+        setCvInfoId(res.data?.fetchedCvInfo?.cvInfoId);
         console.log("📌 Fetched Default CV Template:", templateName);
-        
+
         if (templateName) {
           setDefaultTemplate(templateName);
           localStorage.setItem("defaultCvTemplate", templateName);
@@ -71,7 +73,7 @@ import { useSelector } from "react-redux";
       const response = await axios.put(`${apiUrl}/updateDefaultCvId`, {
         userId: userId,
         templateName: templateName,
-        cvInfoId: "79a38eec-49ad-444d-9d9a-8c4074adc5f5",
+        cvInfoId:cvInfoId,
       });
 
       console.log("✅ API Response:", response.data);

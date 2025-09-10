@@ -8,12 +8,10 @@ import CreatePortfolioPage from '../../pages/CreatePortfolioPage';
 import UserForm from '../../pages/UserForm';
 import CreateCvPage from '../../pages/CreateCvPage';
 // import Cv1 from '../../Components/Template/Cv1'; // <-- yahan se import kar (kyunki tu bol raha tha Cv1 HomePage ke folder me hai)
-
 import BuilderPage from '../../pages/BuilderPage';
 import UserInfo from '../../Components/UserInfo';
 import Template from '../../Components/Template';
 // import Cv3 from '../../Components/Template/Cv3';
-
 import GroupForm from '../../Components/UserInfo/GroupForm';
 import Designpreview from '../../Components/Template/Designpreview';
 import Designpage from '../../Components/Template/Designpage';
@@ -28,7 +26,7 @@ const AppRoutes = (defaultCvTemplate) => {
       <Route path="/learn" element={<Learn />} />
       <Route path="/" element={<HomePage />} />
       {/* <Route path="/:username" element={<ViewCVPage />} /> */}
-      <Route path="/:username" element={<DefaultCv />} />  
+      <Route path="/:username" element={<DefaultCv />} />
 
 
       {/* Design Routes */}
@@ -47,7 +45,7 @@ const AppRoutes = (defaultCvTemplate) => {
           <Route path="userinfo" element={<UserInfo />} />
           <Route path="template" element={<Template />} />
           <Route path="add-group" element={<GroupForm />} />
-          <Route path="edit-group/:groupId" element={<GroupForm />} />
+          {/* <Route path="edit-group/:groupId" element={<GroupForm />} /> */}
         </Route>
       </Route>
     </Routes>
