@@ -20,6 +20,7 @@ import axios from 'axios';
 import { useState } from 'react';
 import { setUserProfile } from '../../store/features/userProfileSlice';
 import { apiUrl } from '../../utils/common';
+ import { format, parseISO } from 'date-fns';
 
 
 
@@ -314,6 +315,8 @@ export default function ProfilePage() {
               Contact Info
             </Typography>
             <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', mb: 3 }} />
+
+
             <Grid container spacing={4}>
               {[
                 ['Date of Birth', userProfile?.fetchedUsed?.dob || user1.dob],
@@ -324,38 +327,55 @@ export default function ProfilePage() {
                 ['City', userProfile?.fetchedUsed?.city || user1.city],
                 ['State', userProfile?.fetchedUsed?.state || user1.state],
                 ['Pincode', userProfile?.fetchedUsed?.pinCode || user1.pincode],
-              ].map(([label, value]) => (
-                <Grid item xs={12} sm={6} md={4} key={label}>
-                  <Typography variant="caption" sx={{ color: '#ccc' }}>
-                    {label}
-                  </Typography>
-                  <Typography variant="body1" fontWeight={500} sx={{ color: 'white' }}>
-                    {label === 'socialLinks' ? (
-                      Array.isArray(value) ? (
-                        value.map((link, i) => (
+              ].map(([label, value]) => {
+                // Pre-format the date outside of JSX
+                if (label === 'Date of Birth' && value) {
+                  value = format(parseISO(value), 'dd-MM-yyyy'); // 22-09-2025
+                }
+
+                return (
+                  <Grid item xs={12} sm={6} md={4} key={label}>
+                    <Typography variant="caption" sx={{ color: '#ccc' }}>
+                      {label}
+                    </Typography>
+                    <Typography variant="body1" fontWeight={500} sx={{ color: 'white' }}>
+                      {label === 'socialLinks' ? (
+                        Array.isArray(value) ? (
+                          value.map((link, i) => (
+                            <a
+                              key={i}
+                              href={link}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                color: 'white',
+                                display: 'block',
+                                textDecoration: 'underline',
+                                marginBottom: 4,
+                              }}
+                            >
+                              {link}
+                            </a>
+                          ))
+                        ) : (
                           <a
-                            key={i}
-                            href={link}
+                            href={value}
                             target="_blank"
                             rel="noreferrer"
-                            style={{ color: 'white', display: 'block', textDecoration: 'underline', marginBottom: 4 }}
+                            style={{ color: 'white', textDecoration: 'underline' }}
                           >
-                            {link}
+                            {value}
                           </a>
-                        ))
+                        )
                       ) : (
-                        // plain string fallback
-                        <a href={value} target="_blank" rel="noreferrer" style={{ color: 'white', textDecoration: 'underline' }}>
-                          {value}
-                        </a>
-                      )
-                    ) : (
-                      value
-                    )}
-                  </Typography>
-                </Grid>
-              ))}
+                        value
+                      )}
+                    </Typography>
+                  </Grid>
+                );
+              })}
             </Grid>
+
 
             {/* Actions */}
             <Box mt={5} display="flex" justifyContent="center" gap={3}>

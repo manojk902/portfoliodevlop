@@ -14,6 +14,10 @@ import axios from 'axios';
 import { setUserProfile } from '../../store/features/userProfileSlice';
 import { useNavigate } from 'react-router-dom';
 import { apiUrl } from '../../utils/common';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { format } from 'date-fns';
 
 
 
@@ -42,11 +46,10 @@ function UserForm() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [info, setInfo] = useState();
-  const [profileEmail, setProfileEmail] = useState("")
 
-  useEffect(() => {
-    setProfileEmail(user?.email)
-  }, [user?.email])
+  // useEffect(() => {
+  //   setProfileEmail(user?.email)
+  // }, [user?.email])
 
   useEffect(() => {
     setInfo(!!fetchedUser ? "Update" : "Create");
@@ -64,7 +67,7 @@ function UserForm() {
     profilePhoto: fetchedUser?.profilePhoto || '',
     firstName: fetchedUser?.firstName || '',
     lastName: fetchedUser?.lastName || '',
-    dob: fetchedUser?.dob || '',
+    dob: fetchedUser?.dob ? new Date(fetchedUser.dob) : null,
     gender: fetchedUser?.gender || '',
     designation: fetchedUser?.designation || '',
     email: fetchedUser?.email || '',
@@ -97,7 +100,11 @@ function UserForm() {
       const data = new FormData();
       data.append('firstName', values?.firstName);
       data.append('lastName', values.lastName);
-      data.append('dob', values?.dob);
+      // data.append('dob', values?.dob);
+      data.append(
+        'dob',
+        values.dob ? format(new Date(values.dob), "yyyy-MM-dd") : ""
+      );
       data.append('gender', values.gender);
       data.append('designation', values.designation);
       data.append('email', values?.email);
@@ -134,8 +141,8 @@ function UserForm() {
       //   dispatch(setUserProfile(updated.data));
       //   navigate('/edit');
       // }
-
       navigate('/profile');
+      window.location.reload();
       setSuccess(true);
       setError('');
       resetForm();
@@ -253,18 +260,20 @@ function UserForm() {
                           />
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                          <TextField
-                            fullWidth
-                            label="Date of Birth"
-                            name="dob"
-                            type="text"
-                            InputLabelProps={{ shrink: true }}
-                            value={values.dob}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={touched.dob && Boolean(errors.dob)}
-                            helperText={touched.dob && errors.dob}
-                          />
+                          <LocalizationProvider dateAdapter={AdapterDateFns}>
+                            <DatePicker
+                              label="Date of Birth"
+                              value={values.dob || null}
+                              onChange={(newValue) => setFieldValue("dob", newValue)}
+                              slotProps={{
+                                textField: {
+                                  fullWidth: true,
+                                  error: touched.dob && Boolean(errors.dob),
+                                  helperText: touched.dob && errors.dob,
+                                },
+                              }}
+                            />
+                          </LocalizationProvider>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                           <TextField
@@ -314,13 +323,12 @@ function UserForm() {
                         <Grid item xs={12}>
                           <TextField
                             fullWidth
-                            // label="Email"
+                            label="Email"
                             name="email"
-                            // disabled
-                            value={profileEmail}
+                            value={values.email}
                             onChange={handleChange}
-                            // onBlur={handleBlur}
-                            error={touched.email && - Boolean(errors.email)}
+                            onBlur={handleBlur}
+                            error={touched.email && Boolean(errors.email)}
                             helperText={touched.email && errors.email}
                           />
                         </Grid>

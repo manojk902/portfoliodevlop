@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import {
   ThemeProvider,
@@ -214,7 +213,7 @@ export default function Cv2() {
 
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching CV data:", err);
+        // console.error("Error fetching CV data:", err);
         setError(err.message);
         setLoading(false);
       }

@@ -27,8 +27,8 @@ import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 
 
-const Cv3 = () => {
-  const [cvData, setCvData] = useState(null);
+const Cv3 = ({usernamee}) => {
+  const [cvData, setCvData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const theme = useTheme();
@@ -40,11 +40,14 @@ const Cv3 = () => {
   useEffect(() => {
     const fetchCV = async () => {
       try {
-        const res = await fetch(
-          `${apiUrl}/defaultCv/${name?.username||username}`
-        );
-        const data = await res.json();
-        setCvData(data.fetchedCvInfo.defaultCvInfo);
+        // const res = await fetch(
+        //   // `${apiUrl}/defaultCv/${username}`
+        //   // `${apiUrl}/defaultCv/${username}`
+        // );
+        // const data = await res.json();
+        // setCvData(data.fetchedCvInfo.defaultCvInfo);
+        setCvData(usernamee?.data?.fetchedCvInfo?.defaultCvInfo);
+
       } catch (err) {
         setError("Failed to fetch CV data");
       } finally {
@@ -53,7 +56,7 @@ const Cv3 = () => {
     };
 
     fetchCV();
-  }, [name]);
+  }, [usernamee?.data?.fetchedCvInfo?.defaultCvInfo]);
 
   if (loading) return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">

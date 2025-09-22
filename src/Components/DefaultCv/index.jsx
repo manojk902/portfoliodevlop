@@ -9,26 +9,29 @@ import Cv6 from "../Template/Cv6";
 import axios from "axios";
 import { apiUrl } from "../../utils/common";
 import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 // import jsPDF from "jspdf";
 
 
 
 
 const DefaultCv = ({ template = 'defaultCv' }) => {
+  const name = useParams()
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
   const [cvt, setCvt] = useState();
   useEffect(() => {
     const fetchCv = async () => {
-      const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
+      const res = await axios.get(`${apiUrl}/defaultCv/${name?.username}`);
       // console.log(res,"oip");
-
+      // console.log('this is from defalut',res.data?.fetchedCvInfo?.templateName);
+      
       setCvt(res.data?.fetchedCvInfo?.templateName)
     }
 
     fetchCv()
   }, [username]);
-  console.log(cvt, "cvttttt");
+  // console.log(cvt, "cvttttt");
 
 const cvOptions = {
   "defaultCv": Cv4,

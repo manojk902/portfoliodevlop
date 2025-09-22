@@ -33,29 +33,32 @@ import {
   GitHub,
   Public
 } from "@mui/icons-material";
-import { apiUrl } from "../../utils/common";
-import { useSelector } from "react-redux";
-import { useParams} from "react-router-dom";
+// import { apiUrl } from "../../utils/common";
+// import { useSelector } from "react-redux";
+// import { useParams} from "react-router-dom";
 
-const Cv1 = () => {
-  const [cvData, setCvData] = useState(null);
+const Cv1 = ({usernamee}) => {
+  const [cvData, setCvData] = useState({});
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
-  const userProfile = useSelector((state) => state.userProfile.data);
-  const username = userProfile?.fetchedUsed?.userName;
+  // const userProfile = useSelector((state) => state.userProfile.data);
+  // const username = userProfile?.fetchedUsed?.userName;
   // const [searchParams] = useSearchParams();
   // const Name = searchParams.get("name",);
-  const name = useParams()
-  console.log(name, "name");
+  // const name = useParams()
+  // console.log(name, "name");
+  console.log(usernamee?.data?.fetchedCvInfo?.defaultCvInfo, "usernamee");
+  console.log(cvData, "cvdata");
+  
   
 
   useEffect(() => {
     const fetchCv = async () => {
       try {
-        const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
-        console.log("✅ CV Data Fetched:", res.data);
-
-        setCvData(res.data.fetchedCvInfo.defaultCvInfo);
+        // const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
+        // const res = await axios.get(`${apiUrl}/defaultCv/${name?.username}`);
+        // // console.log("✅ CV Data Fetched:", res.data);
+        setCvData(usernamee?.data?.fetchedCvInfo?.defaultCvInfo);
       } catch (err) {
         console.error("❌ Error fetching CV:", err);
       } finally {
@@ -63,7 +66,7 @@ const Cv1 = () => {
       }
     };
     fetchCv();
-  }, []);
+  }, [usernamee?.data?.fetchedCvInfo?.defaultCvInfo]);
 
   if (loading) {
     return (

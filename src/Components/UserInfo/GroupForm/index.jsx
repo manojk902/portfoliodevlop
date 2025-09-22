@@ -16,6 +16,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import axios from 'axios';
 import { apiUrl } from '../../../utils/common';
 import { useSelector } from 'react-redux';
+import { format, parseISO } from 'date-fns';
 
 // Define section types with fields, required fields, and whether they allow multiple entries
 const sectionTypes = {
@@ -108,36 +109,36 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
                         />
                       </>
                     ) : (
-                    <TextField
-                      fullWidth
-                      label={field.charAt(0).toUpperCase() + field.slice(1)}
-                      type={field.includes('Date') ? 'date' : field === 'rating' ? 'number' : 'text'}
+                      <TextField
+                        fullWidth
+                        label={field.charAt(0).toUpperCase() + field.slice(1)}
+                        type={field.includes('Date') ? 'date' : field === 'rating' ? 'number' : 'text'}
                         multiline={field === 'summary'}
                         rows={field === 'summary' ? 4 : 1}
-                      value={
-                        field === 'technologies' || field === 'projectImages'
-                          ? Array.isArray(entry[field]) ? entry[field].join(', ') : entry[field] || ''
-                          : entry[field] || ''
-                      }
-                      onChange={e => {
-                        const value =
+                        value={
                           field === 'technologies' || field === 'projectImages'
-                            ? e.target.value.split(',').map(item => item.trim()).filter(item => item)
-                            : e.target.value;
-                        handleSectionChange(section.name, index, entryIndex, field, value);
-                      }}
-                      variant="outlined"
-                      InputLabelProps={field.includes('Date') ? { shrink: true } : undefined}
-                      error={sectionTypes[section.name].required.includes(field) && !entry[field]}
-                      helperText={
-                        sectionTypes[section.name].required.includes(field) && !entry[field]
-                          ? `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
-                          : (field === 'technologies' || field === 'projectImages') && entry[field] && !Array.isArray(entry[field])
-                            ? 'Enter a comma-separated list'
-                            : ''
-                      }
-                      inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
-                    />
+                            ? Array.isArray(entry[field]) ? entry[field].join(', ') : entry[field] || ''
+                            : entry[field] || ''
+                        }
+                        onChange={e => {
+                          const value =
+                            field === 'technologies' || field === 'projectImages'
+                              ? e.target.value.split(',').map(item => item.trim()).filter(item => item)
+                              : e.target.value;
+                          handleSectionChange(section.name, index, entryIndex, field, value);
+                        }}
+                        variant="outlined"
+                        InputLabelProps={field.includes('Date') ? { shrink: true } : undefined}
+                        error={sectionTypes[section.name].required.includes(field) && !entry[field]}
+                        helperText={
+                          sectionTypes[section.name].required.includes(field) && !entry[field]
+                            ? `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
+                            : (field === 'technologies' || field === 'projectImages') && entry[field] && !Array.isArray(entry[field])
+                              ? 'Enter a comma-separated list'
+                              : ''
+                        }
+                        inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
+                      />
                     )}
                   </Box>
                 ))}
@@ -542,6 +543,7 @@ const GroupForm = () => {
           <Card sx={{ borderRadius: 4 }}>
             <CardContent>
               <Typography sx={{ fontSize: '1rem', fontWeight: 500, mb: 1 }}>Personal Information</Typography>
+
               <Grid container spacing={2}>
                 {[
                   { label: 'First Name', field: 'firstName', type: 'text' },
@@ -549,28 +551,40 @@ const GroupForm = () => {
                   { label: 'Email', field: 'email', type: 'email' },
                   { label: 'Phone', field: 'phoneNo', type: 'tel' },
                   { label: 'designation', field: 'designation', type: 'text' },
-                  { label: 'dob', field: 'dob', type: 'text' },
+                  { label: 'dob', field: 'dob', type: 'date' }, // Use 'date' type for date picker
                   { label: 'street', field: 'street', type: 'text' },
                   { label: 'City', field: 'city', type: 'text' },
                   { label: 'PinCode', field: 'zip', type: 'number' },
                   { label: 'State', field: 'state', type: 'text' },
                   { label: 'Country', field: 'country', type: 'text' },
                   { label: 'gender', field: 'gender', type: 'text' },
-                ].map(({ label, field, type, required }) => (
-                  <Grid item xs={12} sm={6} key={field} >
-                    <TextField
-                      fullWidth
-                      label={label}
-                      type={type}
-                      // value={field ? group?.address[field.split('.')[1]] || '' : group[field] || ''}
-                      value={group[field] ?? ''}
-                      onChange={e => handleInputChange(field, e.target.value)}
-                      variant="outlined"
-                    // required={required}
-                    />
-                  </Grid>
-                ))}
+                ].map(({ label, field, type }) => {
+                  let value = group[field] ?? '';
+
+                  // format dob if it exists
+                  if (field === 'dob' && value) {
+                    try {
+                      value = format(parseISO(value), 'yyyy-MM-dd'); // for input type="date"
+                    } catch (err) {
+                      console.warn('Invalid DOB format:', value);
+                    }
+                  }
+
+                  return (
+                    <Grid item xs={12} sm={6} key={field}>
+                      <TextField
+                        fullWidth
+                        label={label}
+                        type={type}
+                        value={value}
+                        onChange={e => handleInputChange(field, e.target.value)}
+                        variant="outlined"
+                      />
+                    </Grid>
+                  );
+                })}
               </Grid>
+
             </CardContent>
           </Card>
           {/* Sections */}
@@ -605,7 +619,12 @@ const GroupForm = () => {
                     addSectionEntry(section);
                     setShowModal(false);
                   }}
-                  disabled={group.sections.some(s => (s.name || '').toString().toLowerCase() === section.toLowerCase())}
+                  // disabled={group.sections.some(s => (s.name || '').toString().toLowerCase() === section.toLowerCase())}
+                  disabled={group.sections.some(s => {
+                    const sName = s?.name?.toString()?.toLowerCase() || '';
+                    const sectionName = section?.toString()?.toLowerCase() || '';
+                    return sName === sectionName;
+                  })}
                 >
                   {sectionTypes[section].title}
                 </Button>
