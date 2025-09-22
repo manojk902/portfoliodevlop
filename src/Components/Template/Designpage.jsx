@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -10,8 +11,7 @@ import {
   Tab,
   useTheme,
   useMediaQuery,
-  Dialog,
-  DialogContent,
+
   // IconButton,
   Chip,
   Alert,
@@ -266,7 +266,7 @@ function DesignPage() {
                         width: "900px",
                       }}
                     >
-                      <Component usernamee={res} />
+                      <Component UserData={res} />
                     </Box>
                   </Box>
 

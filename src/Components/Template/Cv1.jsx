@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+// import axios from "axios";
 import {
   Container,
   Typography,
@@ -33,22 +33,28 @@ import {
   GitHub,
   Public
 } from "@mui/icons-material";
+import axios from "axios";
+import { apiUrl } from "../../utils/common";
+import { useParams } from "react-router-dom";
+// import { useSelector } from "react-redux";
 // import { apiUrl } from "../../utils/common";
 // import { useSelector } from "react-redux";
 // import { useParams} from "react-router-dom";
 
-const Cv1 = ({usernamee}) => {
-  const [cvData, setCvData] = useState({});
+const Cv1 = ({UserData}) => {
+  const [cvData, setCvData] = useState(UserData);
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
+  console.log(cvData, "cvdata555");
+  
   // const userProfile = useSelector((state) => state.userProfile.data);
   // const username = userProfile?.fetchedUsed?.userName;
   // const [searchParams] = useSearchParams();
   // const Name = searchParams.get("name",);
-  // const name = useParams()
+  const name = useParams()
   // console.log(name, "name");
-  console.log(usernamee?.data?.fetchedCvInfo?.defaultCvInfo, "usernamee");
-  console.log(cvData, "cvdata");
+  // console.log(UserData?.data?.fetchedCvInfo?.defaultCvInfo, "UserData");
+  // console.log(UserData, "cvdata1111");
   
   
 
@@ -56,9 +62,10 @@ const Cv1 = ({usernamee}) => {
     const fetchCv = async () => {
       try {
         // const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
-        // const res = await axios.get(`${apiUrl}/defaultCv/${name?.username}`);
+        const res = await axios.get(`${apiUrl}/defaultCv/${name?.username}`);
         // // console.log("✅ CV Data Fetched:", res.data);
-        setCvData(usernamee?.data?.fetchedCvInfo?.defaultCvInfo);
+        // setCvData(UserData?.data?.fetchedCvInfo?.defaultCvInfo);
+        // console.log(UserData?.data?.fetchedCvInfo?.defaultCvInfo);
       } catch (err) {
         console.error("❌ Error fetching CV:", err);
       } finally {
@@ -66,7 +73,7 @@ const Cv1 = ({usernamee}) => {
       }
     };
     fetchCv();
-  }, [usernamee?.data?.fetchedCvInfo?.defaultCvInfo]);
+  }, [UserData?.data?.fetchedCvInfo?.defaultCvInfo]);
 
   if (loading) {
     return (

@@ -19,6 +19,7 @@ import styled from "@emotion/styled";
 import { useReactToPrint } from "react-to-print";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { apiUrl } from "../../utils/common";
 
 const themeData = {
   name: "Professional Light",
@@ -191,7 +192,7 @@ export default function Cv2() {
     const fetchCVData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://192.168.0.3:9000/api/v1/portfolio/defaultCv/mukesh_277');
+        const response = await fetch(`${apiUrl}/defaultCv/mukesh_277`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
