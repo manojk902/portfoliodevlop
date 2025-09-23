@@ -36,17 +36,18 @@ import {
 import axios from "axios";
 import { apiUrl } from "../../utils/common";
 import { useParams } from "react-router-dom";
+import MarkdownPreview from '@uiw/react-markdown-preview';
 // import { useSelector } from "react-redux";
 // import { apiUrl } from "../../utils/common";
 // import { useSelector } from "react-redux";
 // import { useParams} from "react-router-dom";
 
-const Cv1 = ({UserData}) => {
+const Cv1 = ({ UserData }) => {
   const [cvData, setCvData] = useState(UserData);
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
   console.log(cvData, "cvdata555");
-  
+
   // const userProfile = useSelector((state) => state.userProfile.data);
   // const username = userProfile?.fetchedUsed?.userName;
   // const [searchParams] = useSearchParams();
@@ -55,8 +56,8 @@ const Cv1 = ({UserData}) => {
   // console.log(name, "name");
   // console.log(UserData?.data?.fetchedCvInfo?.defaultCvInfo, "UserData");
   // console.log(UserData, "cvdata1111");
-  
-  
+
+
 
   useEffect(() => {
     const fetchCv = async () => {
@@ -206,8 +207,14 @@ const Cv1 = ({UserData}) => {
               <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', mb: 1 }}>
                 {exp.startDate} - {exp.endDate}
               </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                {exp.description}
+              <Typography variant="body1" sx={{ lineHeight: 1.6, backgroundColor: 'transparent' }}>
+                <MarkdownPreview
+                  style={{
+                    backgroundColor: 'transparent',  // removes black
+                    color: 'inherit',                // use your text color
+                    padding: 0,                      // optional
+                  }}
+                  source={exp.description || ""} />
               </Typography>
               {i < experienceSection.data.length - 1 && <Divider sx={{ mt: 2 }} />}
             </Box>
@@ -302,8 +309,14 @@ const Cv1 = ({UserData}) => {
               <Typography variant="h6" component="h3">
                 {proj.name}
               </Typography>
-              <Typography variant="body1" sx={{ mb: 1, lineHeight: 1.6 }}>
-                {proj.description}
+              <Typography variant="body1" sx={{ lineHeight: 1.6, backgroundColor: 'transparent' }}>
+                <MarkdownPreview
+                  style={{
+                    backgroundColor: 'transparent',  // removes black
+                    color: 'inherit',                // use your text color
+                    padding: 0,                      // optional
+                  }}
+                  source={proj.description || ""} />
               </Typography>
               <Typography variant="body2" sx={{ mb: 1 }}>
                 <Box component="span" fontWeight="bold">Technologies: </Box>

@@ -4,6 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Box, Button, TextField, Typography, Grid, Card, CardContent, Dialog, DialogTitle, DialogContent, DialogActions, Collapse, IconButton,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
 } from '@mui/material';
 import MDEditor from "@uiw/react-md-editor";
 import "@uiw/react-md-editor/markdown-editor.css";
@@ -24,7 +28,14 @@ const sectionTypes = {
   Experience: { title: 'Experience', fields: ['jobTitle', 'company', 'location', 'startDate', 'endDate', 'description'], required: ['jobTitle', 'company'], single: false },
   Skill: { title: 'Skill', fields: ['skill', 'rating'], required: ['skill', 'rating'], single: false },
   Certification: { title: 'Certification', fields: ['name', 'institute', 'issueDate'], required: ['name'], single: false },
-  Language: { title: 'Language', fields: ['language', 'proficiency'], required: ['language'], single: false },
+
+  // Language: { title: 'Language', fields: ['language', 'proficiency'], required: ['language'], single: false },
+  Language: {
+    title: 'Language',
+    fields: ['language', 'proficiency'],
+    required: ['language', 'proficiency'],
+    single: false
+  },
   Project: { title: 'Project', fields: ['name', 'description', 'url', 'technologies', 'projectImages'], required: ['name'], single: false },
   Summary: { title: 'Summary', fields: ['summary'], required: ['summary'], single: true },
   Achievement: { title: 'Achievement', fields: ['title'], required: ['title'], single: false },
@@ -96,7 +107,7 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
               <Box key={entryIndex} sx={{ border: '1px solid #e0e0e0', borderRadius: 4, p: 2, mb: 1 }}>
                 {sectionTypes[section.name].fields.map(field => (
                   <Box key={field} sx={{ mb: 1 }}>
-                    {field === "description" ? (
+                    {field === 'description' ? (
                       <>
                         <Typography variant="body2" sx={{ mb: 1 }}>Description</Typography>
                         <MDEditor
@@ -108,38 +119,61 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
                           height={200}
                         />
                       </>
-                    ) : (
-                      <TextField
-                        fullWidth
-                        label={field.charAt(0).toUpperCase() + field.slice(1)}
-                        type={field.includes('Date') ? 'date' : field === 'rating' ? 'number' : 'text'}
-                        multiline={field === 'summary'}
-                        rows={field === 'summary' ? 4 : 1}
-                        value={
-                          field === 'technologies' || field === 'projectImages'
-                            ? Array.isArray(entry[field]) ? entry[field].join(', ') : entry[field] || ''
-                            : entry[field] || ''
-                        }
-                        onChange={e => {
-                          const value =
+                    ) :
+                      field === 'proficiency' && section.name === 'Language' ? (
+                        <FormControl fullWidth margin="normal">
+                          {/* <TextField> */}
+                            <InputLabel>Proficiency</InputLabel>
+                          {/* </TextField> */}
+
+                          <Select
+                            label="Proficiency"
+                            value={entry[field] || ""}
+                            onChange={(e) =>
+                              handleSectionChange(section.name, index, entryIndex, field, e.target.value)
+                            }
+                          >
+                            <MenuItem value="normal">normal</MenuItem>
+                            <MenuItem value="good">good</MenuItem>
+                            <MenuItem value="very-good">very-good</MenuItem>
+                            <MenuItem value="excellent">excellent</MenuItem>
+                          </Select>
+                          {sectionTypes[section.name].required.includes(field) && !entry[field] && (
+                            <Typography color="error" variant="caption">{`${field.charAt(0).toUpperCase() + field.slice(1)} is required`}</Typography>
+                          )}
+                        </FormControl>
+                      ) : (
+                        <TextField
+                          fullWidth
+                          label={field.charAt(0).toUpperCase() + field.slice(1)}
+                          type={field.includes('Date') ? 'date' : field === 'rating' ? 'number' : 'text'}
+                          multiline={field === 'summary'}
+                          rows={field === 'summary' ? 4 : 1}
+                          value={
                             field === 'technologies' || field === 'projectImages'
-                              ? e.target.value.split(',').map(item => item.trim()).filter(item => item)
-                              : e.target.value;
-                          handleSectionChange(section.name, index, entryIndex, field, value);
-                        }}
-                        variant="outlined"
-                        InputLabelProps={field.includes('Date') ? { shrink: true } : undefined}
-                        error={sectionTypes[section.name].required.includes(field) && !entry[field]}
-                        helperText={
-                          sectionTypes[section.name].required.includes(field) && !entry[field]
-                            ? `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
-                            : (field === 'technologies' || field === 'projectImages') && entry[field] && !Array.isArray(entry[field])
-                              ? 'Enter a comma-separated list'
-                              : ''
-                        }
-                        inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
-                      />
-                    )}
+                              ? Array.isArray(entry[field]) ? entry[field].join(',') : entry[field] || ''
+                              : entry[field] || ''
+                          }
+                          onChange={e => {
+                            const value =
+                              field === 'technologies' || field === 'projectImages'
+                                ? e.target.value.split(',').map(item => item.trim()).filter(item => item)
+                                : e.target.value;
+                            handleSectionChange(section.name, index, entryIndex, field, value);
+                          }}
+                          variant="outlined"
+                          InputLabelProps={field.includes('Date') ? { shrink: true } : undefined}
+                          error={sectionTypes[section.name].required.includes(field) && !entry[field]}
+                          helperText={
+                            sectionTypes[section.name].required.includes(field) && !entry[field]
+                              ? `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
+                              : (field === 'technologies' || field === 'projectImages') && entry[field] && !Array.isArray(entry[field])
+                                ? 'Enter a comma-separated list'
+                                : ''
+                          }
+                          inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
+                        />
+                      )}
                   </Box>
                 ))}
 
@@ -150,6 +184,7 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
                 )}
               </Box>
             ))
+
           )}
 
           {!sectionTypes[section.name].single && (
