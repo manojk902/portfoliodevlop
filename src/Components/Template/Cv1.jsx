@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 // import axios from "axios";
 import {
@@ -207,7 +209,7 @@ const Cv1 = ({ UserData }) => {
               <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', mb: 1 }}>
                 {exp.startDate} - {exp.endDate}
               </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.6, backgroundColor: 'transparent' }}>
+              <Typography variant="body1" component="div" sx={{ lineHeight: 1.6, backgroundColor: 'transparent' }}>
                 <MarkdownPreview
                   style={{
                     backgroundColor: 'transparent',  // removes black
@@ -309,7 +311,7 @@ const Cv1 = ({ UserData }) => {
               <Typography variant="h6" component="h3">
                 {proj.name}
               </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.6, backgroundColor: 'transparent' }}>
+              <Typography variant="body1" component="div" sx={{ lineHeight: 1.6, backgroundColor: 'transparent' }}>
                 <MarkdownPreview
                   style={{
                     backgroundColor: 'transparent',  // removes black

@@ -28,7 +28,6 @@ const sectionTypes = {
   Experience: { title: 'Experience', fields: ['jobTitle', 'company', 'location', 'startDate', 'endDate', 'description'], required: ['jobTitle', 'company'], single: false },
   Skill: { title: 'Skill', fields: ['skill', 'rating'], required: ['skill', 'rating'], single: false },
   Certification: { title: 'Certification', fields: ['name', 'institute', 'issueDate'], required: ['name'], single: false },
-
   // Language: { title: 'Language', fields: ['language', 'proficiency'], required: ['language'], single: false },
   Language: {
     title: 'Language',
@@ -123,7 +122,7 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
                       field === 'proficiency' && section.name === 'Language' ? (
                         <FormControl fullWidth margin="normal">
                           {/* <TextField> */}
-                            <InputLabel>Proficiency</InputLabel>
+                          <InputLabel>Proficiency</InputLabel>
                           {/* </TextField> */}
 
                           <Select
@@ -146,13 +145,22 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
                         <TextField
                           fullWidth
                           label={field.charAt(0).toUpperCase() + field.slice(1)}
-                          type={field.includes('Date') ? 'date' : field === 'rating' ? 'number' : 'text'}
+                          type={/date$/i.test(field) ? 'date' : field === 'rating' ? 'number' : 'text'}
                           multiline={field === 'summary'}
                           rows={field === 'summary' ? 4 : 1}
                           value={
                             field === 'technologies' || field === 'projectImages'
                               ? Array.isArray(entry[field]) ? entry[field].join(',') : entry[field] || ''
-                              : entry[field] || ''
+                              : /date$/i.test(field) && entry[field] // only try formatting if it ends with "Date" and has a value
+                                ? (() => {
+                                  try {
+                                    const parsed = parseISO(entry[field]);
+                                    return isNaN(parsed) ? '' : format(parsed, 'yyyy-MM-dd');
+                                  } catch {
+                                    return '';
+                                  }
+                                })()
+                                : entry[field] || ''
                           }
                           onChange={e => {
                             const value =
@@ -162,7 +170,7 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
                             handleSectionChange(section.name, index, entryIndex, field, value);
                           }}
                           variant="outlined"
-                          InputLabelProps={field.includes('Date') ? { shrink: true } : undefined}
+                          InputLabelProps={/date$/i.test(field) ? { shrink: true } : undefined}
                           error={sectionTypes[section.name].required.includes(field) && !entry[field]}
                           helperText={
                             sectionTypes[section.name].required.includes(field) && !entry[field]
@@ -173,6 +181,7 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
                           }
                           inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
                         />
+
                       )}
                   </Box>
                 ))}
@@ -217,8 +226,7 @@ const GroupForm = () => {
     gender: "",
     designation: "",
     socialLinks: [
-      "https://linkedin.com/in/johndoe",
-      "https://github.com/johndoe"
+
     ],
     street: "",
     city: "",
@@ -263,10 +271,7 @@ const GroupForm = () => {
             dob: cvData?.dob || "",
             gender: cvData?.gender || "",
             designation: cvData?.designation || "",
-            socialLinks: [
-              "https://linkedin.com/in/johndoe",
-              "https://github.com/johndoe"
-            ],
+            socialLinks: cvData?.socialLinks && Array.isArray(cvData.socialLinks) ? cvData.socialLinks : [],
             street: cvData?.address?.street || "",
             city: cvData?.address?.city || "",
             state: cvData?.address?.state || "",
@@ -291,6 +296,8 @@ const GroupForm = () => {
   // Update personal info fields
   const handleInputChange = (field, value) => {
     setGroup(prev => ({ ...prev, [field]: value }));
+
+    setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
   // Update section fields
@@ -462,9 +469,62 @@ const GroupForm = () => {
   };
 
 
+  // Simple validation for personal info
+  const validatePersonalInfo = () => {
+    const newErrors = {};
+    // const lettersOnly = /^[A-Za-z]+$/;
+    const lettersAndSpaces = /^[A-Za-z ]+$/;
+    const numbersOnly = /^[0-9]+$/;
+
+    if (!group.designation || !lettersAndSpaces.test(group.designation)) {
+      newErrors.designation = "Only letters & spaces allowed";
+    }
+
+    if (!group.firstName || !lettersAndSpaces.test(group.firstName)) {
+      newErrors.firstName = "Letters only";
+    }
+
+    if (!group.lastName || !lettersAndSpaces.test(group.lastName)) {
+      newErrors.lastName = "Letters only";
+    }
+
+    if (!group.city || !lettersAndSpaces.test(group.city)) {
+      newErrors.city = "Letters & spaces only";
+    }
+    if (!group.country || !lettersAndSpaces.test(group.country)) {
+      newErrors.country = "Letters & spaces only";
+    }
+
+    if (!group.state || !lettersAndSpaces.test(group.state)) {
+      newErrors.state = "Letters & spaces only";
+    }
+    if (!group.gender || !lettersAndSpaces.test(group.gender)) {
+      newErrors.gender = "Letters & spaces only Ex:male,female,other";
+    }
+
+    if (!group.phoneNo || !numbersOnly.test(group.phoneNo)) {
+      newErrors.phoneNo = "Numbers only";
+    }
+
+    if (!group.zip || !numbersOnly.test(group.zip)) {
+      newErrors.zip = "Numbers only";
+    }
+
+    setErrors(prev => ({ ...prev, ...newErrors }));
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+
+
+
   // Submit form to API
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validatePersonalInfo()) {
+      alert('Please fill personal info correctly.');
+      return;
+    }
     if (!validateForm()) {
       alert('Please fill all required fields correctly.');
       return;
@@ -497,10 +557,7 @@ const GroupForm = () => {
             dob: group.dob,
             gender: group.gender,
             designation: group.designation,
-            socialLinks: [
-              "https://linkedin.com/in/johndoe",
-              "https://github.com/johndoe"
-            ],
+            socialLinks: group.socialLinks,
             address: {
               street: group.street,
               city: group.city,
@@ -530,12 +587,9 @@ const GroupForm = () => {
               phoneNo: Number(group.phoneNo),
               dob: Date(group.dob),
               gender: group.gender,
-              profilePhoto: "https://example.com/photo.jpg",
+              profilePhoto: group.profilePhoto || "",
               designation: group.designation,
-              socialLinks: [
-                "https://linkedin.com/in/mukesh",
-                "https://github.com/mukesh"
-              ],
+              socialLinks: group.socialLinks,
               address: {
                 city: group.city,
                 pinCode: Number(group.zip),
@@ -578,48 +632,71 @@ const GroupForm = () => {
           <Card sx={{ borderRadius: 4 }}>
             <CardContent>
               <Typography sx={{ fontSize: '1rem', fontWeight: 500, mb: 1 }}>Personal Information</Typography>
-
               <Grid container spacing={2}>
                 {[
-                  { label: 'First Name', field: 'firstName', type: 'text' },
-                  { label: 'Last Name', field: 'lastName', type: 'text' },
-                  { label: 'Email', field: 'email', type: 'email' },
-                  { label: 'Phone', field: 'phoneNo', type: 'tel' },
-                  { label: 'designation', field: 'designation', type: 'text' },
-                  { label: 'dob', field: 'dob', type: 'date' }, // Use 'date' type for date picker
-                  { label: 'street', field: 'street', type: 'text' },
-                  { label: 'City', field: 'city', type: 'text' },
-                  { label: 'PinCode', field: 'zip', type: 'number' },
-                  { label: 'State', field: 'state', type: 'text' },
-                  { label: 'Country', field: 'country', type: 'text' },
-                  { label: 'gender', field: 'gender', type: 'text' },
-                ].map(({ label, field, type }) => {
-                  let value = group[field] ?? '';
+                  { label: 'First Name', field: 'firstName', type: 'text', size: 6 },
+                  { label: 'Last Name', field: 'lastName', type: 'text', size: 6 },
+                  { label: 'Email', field: 'email', type: 'email', size: 6 },
+                  { label: 'Phone', field: 'phoneNo', type: 'tel', size: 6 },
+                  { label: 'designation', field: 'designation', type: 'text', size: 6 },
+                  { label: 'street', field: 'street', type: 'text', size: 9 },
+                  { label: 'City', field: 'city', type: 'text', size: 4 },
+                  { label: 'PinCode', field: 'zip', type: 'number', size: 4 },
+                  { label: 'State', field: 'state', type: 'text', size: 4 },
+                  { label: 'Country', field: 'country', type: 'text', size: 6 },
+                  { label: 'gender', field: 'gender', type: 'text', size: 6 },
+                  { label: 'socialLinks', field: 'socialLinks', type: 'text', size: 6 },
+                  { label: 'dob', field: 'dob', type: 'date', size: 3 }, // Use 'date' type for date picker
+                ]
+                  .map(({ label, field, type, size }) => {
+                    let value = group[field] ?? '';
 
-                  // format dob if it exists
-                  if (field === 'dob' && value) {
-                    try {
-                      value = format(parseISO(value), 'yyyy-MM-dd'); // for input type="date"
-                    } catch (err) {
-                      console.warn('Invalid DOB format:', value);
+                    // format dob if it exists
+                    if (field === 'dob' && value) {
+                      try {
+                        value = format(parseISO(value), 'yyyy-MM-dd'); // for input type="date"
+                      } catch (err) {
+                        console.warn('Invalid DOB format:', value);
+                      }
                     }
-                  }
 
-                  return (
-                    <Grid item xs={12} sm={6} key={field}>
-                      <TextField
-                        fullWidth
-                        label={label}
-                        type={type}
-                        value={value}
-                        onChange={e => handleInputChange(field, e.target.value)}
-                        variant="outlined"
-                      />
-                    </Grid>
-                  );
-                })}
+                    return (
+
+                      <Grid item xs={12} sm={size} md={6} lg={12} xl={10} key={field}>
+                        {field === 'socialLinks' ? (
+                          <TextField
+                            fullWidth
+                            label={label}
+                            type="text"
+                            value={Array.isArray(group.socialLinks) ? group.socialLinks.join(', ') : ''}
+                            onChange={e => {
+                              const linksArray = e.target.value
+                                .split(',')
+                                .map(link => link.trim())
+                                .filter(link => link);
+                              handleInputChange('socialLinks', linksArray);
+                            }}
+                            variant="outlined"
+                            error={!!errors.socialLinks}
+                            helperText={errors.socialLinks || ''}
+                          />
+                        ) :
+                          <TextField
+                            fullWidth
+                            label={label}
+                            type={type}
+                            value={value}
+                            onChange={e => handleInputChange(field, e.target.value)}
+                            variant="outlined"
+                            error={!!errors[field]}
+                            helperText={errors[field] || ''}
+                          />
+                        }
+
+                      </Grid>
+                    );
+                  })}
               </Grid>
-
             </CardContent>
           </Card>
           {/* Sections */}
