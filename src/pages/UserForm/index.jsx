@@ -40,7 +40,7 @@ function UserForm() {
   const [step, setStep] = useState(1);
   const totalSteps = 3;
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState();
   const user = useSelector(state => state.user);
   const fetchedUser = useSelector(state => state.userProfile?.data?.fetchedUsed);
   const dispatch = useDispatch();
@@ -132,26 +132,22 @@ function UserForm() {
       if (res.data.status === "success") {
         const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
         dispatch(setUserProfile(updated.data));
-        navigate('/edit');
-        alert("done")
+        setSuccess(true);
+        resetForm();
+        setTimeout(() => {
+          navigate('/edit');
+        }, 1000);
       }
-      // if (isEdit) {
-      //   const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
-      //   alert("doneernew")
-      //   dispatch(setUserProfile(updated.data));
-      //   navigate('/edit');
-      // }
-      navigate('/profile');
-      window.location.reload();
-      setSuccess(true);
-      setError('');
-      resetForm();
+      // navigate('/profile');
+      // window.location.reload();
       setStep(1);
     } catch (err) {
-      setError(err.response?.data?.message || 'Submission failed');
-      setSuccess(false);
+      // setError(err.response?.data?.message || 'Submission failed');
+      setError('Failed to submit form. Please try again.');
+      setError(false);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   // UI rendering unchanged
@@ -450,7 +446,7 @@ function UserForm() {
             {error}
           </Alert>
         </Snackbar>
-        <Snackbar open={success} autoHideDuration={4000} onClose={() => setSuccess(false)}>
+        <Snackbar open={success} autoHideDuration={10000} onClose={() => setSuccess(false)}>
           <Alert onClose={() => setSuccess(false)} severity="success" sx={{ width: '100%' }}>
             Profile saved successfully!
           </Alert>
