@@ -1,5 +1,7 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+// import axios from "axios";
 import {
   Container,
   Typography,
@@ -33,26 +35,40 @@ import {
   GitHub,
   Public
 } from "@mui/icons-material";
+import axios from "axios";
 import { apiUrl } from "../../utils/common";
-import { useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import MarkdownPreview from '@uiw/react-markdown-preview';
+// import { useSelector } from "react-redux";
+// import { apiUrl } from "../../utils/common";
+// import { useSelector } from "react-redux";
+// import { useParams} from "react-router-dom";
 
-const Cv1 = () => {
-  const [cvData, setCvData] = useState(null);
+const Cv1 = ({ UserData }) => {
+  const [cvData, setCvData] = useState(UserData);
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
-  const userProfile = useSelector((state) => state.userProfile.data);
-  const username = userProfile?.fetchedUsed?.userName;
-  const [searchParams] = useSearchParams();
-  const Name = searchParams.get("name",);
+  console.log(cvData, "cvdata555");
+
+  // const userProfile = useSelector((state) => state.userProfile.data);
+  // const username = userProfile?.fetchedUsed?.userName;
+  // const [searchParams] = useSearchParams();
+  // const Name = searchParams.get("name",);
+  const name = useParams()
+  // console.log(name, "name");
+  // console.log(UserData?.data?.fetchedCvInfo?.defaultCvInfo, "UserData");
+  // console.log(UserData, "cvdata1111");
+
+
 
   useEffect(() => {
     const fetchCv = async () => {
       try {
-        const res = await axios.get(`${apiUrl}/defaultCv/${Name}`);
-        console.log("✅ CV Data Fetched:", res.data);
-
-        setCvData(res.data.fetchedCvInfo.defaultCvInfo);
+        // const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
+        const res = await axios.get(`${apiUrl}/defaultCv/${name?.username}`);
+        // // console.log("✅ CV Data Fetched:", res.data);
+        // setCvData(UserData?.data?.fetchedCvInfo?.defaultCvInfo);
+        // console.log(UserData?.data?.fetchedCvInfo?.defaultCvInfo);
       } catch (err) {
         console.error("❌ Error fetching CV:", err);
       } finally {
@@ -60,7 +76,7 @@ const Cv1 = () => {
       }
     };
     fetchCv();
-  }, []);
+  }, [UserData?.data?.fetchedCvInfo?.defaultCvInfo]);
 
   if (loading) {
     return (
@@ -193,8 +209,14 @@ const Cv1 = () => {
               <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', mb: 1 }}>
                 {exp.startDate} - {exp.endDate}
               </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                {exp.description}
+              <Typography variant="body1" component="div" sx={{ lineHeight: 1.6, backgroundColor: 'transparent' }}>
+                <MarkdownPreview
+                  style={{
+                    backgroundColor: 'transparent',  // removes black
+                    color: 'inherit',                // use your text color
+                    padding: 0,                      // optional
+                  }}
+                  source={exp.description || ""} />
               </Typography>
               {i < experienceSection.data.length - 1 && <Divider sx={{ mt: 2 }} />}
             </Box>
@@ -289,8 +311,14 @@ const Cv1 = () => {
               <Typography variant="h6" component="h3">
                 {proj.name}
               </Typography>
-              <Typography variant="body1" sx={{ mb: 1, lineHeight: 1.6 }}>
-                {proj.description}
+              <Typography variant="body1" component="div" sx={{ lineHeight: 1.6, backgroundColor: 'transparent' }}>
+                <MarkdownPreview
+                  style={{
+                    backgroundColor: 'transparent',  // removes black
+                    color: 'inherit',                // use your text color
+                    padding: 0,                      // optional
+                  }}
+                  source={proj.description || ""} />
               </Typography>
               <Typography variant="body2" sx={{ mb: 1 }}>
                 <Box component="span" fontWeight="bold">Technologies: </Box>

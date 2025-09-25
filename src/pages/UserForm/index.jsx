@@ -14,6 +14,10 @@ import axios from 'axios';
 import { setUserProfile } from '../../store/features/userProfileSlice';
 import { useNavigate } from 'react-router-dom';
 import { apiUrl } from '../../utils/common';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { format } from 'date-fns';
 
 
 
@@ -36,17 +40,16 @@ function UserForm() {
   const [step, setStep] = useState(1);
   const totalSteps = 3;
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState();
   const user = useSelector(state => state.user);
   const fetchedUser = useSelector(state => state.userProfile?.data?.fetchedUsed);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [info, setInfo] = useState();
-  const [profileEmail, setProfileEmail] = useState("")
 
-  useEffect(() => {
-    setProfileEmail(user?.email)
-  }, [user?.email])
+  // useEffect(() => {
+  //   setProfileEmail(user?.email)
+  // }, [user?.email])
 
   useEffect(() => {
     setInfo(!!fetchedUser ? "Update" : "Create");
@@ -64,7 +67,7 @@ function UserForm() {
     profilePhoto: fetchedUser?.profilePhoto || '',
     firstName: fetchedUser?.firstName || '',
     lastName: fetchedUser?.lastName || '',
-    dob: fetchedUser?.dob || '',
+    dob: fetchedUser?.dob ? new Date(fetchedUser.dob) : null,
     gender: fetchedUser?.gender || '',
     designation: fetchedUser?.designation || '',
     email: fetchedUser?.email || '',
@@ -97,7 +100,11 @@ function UserForm() {
       const data = new FormData();
       data.append('firstName', values?.firstName);
       data.append('lastName', values.lastName);
-      data.append('dob', values?.dob);
+      // data.append('dob', values?.dob);
+      data.append(
+        'dob',
+        values.dob ? format(new Date(values.dob), "yyyy-MM-dd") : ""
+      );
       data.append('gender', values.gender);
       data.append('designation', values.designation);
       data.append('email', values?.email);
@@ -125,26 +132,22 @@ function UserForm() {
       if (res.data.status === "success") {
         const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
         dispatch(setUserProfile(updated.data));
-        navigate('/edit');
-        alert("done")
+        setSuccess(true);
+        resetForm();
+        setTimeout(() => {
+          navigate('/edit');
+        }, 1000);
       }
-      // if (isEdit) {
-      //   const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
-      //   alert("doneernew")
-      //   dispatch(setUserProfile(updated.data));
-      //   navigate('/edit');
-      // }
-
-      navigate('/profile');
-      setSuccess(true);
-      setError('');
-      resetForm();
+      // navigate('/profile');
+      // window.location.reload();
       setStep(1);
     } catch (err) {
-      setError(err.response?.data?.message || 'Submission failed');
-      setSuccess(false);
+      // setError(err.response?.data?.message || 'Submission failed');
+      setError('Failed to submit form. Please try again.');
+      setError(false);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   // UI rendering unchanged
@@ -253,18 +256,20 @@ function UserForm() {
                           />
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                          <TextField
-                            fullWidth
-                            label="Date of Birth"
-                            name="dob"
-                            type="text"
-                            InputLabelProps={{ shrink: true }}
-                            value={values.dob}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={touched.dob && Boolean(errors.dob)}
-                            helperText={touched.dob && errors.dob}
-                          />
+                          <LocalizationProvider dateAdapter={AdapterDateFns}>
+                            <DatePicker
+                              label="Date of Birth"
+                              value={values.dob || null}
+                              onChange={(newValue) => setFieldValue("dob", newValue)}
+                              slotProps={{
+                                textField: {
+                                  fullWidth: true,
+                                  error: touched.dob && Boolean(errors.dob),
+                                  helperText: touched.dob && errors.dob,
+                                },
+                              }}
+                            />
+                          </LocalizationProvider>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                           <TextField
@@ -314,13 +319,12 @@ function UserForm() {
                         <Grid item xs={12}>
                           <TextField
                             fullWidth
-                            // label="Email"
+                            label="Email"
                             name="email"
-                            // disabled
-                            value={profileEmail}
+                            value={values.email}
                             onChange={handleChange}
-                            // onBlur={handleBlur}
-                            error={touched.email && - Boolean(errors.email)}
+                            onBlur={handleBlur}
+                            error={touched.email && Boolean(errors.email)}
                             helperText={touched.email && errors.email}
                           />
                         </Grid>
@@ -442,7 +446,7 @@ function UserForm() {
             {error}
           </Alert>
         </Snackbar>
-        <Snackbar open={success} autoHideDuration={4000} onClose={() => setSuccess(false)}>
+        <Snackbar open={success} autoHideDuration={10000} onClose={() => setSuccess(false)}>
           <Alert onClose={() => setSuccess(false)} severity="success" sx={{ width: '100%' }}>
             Profile saved successfully!
           </Alert>

@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../../../store/features/userSlice';
 import { setUserProfile } from '../../../store/features/userProfileSlice';
 import { apiUrl } from '../../../utils/common';
-import { persistor } from "../../../store"; 
+import { persistor } from "../../../store";
 
 const Header = ({ onNavigate, onToggleSidebar }) => {
   const user = useSelector(state => state.user);
@@ -33,8 +33,9 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
   const [searchParams] = useSearchParams();
   const [decodedToken, setDecodedToken] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [hasPortfolio, setHasPortfolio] = useState(null);
-  const [data, setData] = useState(null);
+  // const [hasPortfolio, setHasPortfolio] = useState(null);
+  const userProfile = useSelector(state => state.userProfile?.data?.fetchedUsed);
+  // const [data, setData] = useState(null);
   const navigate = useNavigate()
   const open = Boolean(anchorEl);
 
@@ -46,23 +47,23 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
         try {
           setLoading(true); // start loading
           const user = await axios.get(`${apiUrl}/user-details/${decodedToken?.userName}`);
+          // setHasPic(user.data.fetchedUsed.profilePhoto, "user from header");
+
           // dispatch(setUserProfile(user.data));
           // setHasPortfolio(!!user.data); // true if data exists
           dispatch(setUserProfile(user.data));
-          setHasPortfolio(!!user.data); // true if data exists
+          // setHasPortfolio(!!user.data); // true if data exists
           // dispatch(setUserProfile(user.data)); // store all payload data in redux
           // console.log(user);
-
-
-          if (user) {
-            setHasPortfolio(true);
-          }
-          else {
-            setHasPortfolio(false);
-          }
+          // if (user) {
+          //   setHasPortfolio(true);
+          // }
+          // else {
+          //   setHasPortfolio(false);
+          // }
         } catch (error) {
           console.log("Server error->", error);
-          setHasPortfolio(false);
+          // setHasPortfolio(false);
         } finally {
           setLoading(false); // stop loading
         }
@@ -71,26 +72,11 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
     } else {
     };
   }, [isLoggedIn, decodedToken?.userName, dispatch]);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await axios.get(`${apiUrl}all-users-details`);
-  //       // console.log(response.data);
-  //       setData(response.data); // Uncomment if you want to store the data
-  //     } catch (error) {
-  //       console.error("Error fetching user details:", error);
-  //     }
-  //   };
-  //   fetchData();
-  // }, []);
-
   useEffect(() => {
     let token = searchParams.get("token") || localStorage.getItem("token");
 
     if (token) {
       if (searchParams.get("token")) {
-        // cleanup URL (remove ?token=...)
         const url = new URL(window.location);
         url.searchParams.delete("token");
         window.history.replaceState({}, document.title, url.pathname + url.search);
@@ -103,7 +89,6 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
         const decoded = jwtDecode(token);
         setDecodedToken(decoded);
 
-        // hydrate redux user immediately
         dispatch(setUser({ userName: decoded?.userName, email: decoded?.email, id: decoded?.id }));
       } catch (e) {
         console.error("Invalid token:", e);
@@ -135,150 +120,61 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
 
   // console.log("this0", user);
 
-return (
-  <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 1, py: 1 }}>
-    <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3, md: 4 } }}>
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-          {/* Left side: logo */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Skeleton variant="circular" width={40} height={40} />
-            <Skeleton variant="text" width={120} height={30} />
-          </Box>
+  return (
+    <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 1, py: 1 }}>
+      <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3, md: 4 } }}>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            {/* Left side: logo */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Skeleton variant="circular" width={40} height={40} />
+              <Skeleton variant="text" width={120} height={30} />
+            </Box>
 
-          {/* Right side: buttons & avatar */}
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-            <Skeleton variant="rectangular" width={70} height={36} />
-            <Skeleton variant="rectangular" width={70} height={36} />
-            <Skeleton variant="rectangular" width={100} height={36} />
-            <Skeleton variant="circular" width={40} height={40} />
-          </Box>
-        </Box>
-      ) : (
-        <>
-          {/* Left side: logo and sidebar toggle */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {/* Sidebar Toggle Button (visible only on small screens) */}
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              sx={{ mr: 2, display: { md: 'none' }, color: 'text.secondary' }}
-              onClick={onToggleSidebar} // Triggers sidebar open/close in AppProvider
-            >
-              <MenuIcon />
-            </IconButton>
-            {/* "Resume Now." Logo/Title */}
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                typography: 'h6', // MUI typography variant
-                fontWeight: 'bold',
-                color: 'text.primary',
-                cursor: 'pointer',
-              }}
-              onClick={() => handleNavigationClick('/')} // Navigates to the home page path
-            >
-              <DescriptionIcon sx={{ mr: 1, color: 'primary.main' }} /> {/* Icon for visual appeal */}
-              Resume Now.
+            {/* Right side: buttons & avatar */}
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Skeleton variant="rectangular" width={70} height={36} />
+              <Skeleton variant="rectangular" width={70} height={36} />
+              <Skeleton variant="rectangular" width={100} height={36} />
+              <Skeleton variant="circular" width={40} height={40} />
             </Box>
           </Box>
+        ) : (
+          <>
+            {/* Left side: logo and sidebar toggle */}
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {/* Sidebar Toggle Button (visible only on small screens) */}
+              <IconButton
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                sx={{ mr: 2, display: { md: 'none' }, color: 'text.secondary' }}
+                onClick={onToggleSidebar} // Triggers sidebar open/close in AppProvider
+              >
+                <MenuIcon />
+              </IconButton>
+              {/* "Resume Now." Logo/Title */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  typography: 'h6', // MUI typography variant
+                  fontWeight: 'bold',
+                  color: 'text.primary',
+                  cursor: 'pointer',
+                }}
+                onClick={() => handleNavigationClick('/')} // Navigates to the home page path
+              >
+                <DescriptionIcon sx={{ mr: 1, color: 'primary.main' }} /> {/* Icon for visual appeal */}
+                Resume Now.
+              </Box>
+            </Box>
 
-          {/* Right side: navigation buttons and user actions */}
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-            <Button
-              onClick={() => handleNavigationClick('/')} // Navigates to home path
-              variant="text" // Text button style
-              sx={{
-                color: 'text.secondary',
-                bgcolor: 'grey.200',
-                '&:hover': { bgcolor: 'grey.300' },
-                px: 2,
-                py: 1,
-              }}
-            >
-              Home
-            </Button>
-
-            <Button
-              onClick={() => window.location.href = `${redirect_url}/signup?appName=${app_name}&redirectUrl=${app_url}`}
-              variant="text" // Text button style
-              sx={{
-                color: 'text.secondary',
-                bgcolor: 'grey.200',
-                '&:hover': { bgcolor: 'grey.300' },
-                px: 2,
-                py: 1,
-              }}
-            >
-              Signup
-            </Button>
-
-            <Button
-              onClick={() => handleNavigationClick('/templates')} // Navigates to templates page path
-              variant="contained" // Filled button style
-              color="primary"
-              sx={{ px: 2, py: 1 }}
-            >
-              Templates
-            </Button>
-
-            {isLoggedIn ? (
-              loading ? (
-                <Skeleton variant="circular" width={40} height={40} />
-              ) : hasPortfolio ? (
-                <>
-                  <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
-                    <Avatar sx={{ bgcolor: 'primary.main' }}>
-                      {decodedToken?.userName?.[0]?.toUpperCase() || 'U'}
-                    </Avatar>
-                  </IconButton>
-                  <Menu
-                    anchorEl={anchorEl}
-                    open={open}
-                    onClose={handleMenuClose}
-                    slotProps={{
-                      paper: {
-                        elevation: 0,
-                        sx: {
-                          mt: 1.5,
-                          minWidth: 150,
-                          borderRadius: 2,
-                        },
-                      },
-                    }}
-                  >
-                    <MenuItem>
-                      <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>
-                        Profile
-                      </Link>
-                    </MenuItem>
-                    <MenuItem>
-                      <Link to="/edit" style={{ textDecoration: 'none', color: 'inherit' }}>
-                        BuilderPage
-                      </Link>
-                    </MenuItem>
-                    <MenuItem onClick={handleLogout}>Logout</MenuItem>
-                  </Menu>
-                </>
-              ) : (
-                <>
-                  <Button onClick={handleLogout}>Logout</Button>
-                  <Button
-                    onClick={() => handleNavigationClick('/editprofile')}
-                    variant="contained"
-                    color="primary"
-                    sx={{ px: 2, py: 1 }}
-                  >
-                    Create Profile
-                  </Button>
-                </>
-              )
-            ) : (
+            {/* Right side: navigation buttons and user actions */}
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Button
-                onClick={() => window.location.href = `${redirect_url}/login?appName=${app_name}&redirectUrl=${app_url}`}
-                variant="text"
+                onClick={() => handleNavigationClick('/')} // Navigates to home path
+                variant="text" // Text button style
                 sx={{
                   color: 'text.secondary',
                   bgcolor: 'grey.200',
@@ -287,15 +183,110 @@ return (
                   py: 1,
                 }}
               >
-                Login
+                Home
               </Button>
-            )}
-          </Box>
-        </>
-      )}
-    </Toolbar>
-  </AppBar>
-);
+
+              <Button
+                onClick={() => window.location.href = `${redirect_url}/signup?appName=${app_name}&redirectUrl=${app_url}`}
+                variant="text" // Text button style
+                sx={{
+                  color: 'text.secondary',
+                  bgcolor: 'grey.200',
+                  '&:hover': { bgcolor: 'grey.300' },
+                  px: 2,
+                  py: 1,
+                }}
+              >
+                Signup
+              </Button>
+
+              <Button
+                onClick={() => handleNavigationClick('/templates')} // Navigates to templates page path
+                variant="contained" // Filled button style
+                color="primary"
+                sx={{ px: 2, py: 1 }}
+              >
+                Templates
+              </Button>
+
+              {isLoggedIn ? (
+                loading ? (
+                  <Skeleton variant="circular" width={40} height={40} />
+                ) :
+                  // hasPortfolio
+                  userProfile?.firstName ? (
+                    <>
+                      <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
+                        {
+                          userProfile?.profilePhoto ? (
+                            <Avatar src={userProfile.profilePhoto} sx={{ bgcolor: 'primary.main' }} />
+                          ) : <Avatar sx={{ bgcolor: 'primary.main' }}>
+                            {decodedToken?.userName?.[0]?.toUpperCase() || 'U'}
+                          </Avatar>
+                        }
+                      </IconButton>
+                      <Menu
+                        anchorEl={anchorEl}
+                        open={open}
+                        onClose={handleMenuClose}
+                        slotProps={{
+                          paper: {
+                            elevation: 0,
+                            sx: {
+                              mt: 1.5,
+                              minWidth: 150,
+                              borderRadius: 2,
+                            },
+                          },
+                        }}
+                      >
+                        <MenuItem>
+                          <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            Profile
+                          </Link>
+                        </MenuItem>
+                        <MenuItem>
+                          <Link to="/edit" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            BuilderPage
+                          </Link>
+                        </MenuItem>
+                        <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                      </Menu>
+                    </>
+                  ) : (
+                    <>
+                      <Button onClick={handleLogout}>Logout</Button>
+                      <Button
+                        onClick={() => handleNavigationClick('/editprofile')}
+                        variant="contained"
+                        color="primary"
+                        sx={{ px: 2, py: 1 }}
+                      >
+                        Create Profile
+                      </Button>
+                    </>
+                  )
+              ) : (
+                <Button
+                  onClick={() => window.location.href = `${redirect_url}/login?appName=${app_name}&redirectUrl=${app_url}`}
+                  variant="text"
+                  sx={{
+                    color: 'text.secondary',
+                    bgcolor: 'grey.200',
+                    '&:hover': { bgcolor: 'grey.300' },
+                    px: 2,
+                    py: 1,
+                  }}
+                >
+                  Login
+                </Button>
+              )}
+            </Box>
+          </>
+        )}
+      </Toolbar>
+    </AppBar>
+  );
 };
 
 export default Header;
