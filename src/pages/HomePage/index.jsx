@@ -19,14 +19,18 @@ import {
   Phone,
   Email,
   Search as SearchIcon,
-  Work
+  Work,
+ 
 } from '@mui/icons-material';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { Link } from "react-router-dom";
 import { apiUrl } from '../../utils/common';
 // import { apiUrl } from '../../utils/common';
 
 const HomePage = () => {
   const [users, setUsers] = useState([]);   // API se aane wala data
+  console.log(users, "users fom home");
+
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +44,7 @@ const HomePage = () => {
     fetch(`${apiUrl}/search-user?name=${search}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("API Response:", data.searchedUser?.[0]);
+        // console.log("API Response:", data.searchedUser?.[0]);
         setUsers(data.searchedUser || data);
         setLoading(false);
       })
@@ -121,9 +125,9 @@ const HomePage = () => {
                 }}
               >
                 <CardContent sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexDirection: 'column'  }}>
                     <Avatar
-                      src={user.profilePhoto}
+                      src={user.profilePhoto || user.name}
                       alt={user.name}
                       sx={{
                         width: 80,
@@ -164,17 +168,11 @@ const HomePage = () => {
                         {user.email}
                       </Typography>
                     </Box>
-                  </Box>
-
-                  {/* Skills */}
-                  <Box sx={{ mt: 'auto' }}>
-                    <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', mb: 1 }}>
-                      Skills:
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {(user.skills || []).map((skill, i) => (
-                        <Chip key={i} label={skill} size="small" />
-                      ))}
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <LocationOnIcon sx={{ fontSize: '1rem', mr: 1, color: 'text.secondary' }} />
+                      <Typography variant="body2" color="text.secondary" noWrap>
+                        {user.city}, {user.state}, {user.country}
+                      </Typography>
                     </Box>
                   </Box>
 

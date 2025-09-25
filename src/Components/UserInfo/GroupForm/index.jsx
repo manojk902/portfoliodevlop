@@ -4,6 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Box, Button, TextField, Typography, Grid, Card, CardContent, Dialog, DialogTitle, DialogContent, DialogActions, Collapse, IconButton,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
 } from '@mui/material';
 import MDEditor from "@uiw/react-md-editor";
 import "@uiw/react-md-editor/markdown-editor.css";
@@ -16,6 +20,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import axios from 'axios';
 import { apiUrl } from '../../../utils/common';
 import { useSelector } from 'react-redux';
+import { format, parseISO } from 'date-fns';
 
 // Define section types with fields, required fields, and whether they allow multiple entries
 const sectionTypes = {
@@ -23,7 +28,13 @@ const sectionTypes = {
   Experience: { title: 'Experience', fields: ['jobTitle', 'company', 'location', 'startDate', 'endDate', 'description'], required: ['jobTitle', 'company'], single: false },
   Skill: { title: 'Skill', fields: ['skill', 'rating'], required: ['skill', 'rating'], single: false },
   Certification: { title: 'Certification', fields: ['name', 'institute', 'issueDate'], required: ['name'], single: false },
-  Language: { title: 'Language', fields: ['language', 'proficiency'], required: ['language'], single: false },
+  // Language: { title: 'Language', fields: ['language', 'proficiency'], required: ['language'], single: false },
+  Language: {
+    title: 'Language',
+    fields: ['language', 'proficiency'],
+    required: ['language', 'proficiency'],
+    single: false
+  },
   Project: { title: 'Project', fields: ['name', 'description', 'url', 'technologies', 'projectImages'], required: ['name'], single: false },
   Summary: { title: 'Summary', fields: ['summary'], required: ['summary'], single: true },
   Achievement: { title: 'Achievement', fields: ['title'], required: ['title'], single: false },
@@ -95,7 +106,7 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
               <Box key={entryIndex} sx={{ border: '1px solid #e0e0e0', borderRadius: 4, p: 2, mb: 1 }}>
                 {sectionTypes[section.name].fields.map(field => (
                   <Box key={field} sx={{ mb: 1 }}>
-                    {field === "description" ? (
+                    {field === 'description' ? (
                       <>
                         <Typography variant="body2" sx={{ mb: 1 }}>Description</Typography>
                         <MDEditor
@@ -107,38 +118,71 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
                           height={200}
                         />
                       </>
-                    ) : (
-                    <TextField
-                      fullWidth
-                      label={field.charAt(0).toUpperCase() + field.slice(1)}
-                      type={field.includes('Date') ? 'date' : field === 'rating' ? 'number' : 'text'}
-                        multiline={field === 'summary'}
-                        rows={field === 'summary' ? 4 : 1}
-                      value={
-                        field === 'technologies' || field === 'projectImages'
-                          ? Array.isArray(entry[field]) ? entry[field].join(', ') : entry[field] || ''
-                          : entry[field] || ''
-                      }
-                      onChange={e => {
-                        const value =
-                          field === 'technologies' || field === 'projectImages'
-                            ? e.target.value.split(',').map(item => item.trim()).filter(item => item)
-                            : e.target.value;
-                        handleSectionChange(section.name, index, entryIndex, field, value);
-                      }}
-                      variant="outlined"
-                      InputLabelProps={field.includes('Date') ? { shrink: true } : undefined}
-                      error={sectionTypes[section.name].required.includes(field) && !entry[field]}
-                      helperText={
-                        sectionTypes[section.name].required.includes(field) && !entry[field]
-                          ? `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
-                          : (field === 'technologies' || field === 'projectImages') && entry[field] && !Array.isArray(entry[field])
-                            ? 'Enter a comma-separated list'
-                            : ''
-                      }
-                      inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
-                    />
-                    )}
+                    ) :
+                      field === 'proficiency' && section.name === 'Language' ? (
+                        <FormControl fullWidth margin="normal">
+                          {/* <TextField> */}
+                          <InputLabel>Proficiency</InputLabel>
+                          {/* </TextField> */}
+
+                          <Select
+                            label="Proficiency"
+                            value={entry[field] || ""}
+                            onChange={(e) =>
+                              handleSectionChange(section.name, index, entryIndex, field, e.target.value)
+                            }
+                          >
+                            <MenuItem value="normal">normal</MenuItem>
+                            <MenuItem value="good">good</MenuItem>
+                            <MenuItem value="very-good">very-good</MenuItem>
+                            <MenuItem value="excellent">excellent</MenuItem>
+                          </Select>
+                          {sectionTypes[section.name].required.includes(field) && !entry[field] && (
+                            <Typography color="error" variant="caption">{`${field.charAt(0).toUpperCase() + field.slice(1)} is required`}</Typography>
+                          )}
+                        </FormControl>
+                      ) : (
+                        <TextField
+                          fullWidth
+                          label={field.charAt(0).toUpperCase() + field.slice(1)}
+                          type={/date$/i.test(field) ? 'date' : field === 'rating' ? 'number' : 'text'}
+                          multiline={field === 'summary'}
+                          rows={field === 'summary' ? 4 : 1}
+                          value={
+                            field === 'technologies' || field === 'projectImages'
+                              ? Array.isArray(entry[field]) ? entry[field].join(',') : entry[field] || ''
+                              : /date$/i.test(field) && entry[field] // only try formatting if it ends with "Date" and has a value
+                                ? (() => {
+                                  try {
+                                    const parsed = parseISO(entry[field]);
+                                    return isNaN(parsed) ? '' : format(parsed, 'yyyy-MM-dd');
+                                  } catch {
+                                    return '';
+                                  }
+                                })()
+                                : entry[field] || ''
+                          }
+                          onChange={e => {
+                            const value =
+                              field === 'technologies' || field === 'projectImages'
+                                ? e.target.value.split(',').map(item => item.trim()).filter(item => item)
+                                : e.target.value;
+                            handleSectionChange(section.name, index, entryIndex, field, value);
+                          }}
+                          variant="outlined"
+                          InputLabelProps={/date$/i.test(field) ? { shrink: true } : undefined}
+                          error={sectionTypes[section.name].required.includes(field) && !entry[field]}
+                          helperText={
+                            sectionTypes[section.name].required.includes(field) && !entry[field]
+                              ? `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
+                              : (field === 'technologies' || field === 'projectImages') && entry[field] && !Array.isArray(entry[field])
+                                ? 'Enter a comma-separated list'
+                                : ''
+                          }
+                          inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
+                        />
+
+                      )}
                   </Box>
                 ))}
 
@@ -149,6 +193,7 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
                 )}
               </Box>
             ))
+
           )}
 
           {!sectionTypes[section.name].single && (
@@ -181,8 +226,7 @@ const GroupForm = () => {
     gender: "",
     designation: "",
     socialLinks: [
-      "https://linkedin.com/in/johndoe",
-      "https://github.com/johndoe"
+
     ],
     street: "",
     city: "",
@@ -227,10 +271,7 @@ const GroupForm = () => {
             dob: cvData?.dob || "",
             gender: cvData?.gender || "",
             designation: cvData?.designation || "",
-            socialLinks: [
-              "https://linkedin.com/in/johndoe",
-              "https://github.com/johndoe"
-            ],
+            socialLinks: cvData?.socialLinks && Array.isArray(cvData.socialLinks) ? cvData.socialLinks : [],
             street: cvData?.address?.street || "",
             city: cvData?.address?.city || "",
             state: cvData?.address?.state || "",
@@ -255,6 +296,8 @@ const GroupForm = () => {
   // Update personal info fields
   const handleInputChange = (field, value) => {
     setGroup(prev => ({ ...prev, [field]: value }));
+
+    setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
   // Update section fields
@@ -426,9 +469,62 @@ const GroupForm = () => {
   };
 
 
+  // Simple validation for personal info
+  const validatePersonalInfo = () => {
+    const newErrors = {};
+    // const lettersOnly = /^[A-Za-z]+$/;
+    const lettersAndSpaces = /^[A-Za-z ]+$/;
+    const numbersOnly = /^[0-9]+$/;
+
+    if (!group.designation || !lettersAndSpaces.test(group.designation)) {
+      newErrors.designation = "Only letters & spaces allowed";
+    }
+
+    if (!group.firstName || !lettersAndSpaces.test(group.firstName)) {
+      newErrors.firstName = "Letters only";
+    }
+
+    if (!group.lastName || !lettersAndSpaces.test(group.lastName)) {
+      newErrors.lastName = "Letters only";
+    }
+
+    if (!group.city || !lettersAndSpaces.test(group.city)) {
+      newErrors.city = "Letters & spaces only";
+    }
+    if (!group.country || !lettersAndSpaces.test(group.country)) {
+      newErrors.country = "Letters & spaces only";
+    }
+
+    if (!group.state || !lettersAndSpaces.test(group.state)) {
+      newErrors.state = "Letters & spaces only";
+    }
+    if (!group.gender || !lettersAndSpaces.test(group.gender)) {
+      newErrors.gender = "Letters & spaces only Ex:male,female,other";
+    }
+
+    if (!group.phoneNo || !numbersOnly.test(group.phoneNo)) {
+      newErrors.phoneNo = "Numbers only";
+    }
+
+    if (!group.zip || !numbersOnly.test(group.zip)) {
+      newErrors.zip = "Numbers only";
+    }
+
+    setErrors(prev => ({ ...prev, ...newErrors }));
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+
+
+
   // Submit form to API
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validatePersonalInfo()) {
+      alert('Please fill personal info correctly.');
+      return;
+    }
     if (!validateForm()) {
       alert('Please fill all required fields correctly.');
       return;
@@ -461,10 +557,7 @@ const GroupForm = () => {
             dob: group.dob,
             gender: group.gender,
             designation: group.designation,
-            socialLinks: [
-              "https://linkedin.com/in/johndoe",
-              "https://github.com/johndoe"
-            ],
+            socialLinks: group.socialLinks,
             address: {
               street: group.street,
               city: group.city,
@@ -494,12 +587,9 @@ const GroupForm = () => {
               phoneNo: Number(group.phoneNo),
               dob: Date(group.dob),
               gender: group.gender,
-              profilePhoto: "https://example.com/photo.jpg",
+              profilePhoto: group.profilePhoto || "",
               designation: group.designation,
-              socialLinks: [
-                "https://linkedin.com/in/mukesh",
-                "https://github.com/mukesh"
-              ],
+              socialLinks: group.socialLinks,
               address: {
                 city: group.city,
                 pinCode: Number(group.zip),
@@ -544,32 +634,68 @@ const GroupForm = () => {
               <Typography sx={{ fontSize: '1rem', fontWeight: 500, mb: 1 }}>Personal Information</Typography>
               <Grid container spacing={2}>
                 {[
-                  { label: 'First Name', field: 'firstName', type: 'text' },
-                  { label: 'Last Name', field: 'lastName', type: 'text' },
-                  { label: 'Email', field: 'email', type: 'email' },
-                  { label: 'Phone', field: 'phoneNo', type: 'tel' },
-                  { label: 'designation', field: 'designation', type: 'text' },
-                  { label: 'dob', field: 'dob', type: 'text' },
-                  { label: 'street', field: 'street', type: 'text' },
-                  { label: 'City', field: 'city', type: 'text' },
-                  { label: 'PinCode', field: 'zip', type: 'number' },
-                  { label: 'State', field: 'state', type: 'text' },
-                  { label: 'Country', field: 'country', type: 'text' },
-                  { label: 'gender', field: 'gender', type: 'text' },
-                ].map(({ label, field, type, required }) => (
-                  <Grid item xs={12} sm={6} key={field} >
-                    <TextField
-                      fullWidth
-                      label={label}
-                      type={type}
-                      // value={field ? group?.address[field.split('.')[1]] || '' : group[field] || ''}
-                      value={group[field] ?? ''}
-                      onChange={e => handleInputChange(field, e.target.value)}
-                      variant="outlined"
-                    // required={required}
-                    />
-                  </Grid>
-                ))}
+                  { label: 'First Name', field: 'firstName', type: 'text', size: 6 },
+                  { label: 'Last Name', field: 'lastName', type: 'text', size: 6 },
+                  { label: 'Email', field: 'email', type: 'email', size: 6 },
+                  { label: 'Phone', field: 'phoneNo', type: 'tel', size: 6 },
+                  { label: 'designation', field: 'designation', type: 'text', size: 6 },
+                  { label: 'street', field: 'street', type: 'text', size: 9 },
+                  { label: 'City', field: 'city', type: 'text', size: 4 },
+                  { label: 'PinCode', field: 'zip', type: 'number', size: 4 },
+                  { label: 'State', field: 'state', type: 'text', size: 4 },
+                  { label: 'Country', field: 'country', type: 'text', size: 6 },
+                  { label: 'gender', field: 'gender', type: 'text', size: 6 },
+                  { label: 'socialLinks', field: 'socialLinks', type: 'text', size: 6 },
+                  { label: 'dob', field: 'dob', type: 'date', size: 3 }, // Use 'date' type for date picker
+                ]
+                  .map(({ label, field, type, size }) => {
+                    let value = group[field] ?? '';
+
+                    // format dob if it exists
+                    if (field === 'dob' && value) {
+                      try {
+                        value = format(parseISO(value), 'yyyy-MM-dd'); // for input type="date"
+                      } catch (err) {
+                        console.warn('Invalid DOB format:', value);
+                      }
+                    }
+
+                    return (
+
+                      <Grid item xs={12} sm={size} md={6} lg={12} xl={10} key={field}>
+                        {field === 'socialLinks' ? (
+                          <TextField
+                            fullWidth
+                            label={label}
+                            type="text"
+                            value={Array.isArray(group.socialLinks) ? group.socialLinks.join(', ') : ''}
+                            onChange={e => {
+                              const linksArray = e.target.value
+                                .split(',')
+                                .map(link => link.trim())
+                                .filter(link => link);
+                              handleInputChange('socialLinks', linksArray);
+                            }}
+                            variant="outlined"
+                            error={!!errors.socialLinks}
+                            helperText={errors.socialLinks || ''}
+                          />
+                        ) :
+                          <TextField
+                            fullWidth
+                            label={label}
+                            type={type}
+                            value={value}
+                            onChange={e => handleInputChange(field, e.target.value)}
+                            variant="outlined"
+                            error={!!errors[field]}
+                            helperText={errors[field] || ''}
+                          />
+                        }
+
+                      </Grid>
+                    );
+                  })}
               </Grid>
             </CardContent>
           </Card>
@@ -605,7 +731,12 @@ const GroupForm = () => {
                     addSectionEntry(section);
                     setShowModal(false);
                   }}
-                  disabled={group.sections.some(s => (s.name || '').toString().toLowerCase() === section.toLowerCase())}
+                  // disabled={group.sections.some(s => (s.name || '').toString().toLowerCase() === section.toLowerCase())}
+                  disabled={group.sections.some(s => {
+                    const sName = s?.name?.toString()?.toLowerCase() || '';
+                    const sectionName = section?.toString()?.toLowerCase() || '';
+                    return sName === sectionName;
+                  })}
                 >
                   {sectionTypes[section].title}
                 </Button>
