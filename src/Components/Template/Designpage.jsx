@@ -21,16 +21,15 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
-import CV1 from "./Cv1";
-import CV2 from "./Cv2";
-import CV3 from "./Cv3";
-import CV4 from "./Cv4";
-import CV5 from "./Cv5";
-import CV6 from "./Cv6";
-
+import Cv1 from "./Cv1";
+import DefaultCvDesign from "./DefaultCvDesign";
 import { apiUrl } from "../../utils/common";
 import { useSelector } from "react-redux";
+import Cv2 from "./Cv2";
+import Cv3 from "./Cv3";
+import Cv4 from "./Cv4";
+// import Cv6 from "./Cv5";
+
 
 function DesignPage() {
   const theme = useTheme();
@@ -41,8 +40,6 @@ function DesignPage() {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [cvInfoId, setCvInfoId] = useState();
   const [res, setRes] = useState();
-  // const [cvInfoId, setCvInfoId] = useState();
-  // const [cvTepm, setCvTemp] = useState();
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
   const userId = userProfile?.fetchedUsed?.userId;
@@ -56,10 +53,9 @@ function DesignPage() {
         setCvInfoId(res.data?.fetchedCvInfo?.cvInfoId);
         // setCvTemp(res.data?.fetchedCvInfo?.cvInfoId);
         console.log("📌 Fetched Default CV Template:", templateName);
-
         if (templateName) {
           setDefaultTemplate(templateName);
-          localStorage.setItem("defaultCvTemplate", templateName);
+          // localStorage.setItem("defaultCvTemplate", templateName);
         }
       } catch (error) {
         console.error("❌ Failed to fetch default CV:", error);
@@ -81,10 +77,9 @@ function DesignPage() {
         cvInfoId: cvInfoId,
       });
 
-      console.log("✅ API Response:", response.data);
 
       setDefaultTemplate(templateName);
-      localStorage.setItem("defaultCvTemplate", templateName);
+      // localStorage.setItem("defaultCvTemplate", templateName);
       setShowSnackbar(true);
     } catch (error) {
       console.error("❌ Error setting default CV:", error);
@@ -98,12 +93,11 @@ function DesignPage() {
   };
 
   const cvDesigns = [
-    { id: 1, name: "Cv1", Component: CV1 },
-    { id: 2, name: "Cv2", Component: CV2 },
-    { id: 3, name: "Cv3", Component: CV3 },
-    { id: 4, name: "Cv4", Component: CV4 },
-    { id: 5, name: "Cv5", Component: CV5 },
-    { id: 6, name: "Cv6", Component: CV6 },
+    { id: 1, name: "Cv1", Component: Cv1 },
+    { id: 2, name: "Cv2", Component: Cv2 },
+    { id: 3, name: "Cv3", Component: Cv3 },
+    { id: 4, name: "Cv4", Component: Cv4 },
+    { id: 5, name: "defaultCv", Component: DefaultCvDesign },
   ];
 
   return (
@@ -266,7 +260,7 @@ function DesignPage() {
                         width: "900px",
                       }}
                     >
-                      <Component UserData={res} />
+                      <Component UserDataFromDesignPage={res} />
                     </Box>
                   </Box>
 

@@ -9,107 +9,109 @@ import {
   Avatar,
   Grid,
   Chip,
+  Button,
+  LinearProgress,
+  Container,
   Card,
   CardContent,
-  Button,
-  Container,
-  List,
-  ListItem,
-  Tooltip
+  Divider,
 } from "@mui/material";
 import {
   LinkedIn,
   GitHub,
-  Twitter,
-  Download as DownloadIcon,
+  CloudDownload,
+  OpenInNew,
   LightMode,
   DarkMode,
-  Star,
   Print,
-  Edit,
-  Delete,
-  Add
 } from "@mui/icons-material";
 import styled from "@emotion/styled";
 import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
-import { useReactToPrint } from "react-to-print";
+import jsPDF from "jspdf";
 
-// Themes configuration
+// Themes
 const themes = [
   {
-    name: "Dark Charcoal",
-    bg: "#2C2C2C",
-    text: "#F5F5DC",
-    accent: "#3B82F6",
-    font: "Manrope, sans-serif",
+    name: "Teal-White",
+    bg: "#FFFFFF",
+    text: "#111827",
+    accent: "#14B8A6",
+    headerFont: "Inter, sans-serif",
+    bodyFont: "IBM Plex Sans, sans-serif",
   },
   {
-    name: "Light Cream",
+    name: "Midnight Blue",
+    bg: "#0F172A",
+    text: "#FFFFFF",
+    accent: "#3B82F6",
+    headerFont: "Inter, sans-serif",
+    bodyFont: "IBM Plex Sans, sans-serif",
+  },
+  {
+    name: "Warm Sand",
     bg: "#F5F5DC",
-    text: "#2C2C2C",
-    accent: "#3B82F6",
-    font: "Inter, sans-serif",
+    text: "#111827",
+    accent: "#D97706",
+    headerFont: "Inter, sans-serif",
+    bodyFont: "IBM Plex Sans, sans-serif",
   },
   {
-    name: "Blue Gray",
+    name: "Slate Black",
     bg: "#1E293B",
-    text: "#F5F5DC",
-    accent: "#3B82F6",
-    font: "Fira Sans, sans-serif",
-  },
-  {
-    name: "Soft Olive",
-    bg: "#556B2F",
-    text: "#F5F5DC",
-    accent: "#3B82F6",
-    font: "Source Sans Pro, sans-serif",
+    text: "#FFFFFF",
+    accent: "#14B8A6",
+    headerFont: "Inter, sans-serif",
+    bodyFont: "IBM Plex Sans, sans-serif",
   },
 ];
 
-// Styled components
 const CVContainer = styled(Box)`
-  width: 210mm;
-  min-height: 297mm;
+  max-width: 1200px;
   margin: auto;
-  padding: 20mm;
-  background: ${({ theme }) => theme.palette.background.default};
-  border-radius: 8px;
-  box-sizing: border-box;
+  padding: 2rem;
   position: relative;
+  background: ${({ theme }) => theme.palette.background.default};
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
 
   @media print {
     box-shadow: none;
-    padding: 20mm !important;
-    width: 210mm !important;
-    min-height: 297mm !important;
+    padding: 1.5rem !important;
+    max-width: 100% !important;
     margin: 0 !important;
-    page-break-after: always;
-    background: white !important;
+    border-radius: 0 !important;
+  }
+
+  &.pdf-mode {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 15mm !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 auto !important;
+    
+    .MuiAvatar-root {
+      width: 120px !important;
+      height: 120px !important;
+    }
+    
+    .section-title {
+      font-size: 1.25rem !important;
+    }
+    
+    .project-card:hover {
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    
+    .MuiButton-root {
+      display: none !important;
+    }
   }
 `;
 
-const SectionCard = styled(Card)`
-  background: ${({ theme }) =>
-    theme.palette.mode === 'light'
-      ? 'rgba(255, 255, 255, 0.8)'
-      : 'rgba(255, 255, 255, 0.05)'};
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 16px;
-  page-break-inside: avoid;
-  position: relative;
-
-  &:hover .section-controls {
-    opacity: 1;
-  }
-
-  @media print {
-    box-shadow: none !important;
-    background: white !important;
-    color: black !important;
-    border: 1px solid #eee;
-  }
+const Section = styled(Box)`
+  margin-bottom: 2rem;
 `;
 
 const SectionTitle = styled(Typography)`
@@ -118,465 +120,124 @@ const SectionTitle = styled(Typography)`
   position: relative;
   display: inline-block;
   padding-bottom: 4px;
+  border-bottom: 2px solid ${({ theme }) => theme.palette.primary.main};
+`;
 
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 50px;
-    height: 2px;
-    background: ${({ theme }) => theme.palette.primary.main};
-  }
+const SkillBar = styled(Box)`
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+`;
 
-  @media print {
-    color: #3B82F6 !important;
-    &::after {
-      background: #3B82F6 !important;
-    }
+const SkillLabel = styled(Typography)`
+  min-width: 120px;
+  font-weight: 500 !important;
+`;
+
+const ProjectCard = styled(Card)`
+  border: 1px solid ${({ theme }) => theme.palette.primary.main}30;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  height: 100%;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border-color: ${({ theme }) => theme.palette.primary.main}80;
   }
 `;
 
 const PrintHide = styled(Box)`
-  @media print {
+  @media print, .pdf-mode {
     display: none !important;
   }
 `;
-
-const ExperienceItem = styled(Box)`
-  margin-bottom: 1.5rem;
-  position: relative;
-  padding-left: 16px;
-  border-left: 3px solid ${({ theme }) => theme.palette.primary.main};
-  
-  &::before {
-    content: "";
-    position: absolute;
-    left: -6px;
-    top: 6px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: ${({ theme }) => theme.palette.primary.main};
-  }
-
-  &:hover .edit-controls {
-    opacity: 1;
-  }
-
-  @media print {
-    border-left: 3px solid #3B82F6 !important;
-    &::before {
-      background: #3B82F6 !important;
-    }
-  }
-`;
-
-const EditableWrapper = styled(Box)`
-  position: relative;
-  &:hover .edit-controls {
-    opacity: 1;
-  }
-`;
-
-const EditControls = styled(Box)`
-  position: absolute;
-  top: -12px;
-  right: -12px;
-  background: white;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 10;
-  display: flex;
-  
-  @media print {
-    display: none !important;
-  }
-`;
-
-const SectionControls = styled(Box)`
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: white;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 10;
-  display: flex;
-  
-  @media print {
-    display: none !important;
-  }
-`;
-
-const EditableImage = styled(Box)`
-  position: relative;
-  display: inline-block;
-  margin-bottom: 8px;
-  &:hover .edit-controls {
-    opacity: 1;
-  }
-`;
-
-// const EditableText = styled(Box)`
-//   position: relative;
-//   &:hover .edit-controls {
-//     opacity: 1;
-//   }
-// `;
 
 export default function Cv4() {
-  const [themeIndex, setThemeIndex] = useState(1); // Default to light theme
+  const [themeIndex, setThemeIndex] = useState(0);
   const active = themes[themeIndex];
   const cvRef = useRef();
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [cvData, setCvData] = useState({
-    personal: {
-      name: "Priya Desai",
-      title: "Senior Fullstack Developer",
-      summary: "Senior Fullstack Developer with 5+ years of experience building scalable web applications. Specialized in React ecosystems with expertise in design systems and component libraries.",
-      profileImage: "https://via.placeholder.com/150"
-    },
-    contact: {
-      phone: "+91 9876012345",
-      email: "priya.desai@email.com",
-      location: "Pune, Maharashtra",
-      social: [
-        { id: 1, icon: <LinkedIn />, url: "#" },
-        { id: 2, icon: <GitHub />, url: "#" },
-        { id: 3, icon: <Twitter />, url: "#" },
-      ]
-    },
-    skills: [
-      "React", "Next.js", "Node.js", "TypeScript",
-      "GraphQL", "Material UI", "Tailwind CSS", "Redux",
-      "Express", "MongoDB", "PostgreSQL", "AWS",
-      "Docker", "Jest", "Cypress", "CI/CD"
-    ],
-    experience: [
-      {
-        id: 1,
-        title: "Senior Fullstack Developer",
-        company: "ZYX Digital | 2022–Present",
-        description: "• Led development of enterprise SaaS platform serving 100K+ users\n• Created design system used across 15+ products\n• Reduced bundle size by 40% through code optimization"
-      },
-      {
-        id: 2,
-        title: "Frontend Developer",
-        company: "LMN Studio | 2020–2022",
-        description: "• Developed responsive UIs for e-commerce platforms\n• Implemented component library reducing dev time by 30%\n• Optimized performance achieving 95+ Lighthouse scores"
-      }
-    ],
-    education: [
-      {
-        id: 1,
-        degree: "Master of Computer Applications",
-        institution: "Pune University | 2017–2020",
-        details: "CGPA: 9.1/10"
-      },
-      {
-        id: 2,
-        degree: "Bachelor of Science (Computer Science)",
-        institution: "Mumbai University | 2014–2017"
-      }
-    ],
-    projects: [
-      {
-        id: 1,
-        title: "Design System Library",
-        description: "Comprehensive React component library with 50+ components used across company products."
-      },
-      {
-        id: 2,
-        title: "SaaS Analytics Dashboard",
-        description: "Real-time analytics platform processing 1M+ events daily."
-      }
-    ],
-    certifications: [
-      "Meta Frontend Professional Certificate (Coursera)",
-      "AWS Certified Developer - Associate",
-      "Google Cloud Professional Developer",
-      "React Advanced Concepts (Frontend Masters)"
-    ],
-    achievements: [
-      "Speaker at React Conf India 2023",
-      "Published 15+ technical articles on Medium"
-    ]
-  });
 
   const theme = createTheme({
     palette: {
-      mode: themeIndex === 1 ? "light" : "dark",
+      mode: themeIndex === 1 || themeIndex === 3 ? "dark" : "light",
       background: { default: active.bg, paper: active.bg },
       text: { primary: active.text },
       primary: { main: active.accent },
     },
     typography: {
-      fontFamily: active.font,
-      h4: { fontWeight: 700, letterSpacing: 0.5 },
-      h5: { fontWeight: 600, letterSpacing: 0.5 },
+      fontFamily: active.bodyFont,
+      h4: {
+        fontFamily: active.headerFont,
+        fontWeight: 700,
+        letterSpacing: 0.5
+      },
+      h5: {
+        fontFamily: active.headerFont,
+        fontWeight: 600,
+        letterSpacing: 0.5
+      },
       body1: { lineHeight: 1.6 }
     },
     components: {
-      MuiChip: {
-        styleOverrides: {
-          root: {
-            marginRight: 4,
-            marginBottom: 4,
-            '@media print': {
-              borderColor: '#3B82F6 !important',
-              color: 'black !important'
-            }
-          }
-        }
-      },
       MuiLinearProgress: {
         styleOverrides: {
           root: {
-            height: 6,
-            borderRadius: 5
+            height: 8,
+            borderRadius: 4
           }
         }
       }
     }
   });
 
-  // Handle text editing
-  const handleTextChange = (path, value) => {
-    setCvData(prev => {
-      const newData = { ...prev };
-      let target = newData;
-      const segments = path.split('.');
+  const nextTheme = () => setThemeIndex((prev) => (prev + 1) % themes.length);
 
-      segments.slice(0, -1).forEach(segment => {
-        target = target[segment];
-      });
-
-      const lastSegment = segments[segments.length - 1];
-      target[lastSegment] = value;
-
-      return newData;
-    });
+  const handlePrint = () => {
+    window.print();
   };
 
-  // Handle array item editing
-  // const handleArrayItemChange = (path, index, value) => {
-  //   setCvData(prev => {
-  //     const newData = { ...prev };
-  //     let target = newData;
-  //     const segments = path.split('.');
+  const handleDownload = () => {
+    if (cvRef.current) {
+      // Add PDF mode class for styling
+      cvRef.current.classList.add("pdf-mode");
 
-  //     segments.slice(0, -1).forEach(segment => {
-  //       target = target[segment];
-  //     });
+      setTimeout(() => {
+        html2canvas(cvRef.current, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+        }).then((canvas) => {
+          const imgData = canvas.toDataURL("image/jpeg", 1.0);
+          const pdf = new jsPDF("p", "mm", "a4");
+          const imgProps = pdf.getImageProperties(imgData);
 
-  //     const lastSegment = segments[segments.length - 1];
-  //     target[lastSegment][index] = value;
+          // Calculate dimensions to fit A4
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+          const ratio = Math.min(pdfWidth / imgProps.width, pdfHeight / imgProps.height);
+          const imgWidth = imgProps.width * ratio;
+          const imgHeight = imgProps.height * ratio;
+          const x = (pdfWidth - imgWidth) / 2;
+          const y = (pdfHeight - imgHeight) / 2;
 
-  //     return newData;
-  //   });
-  // };
+          pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight);
+          pdf.save("vikas-joshi-cv.pdf");
 
-  // Handle object item editing
-  const handleObjectItemChange = (path, id, field, value) => {
-    setCvData(prev => {
-      const newData = { ...prev };
-      const targetArray = newData[path];
-      const index = targetArray.findIndex(item => item.id === id);
-
-      if (index !== -1) {
-        targetArray[index] = { ...targetArray[index], [field]: value };
-      }
-
-      return newData;
-    });
-  };
-
-  // Handle item deletion
-  const handleDeleteItem = (path, id) => {
-    setCvData(prev => {
-      const newData = { ...prev };
-      let target = newData;
-      const segments = path.split('.');
-
-      segments.slice(0, -1).forEach(segment => {
-        target = target[segment];
-      });
-
-      const lastSegment = segments[segments.length - 1];
-      if (Array.isArray(target[lastSegment])) {
-        target[lastSegment] = target[lastSegment].filter(item => item.id !== id);
-      }
-
-      return newData;
-    });
-  };
-
-  // Handle image upload
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCvData(prev => ({
-          ...prev,
-          personal: {
-            ...prev.personal,
-            profileImage: reader.result
-          }
-        }));
-      };
-      reader.readAsDataURL(file);
+          // Remove PDF mode class after generation
+          cvRef.current.classList.remove("pdf-mode");
+        });
+      }, 500);
     }
   };
-
-  // Handle image deletion
-  const handleImageDelete = () => {
-    setCvData(prev => ({
-      ...prev,
-      personal: {
-        ...prev.personal,
-        profileImage: null
-      }
-    }));
-  };
-
-  // Add new item to a section
-  const addNewItem = (section) => {
-    const newItemId = Date.now();
-
-    setCvData(prev => {
-      if (section === 'experience') {
-        return {
-          ...prev,
-          experience: [
-            ...prev.experience,
-            {
-              id: newItemId,
-              title: "New Position",
-              company: "Company Name | Year",
-              description: "• Description point 1\n• Description point 2"
-            }
-          ]
-        };
-      } else if (section === 'projects') {
-        return {
-          ...prev,
-          projects: [
-            ...prev.projects,
-            {
-              id: newItemId,
-              title: "New Project",
-              description: "Project description"
-            }
-          ]
-        };
-      }
-      return prev;
-    });
-  };
-
-  // PDF Download functionality
-  const handleDownloadPDF = async () => {
-    setIsGeneratingPDF(true);
-    const originalTheme = themeIndex;
-
-    // Force light theme for PDF generation
-    if (originalTheme !== 1) {
-      setThemeIndex(1);
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-
-    try {
-      const element = cvRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        logging: false,
-        useCORS: true,
-        backgroundColor: "#FFFFFF",
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      pdf.save('professional-cv.pdf');
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-    } finally {
-      if (originalTheme !== 1) {
-        setThemeIndex(originalTheme);
-      }
-      setIsGeneratingPDF(false);
-    }
-  };
-
-  const nextTheme = () =>
-    setThemeIndex((prev) => (prev + 1) % themes.length);
-
-  const handlePrint = useReactToPrint({
-    content: () => cvRef.current,
-    pageStyle: `
-      @page {
-        size: A4;
-        margin: 0;
-      }
-      @media print {
-        body, html {
-          width: 210mm;
-          height: 297mm;
-        }
-        body {
-          margin: 0;
-          padding: 0;
-          background: white !important;
-          -webkit-print-color-adjust: exact !important;
-          color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        * {
-          -webkit-print-color-adjust: exact !important;
-          color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        .MuiCard-root {
-          break-inside: avoid;
-        }
-      }
-    `,
-    onAfterPrint: () => console.log("Printed successfully!")
-  });
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container sx={{ '@media print': { padding: '0 !important' } }}>
+      <Container>
         <PrintHide display="flex" justifyContent="flex-end" mb={2}>
           <IconButton onClick={nextTheme} color="primary" sx={{ mr: 1 }}>
-            {themeIndex === 1 ? <DarkMode /> : <LightMode />}
+            {themeIndex % 2 === 0 ? <DarkMode /> : <LightMode />}
           </IconButton>
           <Button
             variant="outlined"
@@ -589,557 +250,238 @@ export default function Cv4() {
           <Button
             variant="contained"
             color="primary"
-            startIcon={<DownloadIcon />}
-            onClick={handleDownloadPDF}
-            disabled={isGeneratingPDF}
+            startIcon={<CloudDownload />}
+            onClick={handleDownload}
           >
-            {isGeneratingPDF ? 'Generating...' : 'Download PDF'}
+            Download PDF
           </Button>
         </PrintHide>
 
         <CVContainer ref={cvRef}>
           {/* Header */}
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <EditableWrapper>
-              <Typography variant="h4" color="primary" sx={{ '@media print': { color: '#3B82F6 !important' } }}>
-                {cvData.personal.name}
-              </Typography>
-              <EditControls className="edit-controls">
-                <IconButton size="small" onClick={() => {
-                  const newValue = prompt("Edit name", cvData.personal.name);
-                  if (newValue !== null) {
-                    handleTextChange('personal.name', newValue);
-                  }
-                }}>
-                  <Edit fontSize="small" />
-                </IconButton>
-              </EditControls>
-            </EditableWrapper>
-            <EditableWrapper>
-              <Typography variant="h6" color="textSecondary" sx={{ '@media print': { color: 'black !important' } }}>
-                {cvData.personal.title}
-              </Typography>
-              <EditControls className="edit-controls">
-                <IconButton size="small" onClick={() => {
-                  const newValue = prompt("Edit title", cvData.personal.title);
-                  if (newValue !== null) {
-                    handleTextChange('personal.title', newValue);
-                  }
-                }}>
-                  <Edit fontSize="small" />
-                </IconButton>
-              </EditControls>
-            </EditableWrapper>
+            <Typography variant="h4" sx={{ fontFamily: active.headerFont }}>
+              Vikas Joshi
+            </Typography>
+            <Typography variant="h6" color="textSecondary">
+              Frontend Developer & UI/UX Designer
+            </Typography>
           </Box>
 
-          <Grid container spacing={3}>
+          {/* Hero */}
+          <Grid container spacing={4} mt={2}>
+            <Grid item xs={12} md={3}>
+              <Avatar
+                src="https://via.placeholder.com/200"
+                sx={{
+                  width: 200,
+                  height: 200,
+                  border: `3px solid ${active.accent}`
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={9}>
+              <Box>
+                <Typography variant="body1" mb={1}>
+                  <Box component="span" fontWeight="bold">Phone:</Box> +91 9112345678
+                </Typography>
+                <Typography variant="body1" mb={1}>
+                  <Box component="span" fontWeight="bold">Email:</Box> vikas.joshi@email.com
+                </Typography>
+                <Typography variant="body1" mb={1}>
+                  <Box component="span" fontWeight="bold">Location:</Box> Lucknow, UP, India
+                </Typography>
+                <Box mt={1}>
+                  <IconButton color="primary"><LinkedIn /></IconButton>
+                  <IconButton color="primary"><GitHub /></IconButton>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+
+          {/* Summary */}
+          <Section mt={4}>
+            <Typography
+              variant="h5"
+              sx={{
+                fontStyle: "italic",
+                borderLeft: `4px solid ${active.accent}`,
+                pl: 2,
+                color: "primary.main"
+              }}
+            >
+              "Frontend Dev + Designer. Build it. Brand it. Ship it."
+            </Typography>
+          </Section>
+
+          <Grid container spacing={4}>
             {/* Left Column */}
-            <Grid item xs={12} md={5}>
-              <SectionCard>
-                <CardContent>
-                  <SectionControls className="section-controls">
-                    <Tooltip title="Edit section">
-                      <IconButton size="small">
-                        <Edit fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </SectionControls>
-                  <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} md={5}>
-                      {cvData.personal.profileImage ? (
-                        <EditableImage>
-                          <Avatar
-                            src={cvData.personal.profileImage}
-                            sx={{
-                              width: 120,
-                              height: 120,
-                              border: `3px solid ${active.accent}`,
-                              '@media print': { borderColor: '#3B82F6 !important' }
-                            }}
-                          />
-                          <EditControls className="edit-controls">
-                            <IconButton size="small" onClick={() => document.getElementById('image-upload').click()}>
-                              <Edit fontSize="small" />
-                            </IconButton>
-                            <IconButton size="small" onClick={handleImageDelete}>
-                              <Delete fontSize="small" />
-                            </IconButton>
-                            <input
-                              id="image-upload"
-                              type="file"
-                              accept="image/*"
-                              style={{ display: 'none' }}
-                              onChange={handleImageUpload}
-                            />
-                          </EditControls>
-                        </EditableImage>
-                      ) : (
-                        <Button
-                          variant="outlined"
-                          onClick={() => document.getElementById('image-upload').click()}
-                          sx={{ width: 120, height: 120 }}
-                        >
-                          Add Photo
-                        </Button>
-                      )}
-                    </Grid>
-                    <Grid item xs={12} md={7}>
-                      <EditableWrapper>
-                        <Typography variant="body1" sx={{ '@media print': { color: 'black !important' } }}>
-                          <Box component="span" fontWeight="bold">Phone:</Box> {cvData.contact.phone}
-                        </Typography>
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit phone", cvData.contact.phone);
-                            if (newValue !== null) {
-                              handleTextChange('contact.phone', newValue);
-                            }
-                          }}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </EditControls>
-                      </EditableWrapper>
+            <Grid item xs={12} md={6}>
+              {/* Skills */}
+              <Section>
+                <SectionTitle variant="h5" color="primary" className="section-title">Technical Skills</SectionTitle>
+                {[
+                  { skill: "React", level: 95 },
+                  { skill: "Next.js", level: 90 },
+                  { skill: "Material UI", level: 85 },
+                  { skill: "Three.js", level: 75 },
+                  { skill: "Figma", level: 80 },
+                  { skill: "TypeScript", level: 85 },
+                  { skill: "Node.js", level: 70 },
+                ].map((item) => (
+                  <SkillBar key={item.skill}>
+                    <SkillLabel>{item.skill}</SkillLabel>
+                    <LinearProgress
+                      variant="determinate"
+                      value={item.level}
+                      color="primary"
+                      sx={{ flexGrow: 1, ml: 2 }}
+                    />
+                  </SkillBar>
+                ))}
+              </Section>
 
-                      <EditableWrapper>
-                        <Typography variant="body1" sx={{ '@media print': { color: 'black !important' } }}>
-                          <Box component="span" fontWeight="bold">Email:</Box> {cvData.contact.email}
-                        </Typography>
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit email", cvData.contact.email);
-                            if (newValue !== null) {
-                              handleTextChange('contact.email', newValue);
-                            }
-                          }}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </EditControls>
-                      </EditableWrapper>
+              {/* Experience */}
+              <Section>
+                <SectionTitle variant="h5" color="primary" className="section-title">Professional Experience</SectionTitle>
+                <Box mb={3}>
+                  <Typography variant="subtitle1" fontWeight={600}>Senior Frontend Developer</Typography>
+                  <Typography color="primary" fontStyle="italic">Tech Innovations Pvt Ltd | 2021–Present</Typography>
+                  <Typography variant="body2" mt={1}>
+                    • Developed responsive web applications using React and Next.js<br />
+                    • Created design systems used across 10+ products<br />
+                    • Reduced page load times by 40% through optimization
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>UI/UX Designer</Typography>
+                  <Typography color="primary" fontStyle="italic">Digital Creations | 2019–2021</Typography>
+                  <Typography variant="body2" mt={1}>
+                    • Designed user interfaces for SaaS applications<br />
+                    • Created interactive prototypes using Figma<br />
+                    • Collaborated with developers on implementation
+                  </Typography>
+                </Box>
+              </Section>
 
-                      <EditableWrapper>
-                        <Typography variant="body1" sx={{ '@media print': { color: 'black !important' } }}>
-                          <Box component="span" fontWeight="bold">Location:</Box> {cvData.contact.location}
-                        </Typography>
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit location", cvData.contact.location);
-                            if (newValue !== null) {
-                              handleTextChange('contact.location', newValue);
-                            }
-                          }}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </EditControls>
-                      </EditableWrapper>
-
-                      <Box mt={1} sx={{ '@media print': { display: 'none' } }}>
-                        {cvData.contact.social.map((item) => (
-                          <IconButton key={item.id} color="primary">
-                            {item.icon}
-                          </IconButton>
-                        ))}
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </SectionCard>
-
-              <SectionCard>
-                <CardContent>
-                  <SectionTitle variant="h5" color="primary">
-                    Skills
-                  </SectionTitle>
-                  <SectionControls className="section-controls">
-                    <Tooltip title="Add skill">
-                      <IconButton size="small" onClick={() => {
-                        const newSkill = prompt("Add new skill");
-                        if (newSkill) {
-                          setCvData(prev => ({
-                            ...prev,
-                            skills: [...prev.skills, newSkill]
-                          }));
-                        }
-                      }}>
-                        <Add fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </SectionControls>
-                  <Grid container spacing={1}>
-                    {cvData.skills.map((skill, index) => (
-                      <Grid item xs={6} key={index}>
-                        <EditableWrapper>
-                          <Chip
-                            label={skill}
-                            color="primary"
-                            variant="outlined"
-                            sx={{ '@media print': { color: 'black !important', borderColor: '#3B82F6 !important' } }}
-                          />
-                          <EditControls className="edit-controls">
-                            <IconButton size="small" onClick={() => {
-                              const newValue = prompt("Edit skill", skill);
-                              if (newValue !== null) {
-                                const newSkills = [...cvData.skills];
-                                newSkills[index] = newValue;
-                                setCvData(prev => ({
-                                  ...prev,
-                                  skills: newSkills
-                                }));
-                              }
-                            }}>
-                              <Edit fontSize="small" />
-                            </IconButton>
-                            <IconButton size="small" onClick={() => {
-                              setCvData(prev => ({
-                                ...prev,
-                                skills: prev.skills.filter((_, i) => i !== index)
-                              }));
-                            }}>
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </EditControls>
-                        </EditableWrapper>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </CardContent>
-              </SectionCard>
-
-              <SectionCard>
-                <CardContent>
-                  <SectionTitle variant="h5" color="primary">
-                    Certifications
-                  </SectionTitle>
-                  <SectionControls className="section-controls">
-                    <Tooltip title="Add certification">
-                      <IconButton size="small" onClick={() => {
-                        const newCert = prompt("Add new certification");
-                        if (newCert) {
-                          setCvData(prev => ({
-                            ...prev,
-                            certifications: [...prev.certifications, newCert]
-                          }));
-                        }
-                      }}>
-                        <Add fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </SectionControls>
-                  <List dense>
-                    {cvData.certifications.map((cert, index) => (
-                      <ListItem key={index} sx={{ py: 0.5, position: 'relative' }}>
-                        <EditableWrapper>
-                          <Typography>• {cert}</Typography>
-                          <EditControls className="edit-controls">
-                            <IconButton size="small" onClick={() => {
-                              const newValue = prompt("Edit certification", cert);
-                              if (newValue !== null) {
-                                const newCerts = [...cvData.certifications];
-                                newCerts[index] = newValue;
-                                setCvData(prev => ({
-                                  ...prev,
-                                  certifications: newCerts
-                                }));
-                              }
-                            }}>
-                              <Edit fontSize="small" />
-                            </IconButton>
-                            <IconButton size="small" onClick={() => {
-                              setCvData(prev => ({
-                                ...prev,
-                                certifications: prev.certifications.filter((_, i) => i !== index)
-                              }));
-                            }}>
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </EditControls>
-                        </EditableWrapper>
-                      </ListItem>
-                    ))}
-                  </List>
-                </CardContent>
-              </SectionCard>
-
-              <SectionCard>
-                <CardContent>
-                  <SectionTitle variant="h5" color="primary">
-                    Achievements
-                  </SectionTitle>
-                  <SectionControls className="section-controls">
-                    <Tooltip title="Add achievement">
-                      <IconButton size="small" onClick={() => {
-                        const newAchievement = prompt("Add new achievement");
-                        if (newAchievement) {
-                          setCvData(prev => ({
-                            ...prev,
-                            achievements: [...prev.achievements, newAchievement]
-                          }));
-                        }
-                      }}>
-                        <Add fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </SectionControls>
-                  <Box mt={1}>
-                    {cvData.achievements.map((achievement, index) => (
-                      <Box key={index} display="flex" alignItems="center" mb={1} position="relative">
-                        <EditableWrapper>
-                          <Star color="primary" sx={{ mr: 1 }} />
-                          <Typography>{achievement}</Typography>
-                          <EditControls className="edit-controls">
-                            <IconButton size="small" onClick={() => {
-                              const newValue = prompt("Edit achievement", achievement);
-                              if (newValue !== null) {
-                                const newAchievements = [...cvData.achievements];
-                                newAchievements[index] = newValue;
-                                setCvData(prev => ({
-                                  ...prev,
-                                  achievements: newAchievements
-                                }));
-                              }
-                            }}>
-                              <Edit fontSize="small" />
-                            </IconButton>
-                            <IconButton size="small" onClick={() => {
-                              setCvData(prev => ({
-                                ...prev,
-                                achievements: prev.achievements.filter((_, i) => i !== index)
-                              }));
-                            }}>
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </EditControls>
-                        </EditableWrapper>
-                      </Box>
-                    ))}
-                  </Box>
-                </CardContent>
-              </SectionCard>
+              {/* Education */}
+              <Section>
+                <SectionTitle variant="h5" color="primary" className="section-title">Education</SectionTitle>
+                <Box mb={2}>
+                  <Typography fontWeight={600}>B.Sc Computer Science</Typography>
+                  <Typography>Aligarh Muslim University | 2015–2019</Typography>
+                  <Typography color="textSecondary">CGPA: 8.7/10</Typography>
+                </Box>
+                <Box>
+                  <Typography fontWeight={600}>Diploma in UI/UX Design</Typography>
+                  <Typography>Design Institute of India | 2018</Typography>
+                </Box>
+              </Section>
             </Grid>
 
             {/* Right Column */}
-            <Grid item xs={12} md={7}>
-              <SectionCard>
-                <CardContent>
-                  <SectionTitle variant="h5" color="primary">
-                    Professional Summary
-                  </SectionTitle>
-                  <EditableWrapper>
-                    <Typography sx={{ '@media print': { color: 'black !important' } }}>
-                      {cvData.personal.summary}
-                    </Typography>
-                    <EditControls className="edit-controls">
-                      <IconButton size="small" onClick={() => {
-                        const newValue = prompt("Edit summary", cvData.personal.summary);
-                        if (newValue !== null) {
-                          handleTextChange('personal.summary', newValue);
-                        }
-                      }}>
-                        <Edit fontSize="small" />
-                      </IconButton>
-                    </EditControls>
-                  </EditableWrapper>
-                </CardContent>
-              </SectionCard>
-
-              <SectionCard>
-                <CardContent>
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <SectionTitle variant="h5" color="primary">
-                      Experience
-                    </SectionTitle>
-                    <Tooltip title="Add experience">
-                      <IconButton onClick={() => addNewItem('experience')}>
-                        <Add />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-
-                  {cvData.experience.map((exp) => (
-                    <ExperienceItem key={exp.id}>
-                      <EditControls className="edit-controls" sx={{ top: -8, right: -8 }}>
-                        <IconButton size="small" onClick={() => {
-                          const newTitle = prompt("Edit position", exp.title);
-                          if (newTitle !== null) {
-                            handleObjectItemChange('experience', exp.id, 'title', newTitle);
-                          }
-                        }}>
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" onClick={() => handleDeleteItem('experience', exp.id)}>
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </EditControls>
-
-                      <EditableWrapper>
-                        <Typography variant="subtitle1" fontWeight={600}>{exp.title}</Typography>
-                      </EditableWrapper>
-
-                      <EditableWrapper>
-                        <Typography color="primary" fontStyle="italic">{exp.company}</Typography>
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit company", exp.company);
-                            if (newValue !== null) {
-                              handleObjectItemChange('experience', exp.id, 'company', newValue);
-                            }
-                          }}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </EditControls>
-                      </EditableWrapper>
-
-                      <EditableWrapper sx={{ mt: 1 }}>
-                        <Typography variant="body2" whiteSpace="pre-line">
-                          {exp.description}
-                        </Typography>
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit description", exp.description);
-                            if (newValue !== null) {
-                              handleObjectItemChange('experience', exp.id, 'description', newValue);
-                            }
-                          }}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </EditControls>
-                      </EditableWrapper>
-                    </ExperienceItem>
+            <Grid item xs={12} md={6}>
+              {/* Projects */}
+              <Section>
+                <SectionTitle variant="h5" color="primary" className="section-title">Featured Projects</SectionTitle>
+                <Grid container spacing={2} mt={1}>
+                  {[
+                    {
+                      title: "Portfolio Showcase",
+                      desc: "Interactive portfolio with 3D elements using Three.js",
+                      tech: ["React", "Three.js", "Framer Motion"]
+                    },
+                    {
+                      title: "SaaS Analytics Dashboard",
+                      desc: "Real-time analytics platform for business metrics",
+                      tech: ["Next.js", "Material UI", "Chart.js"]
+                    },
+                    {
+                      title: "3D Product Showcase",
+                      desc: "Immersive e-commerce experience with 3D product visualization",
+                      tech: ["React", "Three.js", "Blender"]
+                    }
+                  ].map((project) => (
+                    <Grid item xs={12} key={project.title}>
+                      <ProjectCard className="project-card">
+                        <CardContent>
+                          <Typography variant="h6" fontWeight={600}>{project.title}</Typography>
+                          <Typography variant="body2" mt={1} mb={2}>
+                            {project.desc}
+                          </Typography>
+                          <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
+                            {project.tech.map(tech => (
+                              <Chip key={tech} label={tech} color="primary" size="small" />
+                            ))}
+                          </Box>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            startIcon={<OpenInNew />}
+                          >
+                            View Project
+                          </Button>
+                        </CardContent>
+                      </ProjectCard>
+                    </Grid>
                   ))}
-                </CardContent>
-              </SectionCard>
+                </Grid>
+              </Section>
 
-              <SectionCard>
-                <CardContent>
-                  <SectionTitle variant="h5" color="primary">
-                    Education
-                  </SectionTitle>
-                  {cvData.education.map((edu, index) => (
-                    <Box key={index} mb={2} position="relative">
-                      <EditControls className="edit-controls" sx={{ top: -8, right: -8 }}>
-                        <IconButton size="small" onClick={() => {
-                          const newDegree = prompt("Edit degree", edu.degree);
-                          if (newDegree !== null) {
-                            const newEducation = [...cvData.education];
-                            newEducation[index] = { ...newEducation[index], degree: newDegree };
-                            setCvData(prev => ({
-                              ...prev,
-                              education: newEducation
-                            }));
-                          }
-                        }}>
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" onClick={() => {
-                          setCvData(prev => ({
-                            ...prev,
-                            education: prev.education.filter((_, i) => i !== index)
-                          }));
-                        }}>
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </EditControls>
+              {/* Certificates & Achievements */}
+              <Section>
+                <SectionTitle variant="h5" color="primary" className="section-title">Certifications</SectionTitle>
+                <Box mb={2}>
+                  <Typography fontWeight={500}>• Meta Frontend Professional Certificate</Typography>
+                  <Typography fontWeight={500}>• Google UX Design Professional Certificate</Typography>
+                  <Typography fontWeight={500}>• AWS Certified Cloud Practitioner</Typography>
+                </Box>
 
-                      <EditableWrapper>
-                        <Typography fontWeight={600}>{edu.degree}</Typography>
-                      </EditableWrapper>
+                <SectionTitle variant="h5" color="primary" className="section-title">Achievements</SectionTitle>
+                <Typography>
+                  • Created India's first interactive VR portfolio<br />
+                  • Featured in "Top 50 Designers to Watch" list<br />
+                  • Open source contributor to Material UI
+                </Typography>
+              </Section>
 
-                      <EditableWrapper>
-                        <Typography>{edu.institution}</Typography>
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit institution", edu.institution);
-                            if (newValue !== null) {
-                              const newEducation = [...cvData.education];
-                              newEducation[index] = { ...newEducation[index], institution: newValue };
-                              setCvData(prev => ({
-                                ...prev,
-                                education: newEducation
-                              }));
-                            }
-                          }}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </EditControls>
-                      </EditableWrapper>
+              {/* Languages & Interests */}
+              <Section>
+                <SectionTitle variant="h5" color="primary" className="section-title">Languages</SectionTitle>
+                <Box mb={2} display="flex" gap={1}>
+                  <Chip label="English (Professional)" color="primary" />
+                  <Chip label="Hindi (Native)" color="primary" />
+                </Box>
 
-                      {edu.details && (
-                        <EditableWrapper>
-                          <Typography color="textSecondary">{edu.details}</Typography>
-                          <EditControls className="edit-controls">
-                            <IconButton size="small" onClick={() => {
-                              const newValue = prompt("Edit details", edu.details);
-                              if (newValue !== null) {
-                                const newEducation = [...cvData.education];
-                                newEducation[index] = { ...newEducation[index], details: newValue };
-                                setCvData(prev => ({
-                                  ...prev,
-                                  education: newEducation
-                                }));
-                              }
-                            }}>
-                              <Edit fontSize="small" />
-                            </IconButton>
-                          </EditControls>
-                        </EditableWrapper>
-                      )}
-                    </Box>
-                  ))}
-                </CardContent>
-              </SectionCard>
+                <SectionTitle variant="h5" color="primary" className="section-title">Interests</SectionTitle>
+                <Box display="flex" gap={1}>
+                  <Chip label="🎨 3D Art" color="primary" />
+                  <Chip label="✨ Web Animation" color="primary" />
+                  <Chip label="📱 UI Experimentation" color="primary" />
+                </Box>
+              </Section>
 
-              <SectionCard>
-                <CardContent>
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <SectionTitle variant="h5" color="primary">
-                      Projects
-                    </SectionTitle>
-                    <Tooltip title="Add project">
-                      <IconButton onClick={() => addNewItem('projects')}>
-                        <Add />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                  {cvData.projects.map((project) => (
-                    <Box key={project.id} mt={2} position="relative">
-                      <EditControls className="edit-controls" sx={{ top: -8, right: -8 }}>
-                        <IconButton size="small" onClick={() => {
-                          const newTitle = prompt("Edit project title", project.title);
-                          if (newTitle !== null) {
-                            handleObjectItemChange('projects', project.id, 'title', newTitle);
-                          }
-                        }}>
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" onClick={() => handleDeleteItem('projects', project.id)}>
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </EditControls>
+              {/* Awards */}
+              <Section>
+                <SectionTitle variant="h5" color="primary" className="section-title">Awards</SectionTitle>
+                <Box>
+                  <Typography fontWeight={500}>🏆 Top 50 Designer Showcase - 2023</Typography>
+                  <Typography variant="body2" color="textSecondary">Design Excellence Awards</Typography>
 
-                      <EditableWrapper>
-                        <Typography fontWeight={600}>{project.title}</Typography>
-                      </EditableWrapper>
-
-                      <EditableWrapper>
-                        <Typography variant="body2" mt={1}>
-                          {project.description}
-                        </Typography>
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit description", project.description);
-                            if (newValue !== null) {
-                              handleObjectItemChange('projects', project.id, 'description', newValue);
-                            }
-                          }}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </EditControls>
-                      </EditableWrapper>
-                    </Box>
-                  ))}
-                </CardContent>
-              </SectionCard>
+                  <Typography fontWeight={500} mt={1}>🥇 Best UI Innovation - 2022</Typography>
+                  <Typography variant="body2" color="textSecondary">India Tech Summit</Typography>
+                </Box>
+              </Section>
             </Grid>
           </Grid>
+
+          <Divider sx={{ my: 4, borderColor: "primary.main" }} />
+          <Box textAlign="center">
+            <Typography variant="body2">
+              Designed with React & Material UI • vikas-joshi-portfolio.com
+            </Typography>
+          </Box>
         </CVContainer>
       </Container>
     </ThemeProvider>

@@ -20,16 +20,20 @@ import {
   Email,
   Search as SearchIcon,
   Work,
- 
+
 } from '@mui/icons-material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { Link } from "react-router-dom";
 import { apiUrl } from '../../utils/common';
+import { useSelector } from 'react-redux';
 // import { apiUrl } from '../../utils/common';
 
 const HomePage = () => {
   const [users, setUsers] = useState([]);   // API se aane wala data
-  console.log(users, "users fom home");
+  // console.log(users, "users fom home");
+  // const userProfile = useSelector(state => state.userProfile?.data?.fetchedUsed);
+  // console.log(users, "userProfile from home");
+
 
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -37,6 +41,25 @@ const HomePage = () => {
   const theme = useTheme();
   // const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  // Function to generate a random color based on a string (e.g., the user's name)
+  const stringToColor = (string) => {
+    let hash = 0;
+    let i;
+
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    let color = '#';
+
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
+    }
+    /* eslint-enable no-bitwise */
+    return color;
+  };
   // 🔹 API call
   useEffect(() => {
     setLoading(true);
@@ -76,7 +99,7 @@ const HomePage = () => {
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Search by name, title or skills..."
+            placeholder="Search by name"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             sx={{
@@ -106,6 +129,7 @@ const HomePage = () => {
       {!loading && users.length > 0 ? (
         <Grid container spacing={3} justifyContent="center">
           {users.map((user, index) => (
+            // console.log(user.userName?.charAt(0)?.toUpperCase()),
             <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
               <Card
                 sx={{
@@ -125,28 +149,36 @@ const HomePage = () => {
                 }}
               >
                 <CardContent sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexDirection: 'column'  }}>
+                  <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column', // Stacks children vertically
+                    alignItems: 'center', // Centers children horizontally within the column
+                    mb: 2,
+                    textAlign: 'center' // Ensures text inside the inner box is also centered
+                  }}>
                     <Avatar
-                      src={user.profilePhoto || user.name}
-                      alt={user.name}
+                      key={index}
+                      src={user?.profilePhoto}
                       sx={{
                         width: 80,
                         height: 80,
+                        bgcolor: user?.profilePhoto ? 'transparent' : stringToColor(user.firstName + user.lastName),
                         border: '2px solid',
                         borderColor: 'primary.main',
-                        mr: 2,
+                        mb: 1, // Added a margin bottom to separate the avatar and name
                         flexShrink: 0
                       }}
-                    />
-
+                    >
+                      {(!user?.profilePhoto) && `${user?.firstName?.charAt(0)?.toUpperCase()}${user?.lastName?.charAt(0)?.toUpperCase()}`}
+                    </Avatar>
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                       <Typography variant="h6" noWrap>
-                        {`${user.firstName} ${user.lastName}`}
+                        {`${user?.firstName} ${user?.lastName}`}
                       </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Work sx={{ fontSize: '1rem', mr: 0.5, color: 'primary.main' }} />
+                      <Box  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Work  sx={{ fontSize: '1rem', mr: 0.5, color: 'primary.main' }} />
                         <Typography variant="body2" color="primary" noWrap>
-                          {user.designation}
+                          {user?.designation}
                         </Typography>
                       </Box>
                     </Box>
@@ -159,19 +191,19 @@ const HomePage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <Phone sx={{ fontSize: '1rem', mr: 1, color: 'text.secondary' }} />
                       <Typography variant="body2" color="text.secondary" noWrap>
-                        {user.phoneNo}
+                        {user?.phoneNo}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <Email sx={{ fontSize: '1rem', mr: 1, color: 'text.secondary' }} />
                       <Typography variant="body2" color="text.secondary" noWrap>
-                        {user.email}
+                        {user?.email}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <LocationOnIcon sx={{ fontSize: '1rem', mr: 1, color: 'text.secondary' }} />
                       <Typography variant="body2" color="text.secondary" noWrap>
-                        {user.city}, {user.state}, {user.country}
+                        {user?.city}, {user?.state}, {user?.country}
                       </Typography>
                     </Box>
                   </Box>
@@ -180,7 +212,7 @@ const HomePage = () => {
                   <Box sx={{ mt: 2, textAlign: "center" }}>
                     <Button
                       component={Link}
-                      to={`/${user?.userName}`}
+                      to={`/${user?.userName}?cv=true`}
                       variant="contained"
                       color="primary"
                       fullWidth
@@ -204,8 +236,9 @@ const HomePage = () => {
             </Typography>
           </Box>
         )
-      )}
-    </Container>
+      )
+      }
+    </Container >
   );
 };
 

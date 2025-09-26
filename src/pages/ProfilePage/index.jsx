@@ -47,10 +47,10 @@ const user1 = {
   about: 'A passionate developer with experience in building scalable web applications. Loves to explore new technologies and contribute to open source projects.',
 };
 
- function ProfilePage() {
+function ProfilePage() {
   const [hasCV, setHasCV] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -242,7 +242,7 @@ const user1 = {
                   width: '100%',
                   objectFit: 'cover',
                 }}
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPcQfxnjbD0jsosD1o-UxNAwgo03XgHJPxeR39yjIv26hmM5hcHRLPyr1zMlWBKpZRFANos9EmNzXTw2M9TyrVJpyltsqRadVL2q_ojXtiC5lE_wBoDrbYEXlRTGRt8oaqiO4IyTlWH8f1JZ4YXDcM8J5OTdYrN9qHHliKn6praARlA7jUl6COrvhHWSrjNd_NoX5ajF2pIZGieN-bSWAuGs0kt6u-XknmWHYXLnLX_ZCvpwu4B5hXxvwALr73cgfgN_ts4rWk4po"
+                src="https://tse4.mm.bing.net/th/id/OIP.3pRVgDEHgJprQOdd1GsQQAHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
                 alt="Cover photo"
               />
               <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -373,6 +373,13 @@ const user1 = {
                       value={userProfile?.fetchedUsed?.phoneNo || user1.phoneNo}
                     />
                   </Grid>
+                  <Grid item xs={12} md={6} lg={4}>
+                    <InfoItem
+                      icon={<LocationOnIcon sx={{ fontSize: '1.25rem' }} />}
+                      label="Address"
+                      value={`${userProfile?.fetchedUsed?.city || user1.city}, ${userProfile?.fetchedUsed?.state || user1.state}`}
+                    />
+                  </Grid>
                   <Grid item xs={12} md={6} lg={8}>
                     <InfoItem
                       icon={<EmailIcon sx={{ fontSize: '1.25rem' }} />}
@@ -387,13 +394,7 @@ const user1 = {
                       value={userProfile?.fetchedUsed?.socialLinks || user1.socialLinks}
                     />
                   </Grid>
-                  <Grid item xs={12} md={6} lg={4}>
-                    <InfoItem
-                      icon={<LocationOnIcon sx={{ fontSize: '1.25rem' }} />}
-                      label="Address"
-                      value={`${userProfile?.fetchedUsed?.city || user1.city}, ${userProfile?.fetchedUsed?.state || user1.state}`}
-                    />
-                  </Grid>
+
                 </Grid>
               </Box>
 
@@ -440,4 +441,4 @@ const user1 = {
       </Box>
     </Box>
   );
-}export default ProfilePage;
+} export default ProfilePage;
