@@ -35,7 +35,6 @@ const AppRoutes = (defaultCvTemplate) => {
 
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/createportfolio" element={<CreatePortfolioPage />} />
         <Route path="/editprofile" element={<UserForm />} />
         <Route path="/create-cv" element={<CreateCvPage />} />
@@ -48,6 +47,8 @@ const AppRoutes = (defaultCvTemplate) => {
           {/* <Route path="edit-group/:groupId" element={<GroupForm />} /> */}
         </Route>
       </Route>
+        <Route path="/profile" element={<ProfilePage />} />
+
     </Routes>
   );
 };

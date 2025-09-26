@@ -3,11 +3,11 @@
 // src/components/Layout/Header/index.jsx
 // This component renders the top application bar with navigation and sidebar toggle.
 import { useEffect, useState } from 'react';
-import { AppBar, Toolbar, Button, IconButton, Box, Skeleton } from '@mui/material';
+import { AppBar, Toolbar, Button, IconButton, Box, Skeleton, useMediaQuery, useTheme } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu'; // Hamburger icon for sidebar toggle
 import DescriptionIcon from '@mui/icons-material/Description'; // Icon for "Resume Now." logo
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'; // Import useNavigate hook
-import { jwtDecode } from "jwt-decode"
+import { jwtDecode } from "jwt-decode";
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -21,57 +21,44 @@ import { persistor } from "../../../store";
 const Header = ({ onNavigate, onToggleSidebar }) => {
   const user = useSelector(state => state.user);
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const handleNavigationClick = (path) => {
     onNavigate(path);
   };
-  const app_name = process.env.REACT_APP_APP_NAME
-  const app_url = process.env.REACT_APP_APP_URL
-  const redirect_url = process.env.REACT_APP_REDIRECT_URL
+
+  const app_name = process.env.REACT_APP_APP_NAME;
+  const app_url = process.env.REACT_APP_APP_URL;
+  const redirect_url = process.env.REACT_APP_REDIRECT_URL;
 
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [searchParams] = useSearchParams();
   const [decodedToken, setDecodedToken] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
-  // const [hasPortfolio, setHasPortfolio] = useState(null);
   const userProfile = useSelector(state => state.userProfile?.data?.fetchedUsed);
-  // const [data, setData] = useState(null);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const open = Boolean(anchorEl);
-
 
   useEffect(() => {
     dispatch(setUser({ userName: decodedToken?.userName, email: decodedToken?.email, id: decodedToken?.id }));
     if (isLoggedIn && decodedToken?.userName) {
       const fetchUser = async () => {
         try {
-          setLoading(true); // start loading
+          setLoading(true);
           const user = await axios.get(`${apiUrl}/user-details/${decodedToken?.userName}`);
-          // setHasPic(user.data.fetchedUsed.profilePhoto, "user from header");
-
-          // dispatch(setUserProfile(user.data));
-          // setHasPortfolio(!!user.data); // true if data exists
           dispatch(setUserProfile(user.data));
-          // setHasPortfolio(!!user.data); // true if data exists
-          // dispatch(setUserProfile(user.data)); // store all payload data in redux
-          // console.log(user);
-          // if (user) {
-          //   setHasPortfolio(true);
-          // }
-          // else {
-          //   setHasPortfolio(false);
-          // }
         } catch (error) {
           console.log("Server error->", error);
-          // setHasPortfolio(false);
         } finally {
-          setLoading(false); // stop loading
+          setLoading(false);
         }
       };
       fetchUser();
-    } else {
-    };
+    }
   }, [isLoggedIn, decodedToken?.userName, dispatch]);
+
   useEffect(() => {
     let token = searchParams.get("token") || localStorage.getItem("token");
 
@@ -81,14 +68,12 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
         url.searchParams.delete("token");
         window.history.replaceState({}, document.title, url.pathname + url.search);
       }
-
       localStorage.setItem("token", token);
       setIsLoggedIn(true);
 
       try {
         const decoded = jwtDecode(token);
         setDecodedToken(decoded);
-
         dispatch(setUser({ userName: decoded?.userName, email: decoded?.email, id: decoded?.id }));
       } catch (e) {
         console.error("Invalid token:", e);
@@ -96,7 +81,6 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
       }
     }
   }, [searchParams, dispatch]);
-
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -107,7 +91,7 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
     const url = new URL(window.location);
     url.searchParams.delete("token");
     window.history.replaceState({}, document.title, url.pathname + url.search);
-    navigate("/")
+    navigate("/");
   };
 
   const handleProfileClick = (event) => {
@@ -118,10 +102,8 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
     setAnchorEl(null);
   };
 
-  // console.log("this0", user);
-
   return (
-    <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 1, py: 1 }}>
+    <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 1, py: { xs: 0.5, sm: 1 } }}>
       <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3, md: 4 } }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
@@ -133,9 +115,9 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
 
             {/* Right side: buttons & avatar */}
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Skeleton variant="rectangular" width={70} height={36} />
-              <Skeleton variant="rectangular" width={70} height={36} />
-              <Skeleton variant="rectangular" width={100} height={36} />
+              <Skeleton variant="rectangular" width={isMobile ? 50 : 70} height={36} />
+              <Skeleton variant="rectangular" width={isMobile ? 50 : 70} height={36} />
+              {!isMobile && <Skeleton variant="rectangular" width={100} height={36} />}
               <Skeleton variant="circular" width={40} height={40} />
             </Box>
           </Box>
@@ -148,8 +130,8 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
                 edge="start"
                 color="inherit"
                 aria-label="menu"
-                sx={{ mr: 2, display: { md: 'none' }, color: 'text.secondary' }}
-                onClick={onToggleSidebar} // Triggers sidebar open/close in AppProvider
+                sx={{ mr: 2, display: { xs: 'block', md: 'none' }, color: 'text.secondary' }}
+                onClick={onToggleSidebar}
               >
                 <MenuIcon />
               </IconButton>
@@ -158,72 +140,59 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  typography: 'h6', // MUI typography variant
+                  typography: { xs: 'h6', sm: 'h5' },
                   fontWeight: 'bold',
                   color: 'text.primary',
                   cursor: 'pointer',
                 }}
-                onClick={() => handleNavigationClick('/')} // Navigates to the home page path
+                onClick={() => handleNavigationClick('/')}
               >
-                <DescriptionIcon sx={{ mr: 1, color: 'primary.main' }} /> {/* Icon for visual appeal */}
+                <DescriptionIcon sx={{ mr: 1, color: 'primary.main', display: { xs: 'none', sm: 'block' } }} />
                 Resume Now.
               </Box>
             </Box>
 
             {/* Right side: navigation buttons and user actions */}
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Button
-                onClick={() => handleNavigationClick('/')} // Navigates to home path
-                variant="text" // Text button style
-                sx={{
-                  color: 'text.secondary',
-                  bgcolor: 'grey.200',
-                  '&:hover': { bgcolor: 'grey.300' },
-                  px: 2,
-                  py: 1,
-                }}
-              >
-                Home
-              </Button>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1, alignItems: 'center' }}>
+                <Button
+                  onClick={() => handleNavigationClick('/')}
+                  variant="text"
+                  sx={{
+                    color: 'text.secondary',
+                    bgcolor: 'grey.200',
+                    '&:hover': { bgcolor: 'grey.300' },
+                    px: 2,
+                    py: 1,
+                  }}
+                >
+                  Home
+                </Button>
 
-              <Button
-                onClick={() => window.location.href = `${redirect_url}/signup?appName=${app_name}&redirectUrl=${app_url}`}
-                variant="text" // Text button style
-                sx={{
-                  color: 'text.secondary',
-                  bgcolor: 'grey.200',
-                  '&:hover': { bgcolor: 'grey.300' },
-                  px: 2,
-                  py: 1,
-                }}
-              >
-                Signup
-              </Button>
-
-              <Button
-                onClick={() => handleNavigationClick('/templates')} // Navigates to templates page path
-                variant="contained" // Filled button style
-                color="primary"
-                sx={{ px: 2, py: 1 }}
-              >
-                Templates
-              </Button>
+                <Button
+                  onClick={() => handleNavigationClick('/templates')}
+                  variant="contained"
+                  color="primary"
+                  sx={{ px: 2, py: 1 }}
+                >
+                  Templates
+                </Button>
+              </Box>
 
               {isLoggedIn ? (
                 loading ? (
                   <Skeleton variant="circular" width={40} height={40} />
                 ) :
-                  // hasPortfolio
                   userProfile?.firstName ? (
                     <>
                       <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
-                        {
-                          userProfile?.profilePhoto ? (
-                            <Avatar src={userProfile.profilePhoto} sx={{ bgcolor: 'primary.main' }} />
-                          ) : <Avatar sx={{ bgcolor: 'primary.main' }}>
+                        {userProfile?.profilePhoto ? (
+                          <Avatar src={userProfile.profilePhoto} sx={{ bgcolor: 'primary.main', width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }} />
+                        ) : (
+                          <Avatar sx={{ bgcolor: 'primary.main', width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}>
                             {decodedToken?.userName?.[0]?.toUpperCase() || 'U'}
                           </Avatar>
-                        }
+                        )}
                       </IconButton>
                       <Menu
                         anchorEl={anchorEl}
@@ -240,12 +209,12 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
                           },
                         }}
                       >
-                        <MenuItem>
+                        <MenuItem onClick={handleMenuClose}>
                           <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>
                             Profile
                           </Link>
                         </MenuItem>
-                        <MenuItem>
+                        <MenuItem onClick={handleMenuClose}>
                           <Link to="/edit" style={{ textDecoration: 'none', color: 'inherit' }}>
                             BuilderPage
                           </Link>
@@ -255,31 +224,45 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
                     </>
                   ) : (
                     <>
-                      <Button onClick={handleLogout}>Logout</Button>
+                      <Button onClick={handleLogout} sx={{ display: { xs: 'none', sm: 'block' } }}>Logout</Button>
                       <Button
                         onClick={() => handleNavigationClick('/editprofile')}
                         variant="contained"
                         color="primary"
-                        sx={{ px: 2, py: 1 }}
+                        sx={{ px: { xs: 1, sm: 2 }, py: 1 }}
                       >
                         Create Profile
                       </Button>
                     </>
                   )
               ) : (
-                <Button
-                  onClick={() => window.location.href = `${redirect_url}/login?appName=${app_name}&redirectUrl=${app_url}`}
-                  variant="text"
-                  sx={{
-                    color: 'text.secondary',
-                    bgcolor: 'grey.200',
-                    '&:hover': { bgcolor: 'grey.300' },
-                    px: 2,
-                    py: 1,
-                  }}
-                >
-                  Login
-                </Button>
+                <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 } }}>
+                  <Button
+                    onClick={() => window.location.href = `${redirect_url}/signup?appName=${app_name}&redirectUrl=${app_url}`}
+                    variant="text"
+                    sx={{
+                      color: 'text.secondary',
+                      bgcolor: 'grey.200',
+                      '&:hover': { bgcolor: 'grey.300' },
+                      px: 1,
+                      py: 1,
+                      display: { xs: 'none', sm: 'block' }
+                    }}
+                  >
+                    Signup
+                  </Button>
+                  <Button
+                    onClick={() => window.location.href = `${redirect_url}/login?appName=${app_name}&redirectUrl=${app_url}`}
+                    variant="contained"
+                    color="primary"
+                    sx={{
+                      px: { xs: 1, sm: 2 },
+                      py: 1,
+                    }}
+                  >
+                    Login
+                  </Button>
+                </Box>
               )}
             </Box>
           </>

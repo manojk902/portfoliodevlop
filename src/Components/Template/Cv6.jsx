@@ -1,489 +1,464 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  ThemeProvider,
-  createTheme,
-  CssBaseline,
-  Box,
-  Typography,
-  IconButton,
-  Avatar,
-  Grid,
-  Chip,
-  Button,
-  LinearProgress,
   Container,
-  Card,
-  CardContent,
+  Typography,
+  Grid,
+  Paper,
+  Avatar,
+  CircularProgress,
+  Box,
+  Chip,
   Divider,
+  alpha,
+  useTheme,
+  // Rating
 } from "@mui/material";
 import {
+  Email,
+  Phone,
+  Cake,
+  LocationOn,
   LinkedIn,
   GitHub,
-  CloudDownload,
-  OpenInNew,
-  LightMode,
-  DarkMode,
-  Print,
+  Language,
+  Facebook,
 } from "@mui/icons-material";
-import styled from "@emotion/styled";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
+// import { apiUrl } from "../../utils/common";
+// import { useSelector } from "react-redux";
+// import { useParams } from "react-router-dom";
+import MarkdownPreview from '@uiw/react-markdown-preview';
+import { apiUrl } from "../../utils/common";
+import axios from "axios";
+import { useParams, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-// Themes
-const themes = [
-  {
-    name: "Teal-White",
-    bg: "#FFFFFF",
-    text: "#111827",
-    accent: "#14B8A6",
-    headerFont: "Inter, sans-serif",
-    bodyFont: "IBM Plex Sans, sans-serif",
-  },
-  {
-    name: "Midnight Blue",
-    bg: "#0F172A",
-    text: "#FFFFFF",
-    accent: "#3B82F6",
-    headerFont: "Inter, sans-serif",
-    bodyFont: "IBM Plex Sans, sans-serif",
-  },
-  {
-    name: "Warm Sand",
-    bg: "#F5F5DC",
-    text: "#111827",
-    accent: "#D97706",
-    headerFont: "Inter, sans-serif",
-    bodyFont: "IBM Plex Sans, sans-serif",
-  },
-  {
-    name: "Slate Black",
-    bg: "#1E293B",
-    text: "#FFFFFF",
-    accent: "#14B8A6",
-    headerFont: "Inter, sans-serif",
-    bodyFont: "IBM Plex Sans, sans-serif",
-  },
-];
 
-const CVContainer = styled(Box)`
-  max-width: 1200px;
-  margin: auto;
-  padding: 2rem;
-  position: relative;
-  background: ${({ theme }) => theme.palette.background.default};
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border-radius: 16px;
 
-  @media print {
-    box-shadow: none;
-    padding: 1.5rem !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
-  }
+const Cv6 = ({ UserDataFromDesignPage }) => {
+  const theme = useTheme();
+  const [searchParams] = useSearchParams({ UserDataFromDesignPage });
+  // Path parameter: e.g., 'johnsmith' from URL route /johnsmith?cv=true
+  const { username } = useParams();
+  // Query parameter: 'true' or null (for public view from HomePage)
+  const cvPublicView = searchParams.get("cv");
 
-  &.pdf-mode {
-    width: 210mm;
-    min-height: 297mm;
-    padding: 15mm !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    margin: 0 auto !important;
-    
-    .MuiAvatar-root {
-      width: 120px !important;
-      height: 120px !important;
-    }
-    
-    .section-title {
-      font-size: 1.25rem !important;
-    }
-    
-    .project-card:hover {
-      transform: none !important;
-      box-shadow: none !important;
-    }
-    
-    .MuiButton-root {
-      display: none !important;
-    }
-  }
-`;
+  const userProfile = useSelector(state => state.userProfile?.data?.fetchedUsed);
+  const userNameRedux = userProfile?.userName; // Logged-in user's username 
 
-const Section = styled(Box)`
-  margin-bottom: 2rem;
-`;
+  // --- 2. State Management ---
+  const [cvData, setCvData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-const SectionTitle = styled(Typography)`
-  font-weight: 700 !important;
-  margin-bottom: 1rem !important;
-  position: relative;
-  display: inline-block;
-  padding-bottom: 4px;
-  border-bottom: 2px solid ${({ theme }) => theme.palette.primary.main};
-`;
+  useEffect(() => {
+    const fetchCvData = async () => {
+      setLoading(true);
+      let usernameToFetch = null;
+      let isDifferentUser = (username && userNameRedux && username !== userNameRedux);
 
-const SkillBar = styled(Box)`
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-`;
+      // --- 1. PRIORITY CHECK: DIFFERENT USER OR EXPLICIT PUBLIC FLAG ---
+      // Condition: Agar URL mein username hai AND (ya toh user alag hai OR 'cv=true' hai)
+      // Ya agar user logged in nahi hai but URL mein username hai.
+      if (username && (isDifferentUser || cvPublicView === "true" || !userNameRedux)) {
 
-const SkillLabel = styled(Typography)`
-  min-width: 120px;
-  font-weight: 500 !important;
-`;
-
-const ProjectCard = styled(Card)`
-  border: 1px solid ${({ theme }) => theme.palette.primary.main}30;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  height: 100%;
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-    border-color: ${({ theme }) => theme.palette.primary.main}80;
-  }
-`;
-
-const PrintHide = styled(Box)`
-  @media print, .pdf-mode {
-    display: none !important;
-  }
-`;
-
-export default function Cv6() {
-  const [themeIndex, setThemeIndex] = useState(0);
-  const active = themes[themeIndex];
-  const cvRef = useRef();
-
-  const theme = createTheme({
-    palette: {
-      mode: themeIndex === 1 || themeIndex === 3 ? "dark" : "light",
-      background: { default: active.bg, paper: active.bg },
-      text: { primary: active.text },
-      primary: { main: active.accent },
-    },
-    typography: {
-      fontFamily: active.bodyFont,
-      h4: {
-        fontFamily: active.headerFont,
-        fontWeight: 700,
-        letterSpacing: 0.5
-      },
-      h5: {
-        fontFamily: active.headerFont,
-        fontWeight: 600,
-        letterSpacing: 0.5
-      },
-      body1: { lineHeight: 1.6 }
-    },
-    components: {
-      MuiLinearProgress: {
-        styleOverrides: {
-          root: {
-            height: 8,
-            borderRadius: 4
-          }
-        }
+        // Lekin agar user logged-in hai AUR woh apna hi public link dekh raha hai, 
+        // tab bhi hume URL user ko fetch karna hai.
+        usernameToFetch = username;
+        console.log(`✅ Public View (URL based) Activated. Fetching: ${username}`);
       }
-    }
-  });
 
-  const nextTheme = () => setThemeIndex((prev) => (prev + 1) % themes.length);
+      // --- 2. FALLBACK: PRIVATE VIEW (Logged-in user) ---
+      // Yeh block tab chalega jab koi URL username nahi hai ya URL username hi Redux user hai (Home page)
+      else if (userNameRedux) {
+        usernameToFetch = userNameRedux;
+        console.log(`👤 Private View (Redux based) Activated. Fetching: ${userNameRedux}`);
+      }
 
-  const handlePrint = () => {
-    window.print();
+      // --- 3. EXECUTE FETCH ---
+      if (usernameToFetch) {
+        try {
+          const res = await axios.get(`${apiUrl}/defaultCv/${usernameToFetch}`);
+          setCvData(res?.data?.fetchedCvInfo?.defaultCvInfo);
+          console.log(`⭐ Data Fetched for: ${usernameToFetch}.`);
+        } catch (err) {
+          console.error(`❌ Error fetching CV for ${usernameToFetch}:`, err);
+          setCvData(null);
+        }
+      } else {
+        setCvData(null);
+      }
+
+      setLoading(false);
+    };
+
+    fetchCvData();
+
+  }, [cvPublicView, username, userNameRedux]);
+  if (loading) {
+    return (
+      <Box sx={{ p: 2, textAlign: 'center' }}>
+        <CircularProgress size={24} />
+        <Typography variant="body2" color="text.secondary">Loading CV...</Typography>
+      </Box>
+    );
+  }
+
+  if (!cvData) {
+    return (
+      <Box sx={{ p: 4, textAlign: 'center', backgroundColor: '#f9f9f9' }}>
+        <Typography color="error">No CV data available for this user.</Typography>
+      </Box>
+    );
+  }
+
+  const {
+    firstName,
+    lastName,
+    designation,
+    dob,
+    email,
+    gender,
+    phoneNo,
+    profilePhoto,
+    socialLinks,
+    sections,
+  } = cvData;
+
+  // Helper function to render social links with icons
+  const renderSocialLinks = () => {
+    if (!socialLinks || socialLinks.length === 0) return null;
+
+    return (
+      <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
+        {socialLinks.map((link, index) => {
+          let icon = <Language />;
+          if (link.includes("linkedin")) icon = <LinkedIn />;
+          if (link.includes("github")) icon = <GitHub />;
+          if (link.includes("facebook")) icon = <Facebook />;
+          if (link.includes("gmail")) icon = <AlternateEmailIcon />;
+
+          return (
+            <Chip
+              key={index}
+              icon={icon}
+              label={link}
+              onClick={() => window.open(link, "_blank")}
+              size="small"
+              variant="outlined"
+            />
+          );
+        })}
+      </Box>
+    );
   };
 
-  const handleDownload = () => {
-    if (cvRef.current) {
-      // Add PDF mode class for styling
-      cvRef.current.classList.add("pdf-mode");
+  // Helper function to render sections
+  const renderSection = (section) => {
+    if (!section || !section.data || section.data.length === 0) return null;
 
-      setTimeout(() => {
-        html2canvas(cvRef.current, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-        }).then((canvas) => {
-          const imgData = canvas.toDataURL("image/jpeg", 1.0);
-          const pdf = new jsPDF("p", "mm", "a4");
-          const imgProps = pdf.getImageProperties(imgData);
-
-          // Calculate dimensions to fit A4
-          const pdfWidth = pdf.internal.pageSize.getWidth();
-          const pdfHeight = pdf.internal.pageSize.getHeight();
-          const ratio = Math.min(pdfWidth / imgProps.width, pdfHeight / imgProps.height);
-          const imgWidth = imgProps.width * ratio;
-          const imgHeight = imgProps.height * ratio;
-          const x = (pdfWidth - imgWidth) / 2;
-          const y = (pdfHeight - imgHeight) / 2;
-
-          pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight);
-          pdf.save("vikas-joshi-cv.pdf");
-
-          // Remove PDF mode class after generation
-          cvRef.current.classList.remove("pdf-mode");
-        });
-      }, 500);
+    switch (section.name) {
+      case "Summary":
+        return (
+          <Paper elevation={0} sx={{ p: 3, mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
+              Professional Summary
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
+              {section.data}
+            </Typography>
+          </Paper>
+        );
+      case "Skill":
+        return (
+          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
+              Skills
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+              {section.data.map((skill, idx) => (
+                <Chip
+                  key={idx}
+                  label={skill.skill ? `${skill.skill} (${skill.rating}/5)` : skill.skill}
+                  variant="outlined"
+                  color="primary"
+                  sx={{ mb: 1 }}
+                />
+              ))}
+            </Box>
+          </Paper>
+        );
+      case "Experience":
+        return (
+          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
+              Work Experience
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            {section.data.map((exp, idx) => (
+              <Box key={idx} mb={3}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  {exp.jobTitle}
+                </Typography>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {exp.company} | {exp.location}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
+                  {exp.startDate} - {exp.endDate}
+                </Typography>
+                <Typography variant="body2" component="div" sx={{ lineHeight: 1.6 }}>
+                  <MarkdownPreview
+                    style={{
+                      backgroundColor: 'transparent',  // removes black
+                      color: 'inherit',                // use your text color
+                      padding: 0,                      // optional
+                    }}
+                    source={exp.description || ""} />
+                </Typography>
+                {idx < section.data.length - 1 && <Divider sx={{ mt: 2 }} />}
+              </Box>
+            ))}
+          </Paper>
+        );
+      case "Education":
+        return (
+          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
+              Education
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            {section.data.map((edu, idx) => (
+              <Box key={idx} mb={3}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  {edu.course}
+                </Typography>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {edu.college} | {edu.fieldOfStudy}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
+                  {edu.startDate} - {edu.endDate} | Grade: {edu.grade}
+                </Typography>
+                <Typography variant="body2">
+                  Location: {edu.location}
+                </Typography>
+                {idx < section.data.length - 1 && <Divider sx={{ mt: 2 }} />}
+              </Box>
+            ))}
+          </Paper>
+        );
+      case "Project":
+        return (
+          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
+              Projects
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            {section.data.map((proj, idx) => (
+              <Box key={idx} mb={3}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  {proj.name}
+                </Typography>
+                <Typography variant="body2" component="div" sx={{ mb: 1, lineHeight: 1.6 }}>
+                  <MarkdownPreview
+                    style={{
+                      backgroundColor: 'transparent',  // removes black
+                      color: 'inherit',                // use your text color
+                      padding: 0,                      // optional
+                    }}
+                    source={proj.description || ""} />
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  <Box component="span" sx={{ fontWeight: 600 }}>Technologies: </Box>
+                  {proj.technologies.join(", ")}
+                </Typography>
+                {proj.url && (
+                  <Typography variant="body2">
+                    <Box component="span" sx={{ fontWeight: 600 }}>URL: </Box>
+                    <Box
+                      component="a"
+                      href={proj.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ color: "primary.main", textDecoration: "none" }}
+                    >
+                      {proj.url}
+                    </Box>
+                  </Typography>
+                )}
+                {idx < section.data.length - 1 && <Divider sx={{ mt: 2 }} />}
+              </Box>
+            ))}
+          </Paper>
+        );
+      case "Certification":
+        return (
+          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
+              Certifications
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            {section.data.map((cert, idx) => (
+              <Box key={idx} mb={2}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  {cert.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {cert.institute}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Issued: {cert.issueDate}
+                </Typography>
+              </Box>
+            ))}
+          </Paper>
+        );
+      case "Language":
+        return (
+          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
+              Languages
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+              {section.data.map((lang, idx) => (
+                <Box key={idx}>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {lang.language}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {lang.proficiency}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Paper>
+        );
+      case "Award":
+        return (
+          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
+              Awards
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+              {section.data.map((award, idx) => (
+                <Box key={idx}>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    Title: {award.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Issuer: {award.issuer}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Description {award.description}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Issued: {award.date}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Paper>
+        );
+      case "Achievement":
+        return (
+          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
+              Achievement
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+              {section.data.map((Achievement, idx) => (
+                <Box key={idx}>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {idx + 1}: {Achievement}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Paper>
+        );
+      case "Interest":
+        return (
+          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
+              Interests
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+              {section.data.map((interest, idx) => (
+                <Box key={idx}>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {idx + 1}: {interest}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Paper>
+        );
+      default:
+        return null;
     }
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Container>
-        <PrintHide display="flex" justifyContent="flex-end" mb={2}>
-          <IconButton onClick={nextTheme} color="primary" sx={{ mr: 1 }}>
-            {themeIndex % 2 === 0 ? <DarkMode /> : <LightMode />}
-          </IconButton>
-          <Button
-            variant="outlined"
-            startIcon={<Print />}
-            onClick={handlePrint}
-            sx={{ mr: 1 }}
-          >
-            Print
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<CloudDownload />}
-            onClick={handleDownload}
-          >
-            Download PDF
-          </Button>
-        </PrintHide>
-
-        <CVContainer ref={cvRef}>
-          {/* Header */}
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography variant="h4" sx={{ fontFamily: active.headerFont }}>
-              Vikas Joshi
-            </Typography>
-            <Typography variant="h6" color="textSecondary">
-              Frontend Developer & UI/UX Designer
-            </Typography>
-          </Box>
-
-          {/* Hero */}
-          <Grid container spacing={4} mt={2}>
-            <Grid item xs={12} md={3}>
-              <Avatar
-                src="https://via.placeholder.com/200"
-                sx={{
-                  width: 200,
-                  height: 200,
-                  border: `3px solid ${active.accent}`
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={9}>
-              <Box>
-                <Typography variant="body1" mb={1}>
-                  <Box component="span" fontWeight="bold">Phone:</Box> +91 9112345678
-                </Typography>
-                <Typography variant="body1" mb={1}>
-                  <Box component="span" fontWeight="bold">Email:</Box> vikas.joshi@email.com
-                </Typography>
-                <Typography variant="body1" mb={1}>
-                  <Box component="span" fontWeight="bold">Location:</Box> Lucknow, UP, India
-                </Typography>
-                <Box mt={1}>
-                  <IconButton color="primary"><LinkedIn /></IconButton>
-                  <IconButton color="primary"><GitHub /></IconButton>
-                </Box>
-              </Box>
-            </Grid>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Header Section */}
+      <Paper elevation={2} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
+        <Grid container spacing={4} alignItems="center">
+          <Grid item xs={12} md={3} sx={{ display: "flex", justifyContent: "center" }}>
+            <Avatar
+              src={profilePhoto || ""}
+              alt={`${firstName} ${lastName}`}
+              sx={{ width: 180, height: 180, border: `4px solid ${theme.palette.primary.main}` }}
+            />
           </Grid>
-
-          {/* Summary */}
-          <Section mt={4}>
-            <Typography
-              variant="h5"
-              sx={{
-                fontStyle: "italic",
-                borderLeft: `4px solid ${active.accent}`,
-                pl: 2,
-                color: "primary.main"
-              }}
-            >
-              "Frontend Dev + Designer. Build it. Brand it. Ship it."
+          <Grid item xs={12} md={9}>
+            <Typography variant="h3" gutterBottom sx={{ fontWeight: 700 }}>
+              {firstName} {lastName}
             </Typography>
-          </Section>
+            <Typography variant="h5" color="primary" gutterBottom sx={{ fontWeight: 600 }}>
+              {designation}
+            </Typography>
 
-          <Grid container spacing={4}>
-            {/* Left Column */}
-            <Grid item xs={12} md={6}>
-              {/* Skills */}
-              <Section>
-                <SectionTitle variant="h5" color="primary" className="section-title">Technical Skills</SectionTitle>
-                {[
-                  { skill: "React", level: 95 },
-                  { skill: "Next.js", level: 90 },
-                  { skill: "Material UI", level: 85 },
-                  { skill: "Three.js", level: 75 },
-                  { skill: "Figma", level: 80 },
-                  { skill: "TypeScript", level: 85 },
-                  { skill: "Node.js", level: 70 },
-                ].map((item) => (
-                  <SkillBar key={item.skill}>
-                    <SkillLabel>{item.skill}</SkillLabel>
-                    <LinearProgress
-                      variant="determinate"
-                      value={item.level}
-                      color="primary"
-                      sx={{ flexGrow: 1, ml: 2 }}
-                    />
-                  </SkillBar>
-                ))}
-              </Section>
-
-              {/* Experience */}
-              <Section>
-                <SectionTitle variant="h5" color="primary" className="section-title">Professional Experience</SectionTitle>
-                <Box mb={3}>
-                  <Typography variant="subtitle1" fontWeight={600}>Senior Frontend Developer</Typography>
-                  <Typography color="primary" fontStyle="italic">Tech Innovations Pvt Ltd | 2021–Present</Typography>
-                  <Typography variant="body2" mt={1}>
-                    • Developed responsive web applications using React and Next.js<br />
-                    • Created design systems used across 10+ products<br />
-                    • Reduced page load times by 40% through optimization
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12} md={6}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <Email sx={{ mr: 1, color: "primary.main" }} />
+                  <Typography variant="body1">{email}</Typography>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <Phone sx={{ mr: 1, color: "primary.main" }} />
+                  <Typography variant="body1">{phoneNo}</Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <Cake sx={{ mr: 1, color: "primary.main" }} />
+                  <Typography variant="body1">
+                    {new Date(dob).toLocaleDateString()} ({gender})
                   </Typography>
                 </Box>
-                <Box>
-                  <Typography variant="subtitle1" fontWeight={600}>UI/UX Designer</Typography>
-                  <Typography color="primary" fontStyle="italic">Digital Creations | 2019–2021</Typography>
-                  <Typography variant="body2" mt={1}>
-                    • Designed user interfaces for SaaS applications<br />
-                    • Created interactive prototypes using Figma<br />
-                    • Collaborated with developers on implementation
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <LocationOn sx={{ mr: 1, color: "primary.main" }} />
+                  <Typography variant="body1">
+                    {cvData?.address?.city}, {cvData?.address?.state}, {cvData?.address?.country}
                   </Typography>
                 </Box>
-              </Section>
-
-              {/* Education */}
-              <Section>
-                <SectionTitle variant="h5" color="primary" className="section-title">Education</SectionTitle>
-                <Box mb={2}>
-                  <Typography fontWeight={600}>B.Sc Computer Science</Typography>
-                  <Typography>Aligarh Muslim University | 2015–2019</Typography>
-                  <Typography color="textSecondary">CGPA: 8.7/10</Typography>
-                </Box>
-                <Box>
-                  <Typography fontWeight={600}>Diploma in UI/UX Design</Typography>
-                  <Typography>Design Institute of India | 2018</Typography>
-                </Box>
-              </Section>
+              </Grid>
             </Grid>
-
-            {/* Right Column */}
-            <Grid item xs={12} md={6}>
-              {/* Projects */}
-              <Section>
-                <SectionTitle variant="h5" color="primary" className="section-title">Featured Projects</SectionTitle>
-                <Grid container spacing={2} mt={1}>
-                  {[
-                    {
-                      title: "Portfolio Showcase",
-                      desc: "Interactive portfolio with 3D elements using Three.js",
-                      tech: ["React", "Three.js", "Framer Motion"]
-                    },
-                    {
-                      title: "SaaS Analytics Dashboard",
-                      desc: "Real-time analytics platform for business metrics",
-                      tech: ["Next.js", "Material UI", "Chart.js"]
-                    },
-                    {
-                      title: "3D Product Showcase",
-                      desc: "Immersive e-commerce experience with 3D product visualization",
-                      tech: ["React", "Three.js", "Blender"]
-                    }
-                  ].map((project) => (
-                    <Grid item xs={12} key={project.title}>
-                      <ProjectCard className="project-card">
-                        <CardContent>
-                          <Typography variant="h6" fontWeight={600}>{project.title}</Typography>
-                          <Typography variant="body2" mt={1} mb={2}>
-                            {project.desc}
-                          </Typography>
-                          <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
-                            {project.tech.map(tech => (
-                              <Chip key={tech} label={tech} color="primary" size="small" />
-                            ))}
-                          </Box>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            size="small"
-                            startIcon={<OpenInNew />}
-                          >
-                            View Project
-                          </Button>
-                        </CardContent>
-                      </ProjectCard>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Section>
-
-              {/* Certificates & Achievements */}
-              <Section>
-                <SectionTitle variant="h5" color="primary" className="section-title">Certifications</SectionTitle>
-                <Box mb={2}>
-                  <Typography fontWeight={500}>• Meta Frontend Professional Certificate</Typography>
-                  <Typography fontWeight={500}>• Google UX Design Professional Certificate</Typography>
-                  <Typography fontWeight={500}>• AWS Certified Cloud Practitioner</Typography>
-                </Box>
-
-                <SectionTitle variant="h5" color="primary" className="section-title">Achievements</SectionTitle>
-                <Typography>
-                  • Created India's first interactive VR portfolio<br />
-                  • Featured in "Top 50 Designers to Watch" list<br />
-                  • Open source contributor to Material UI
-                </Typography>
-              </Section>
-
-              {/* Languages & Interests */}
-              <Section>
-                <SectionTitle variant="h5" color="primary" className="section-title">Languages</SectionTitle>
-                <Box mb={2} display="flex" gap={1}>
-                  <Chip label="English (Professional)" color="primary" />
-                  <Chip label="Hindi (Native)" color="primary" />
-                </Box>
-
-                <SectionTitle variant="h5" color="primary" className="section-title">Interests</SectionTitle>
-                <Box display="flex" gap={1}>
-                  <Chip label="🎨 3D Art" color="primary" />
-                  <Chip label="✨ Web Animation" color="primary" />
-                  <Chip label="📱 UI Experimentation" color="primary" />
-                </Box>
-              </Section>
-
-              {/* Awards */}
-              <Section>
-                <SectionTitle variant="h5" color="primary" className="section-title">Awards</SectionTitle>
-                <Box>
-                  <Typography fontWeight={500}>🏆 Top 50 Designer Showcase - 2023</Typography>
-                  <Typography variant="body2" color="textSecondary">Design Excellence Awards</Typography>
-
-                  <Typography fontWeight={500} mt={1}>🥇 Best UI Innovation - 2022</Typography>
-                  <Typography variant="body2" color="textSecondary">India Tech Summit</Typography>
-                </Box>
-              </Section>
-            </Grid>
+            {renderSocialLinks()}
           </Grid>
+        </Grid>
+      </Paper>
 
-          <Divider sx={{ my: 4, borderColor: "primary.main" }} />
-          <Box textAlign="center">
-            <Typography variant="body2">
-              Designed with React & Material UI • vikas-joshi-portfolio.com
-            </Typography>
-          </Box>
-        </CVContainer>
-      </Container>
-    </ThemeProvider>
+      {/* Sections */}
+      {sections?.map((section, idx) => (
+        <React.Fragment key={idx}>{renderSection(section)}</React.Fragment>
+      ))}
+    </Container>
   );
-}
+};
+
+export default Cv6;
