@@ -36,58 +36,83 @@ import { apiUrl } from "../../utils/common";
 import { useParams, useSearchParams } from "react-router-dom";
 import MarkdownPreview from '@uiw/react-markdown-preview';
 import { useSelector } from "react-redux";
-const DefaultCvDesign = ({ UserData }) => {
-  const [cvData, setCvData] = useState(UserData);
-  const userProfile = useSelector(state => state.userProfile?.data?.fetchedUsed);
-  const userNameRedux = userProfile?.userName;
-  const [loading, setLoading] = useState(true);
+const DefaultCvDesign = ({ UserDataFromDesignPage }) => {
   const theme = useTheme();
-  const [searchParams] = useSearchParams();
-  const cv = searchParams.get("cv"); // "true" milega
-  console.log(cvData, "cvdata555");
 
-  // const userProfile = useSelector((state) => state.userProfile.data);
-  // const username = userProfile?.fetchedUsed?.userName;
-  // const [searchParams] = useSearchParams();
-  // const Name = searchParams.get("name",);
-  const name = useParams()
-  // console.log(name, "name");
-  // console.log(UserData?.data?.fetchedCvInfo?.defaultCvInfo, "UserData");
-  // console.log(UserData, "cvdata1111");
+  // --- 1. Identify Context (URL & Redux) ---
+  const [searchParams] = useSearchParams({ UserDataFromDesignPage });
+  // Path parameter: e.g., 'johnsmith' from URL route /johnsmith?cv=true
+  const { username } = useParams();
+  // Query parameter: 'true' or null (for public view from HomePage)
+  const cvPublicView = searchParams.get("cv");
 
+  const userProfile = useSelector(state => state.userProfile?.data?.fetchedUsed);
+  const userNameRedux = userProfile?.userName; // Logged-in user's username 
 
-
+  // --- 2. State Management ---
+  const [cvData, setCvData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
-    const fetchCv = async () => {
-      try {
-        // const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
-        if (!cv) {
-          const res = await axios.get(`${apiUrl}/defaultCv/${userNameRedux}`);
-          // // console.log("✅ CV Data Fetched:", res.data);
-          setCvData(res?.data?.fetchedCvInfo?.defaultCvInfo);
-        }
-        else {
-          const res = await axios.get(`${apiUrl}/defaultCv/${name}`);
-        }
-        // console.log(UserData?.data?.fetchedCvInfo?.defaultCvInfo);
-      } catch (err) {
-        console.error("❌ Error fetching CV:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCv();
-  }, [UserData?.data?.fetchedCvInfo?.defafultCvInfo]);
+    const fetchCvData = async () => {
+      setLoading(true);
+      let usernameToFetch = null;
+      let isDifferentUser = (username && userNameRedux && username !== userNameRedux);
 
+      // --- 1. PRIORITY CHECK: DIFFERENT USER OR EXPLICIT PUBLIC FLAG ---
+      // Condition: Agar URL mein username hai AND (ya toh user alag hai OR 'cv=true' hai)
+      // Ya agar user logged in nahi hai but URL mein username hai.
+      if (username && (isDifferentUser || cvPublicView === "true" || !userNameRedux)) {
+
+        // Lekin agar user logged-in hai AUR woh apna hi public link dekh raha hai, 
+        // tab bhi hume URL user ko fetch karna hai.
+        usernameToFetch = username;
+        console.log(`✅ Public View (URL based) Activated. Fetching: ${username}`);
+      }
+
+      // --- 2. FALLBACK: PRIVATE VIEW (Logged-in user) ---
+      // Yeh block tab chalega jab koi URL username nahi hai ya URL username hi Redux user hai (Home page)
+      else if (userNameRedux) {
+        usernameToFetch = userNameRedux;
+        console.log(`👤 Private View (Redux based) Activated. Fetching: ${userNameRedux}`);
+      }
+
+      // --- 3. EXECUTE FETCH ---
+      if (usernameToFetch) {
+        try {
+          const res = await axios.get(`${apiUrl}/defaultCv/${usernameToFetch}`);
+          setCvData(res?.data?.fetchedCvInfo?.defaultCvInfo);
+          console.log(`⭐ Data Fetched for: ${usernameToFetch}.`);
+        } catch (err) {
+          console.error(`❌ Error fetching CV for ${usernameToFetch}:`, err);
+          setCvData(null);
+        }
+      } else {
+        setCvData(null);
+      }
+
+      setLoading(false);
+    };
+
+    fetchCvData();
+
+  }, [cvPublicView, username, userNameRedux]);
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <CircularProgress />
+      <Box sx={{ p: 2, textAlign: 'center' }}>
+        <CircularProgress size={24} />
+        <Typography variant="body2" color="text.secondary">Loading CV...</Typography>
       </Box>
     );
   }
 
-  if (!cvData) return <Typography variant="h6" align="center" mt={4}>No CV data available</Typography>;
+  if (!cvData) {
+    return (
+      <Box sx={{ p: 4, textAlign: 'center', backgroundColor: '#f9f9f9' }}>
+        <Typography color="error">No CV data available for this user.</Typography>
+      </Box>
+    );
+  }
 
   // Function to determine icon for social links
   const getSocialIcon = (url) => {

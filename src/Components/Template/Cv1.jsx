@@ -157,9 +157,9 @@ export default function Cv1(UserData) {
   const userNameRedux = userProfile?.userName;
   const [searchParams] = useSearchParams();
   const cv = searchParams.get("cv"); // "true" milega
-  console.log(userProfile, "cv in cv1");
+  console.log(cv, "cv in cv1");
 
-  const [cvData, setCvData] = useState(UserData?.data?.fetchedCvInfo?.defafultCvInfo);
+  const [cvData, setCvData] = useState();
 
   // Fetch data from API
   useEffect(() => {

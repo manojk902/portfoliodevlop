@@ -260,7 +260,7 @@ function DesignPage() {
                         width: "900px",
                       }}
                     >
-                      <Component UserDataFromDesignPage={res} />
+                      <Component />
                     </Box>
                   </Box>
 
