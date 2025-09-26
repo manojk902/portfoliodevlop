@@ -11,6 +11,7 @@ import Cv1 from "../Template/Cv1";
 import Cv2 from "../Template/Cv2";
 import Cv3 from "../Template/Cv3";
 import Cv4 from "../Template/Cv4";
+import Cv6 from "../Template/Cv6";
 
 const DefaultCv = ({ template = 'defaultCv' }) => {
   const name = useParams()
@@ -45,6 +46,8 @@ const DefaultCv = ({ template = 'defaultCv' }) => {
     Cv2: Cv2,
     Cv3: Cv3,
     Cv4: Cv4,
+    Cv6: Cv6,
+    
   }
 
   const Component = cvOptions[cvt || template];

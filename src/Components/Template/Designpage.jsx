@@ -28,6 +28,7 @@ import { useSelector } from "react-redux";
 import Cv2 from "./Cv2";
 import Cv3 from "./Cv3";
 import Cv4 from "./Cv4";
+import Cv6 from "./Cv6";
 // import Cv6 from "./Cv5";
 
 
@@ -98,6 +99,7 @@ function DesignPage() {
     { id: 3, name: "Cv3", Component: Cv3 },
     { id: 4, name: "Cv4", Component: Cv4 },
     { id: 5, name: "defaultCv", Component: DefaultCvDesign },
+    { id: 6, name: "Cv6", Component: Cv6 },
   ];
 
   return (

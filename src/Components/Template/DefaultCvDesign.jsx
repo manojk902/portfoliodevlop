@@ -408,7 +408,7 @@ const DefaultCvDesign = ({ UserDataFromDesignPage }) => {
         borderRadius: 2,
         background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`
       }}>
-        <Grid container spacing={4}>
+        <Grid container sx={{ display: 'flex' , flexDirection: 'column' }} spacing={4}>
           {/* Left Column */}
           <Grid item xs={12} md={4}>
             <PersonalInfo />
