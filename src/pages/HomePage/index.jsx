@@ -28,10 +28,6 @@ const HomePage = ({ mode }) => {
   const [users, setUsers] = useState([]);   // API se aane wala data
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-
-
   const theme = useTheme();
   const stringToColor = (string) => {
     let hash = 0;

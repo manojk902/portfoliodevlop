@@ -19,6 +19,10 @@ export const getTheme = (mode) => {
 
     palette: {
       mode: mode, // 'light' ya 'dark'
+      subtextColor: mode === "light" ? '#9CA3AF' : '#6B7280',
+      cardBgColor: mode === "dark" ? '#1F2937' : '#FFFFFF',
+      borderColor: mode === "dark" ? '#374151' : '#E5E7EB',
+      textColor: mode === "dark" ? '#F9FAFB' : '#1F2937',
       primary: { main: "#0d6efd" },
       secondary: { main: "#6c757d" },
       success: { main: "#198754" },
@@ -52,26 +56,26 @@ export const getTheme = (mode) => {
           },
         },
       },
-     MuiCard: {
-  styleOverrides: {
-    root: ({ theme }) => ({
-      borderRadius: "12px",
-      boxShadow:
-        theme.palette.mode === "light"
-          ? "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)"
-          : "0 4px 6px -1px rgba(255,255,255,0.05), 0 2px 4px -1px rgba(255,255,255,0.04)",
-      "&:hover": {
-        boxShadow:
-          theme.palette.mode === "light"
-            ? "0 8px 16px rgba(0,0,0,0.15)"
-            : "0 8px 16px rgba(255,255,255,0.08)",
+      MuiCard: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            borderRadius: "12px",
+            boxShadow:
+              theme.palette.mode === "light"
+                ? "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)"
+                : "0 4px 6px -1px rgba(255,255,255,0.05), 0 2px 4px -1px rgba(255,255,255,0.04)",
+            "&:hover": {
+              boxShadow:
+                theme.palette.mode === "light"
+                  ? "0 8px 16px rgba(0,0,0,0.15)"
+                  : "0 8px 16px rgba(255,255,255,0.08)",
+            },
+            ...(theme.palette.mode === "dark" && {
+              border: "1px solid rgba(255,255,255,0.08)",
+            }),
+          }),
+        },
       },
-      ...(theme.palette.mode === "dark" && {
-        border: "1px solid rgba(255,255,255,0.08)",
-      }),
-    }),
-  },
-},
       MuiTextField: {
         styleOverrides: {
           root: {

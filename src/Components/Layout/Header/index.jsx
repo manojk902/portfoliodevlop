@@ -42,7 +42,6 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   const userProfile = useSelector(state => state.userProfile?.data?.fetchedUsed);
   const navigate = useNavigate();
   const open = Boolean(anchorEl);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
 
 
@@ -111,7 +110,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
     // You would typically save this to localStorage
   };
   return (
-    <AppBar position="static" sx={{ bgcolor: mode === 'light' ? '#F3F4F6' : '#111827', boxShadow: 1, py: { xs: 0.5, sm: 1 } }}>
+    <AppBar position="static" sx={{ bgcolor: theme.palette.background.default, boxShadow: 1, py: { xs: 0.5, sm: 1 } }}>
       <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3, md: 4 } }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
