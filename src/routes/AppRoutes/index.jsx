@@ -19,7 +19,7 @@ import DefaultCv from '../../Components/DefaultCv';
 // import Cv2 from '../../Components/Template/Cv2';
 import Learn from '../../Learn'
 
-const AppRoutes = (defaultCvTemplate) => {
+const AppRoutes = () => {
   return (
     <Routes>
       {/* Public Routes */}
@@ -30,11 +30,12 @@ const AppRoutes = (defaultCvTemplate) => {
 
 
       {/* Design Routes */}
-      <Route path="/Designpage" element={<Designpage />} />
       <Route path="/Designpreview/:type/:id" element={<Designpreview />} />
 
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/Designpage" element={<Designpage />} />
+
         <Route path="/createportfolio" element={<CreatePortfolioPage />} />
         <Route path="/editprofile" element={<UserForm />} />
         <Route path="/create-cv" element={<CreateCvPage />} />
@@ -47,7 +48,7 @@ const AppRoutes = (defaultCvTemplate) => {
           {/* <Route path="edit-group/:groupId" element={<GroupForm />} /> */}
         </Route>
       </Route>
-        <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/profile" element={<ProfilePage />} />
 
     </Routes>
   );

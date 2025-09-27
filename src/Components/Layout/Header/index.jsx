@@ -17,8 +17,10 @@ import { setUser } from '../../../store/features/userSlice';
 import { setUserProfile } from '../../../store/features/userProfileSlice';
 import { apiUrl } from '../../../utils/common';
 import { persistor } from "../../../store";
+import NightlightIcon from '@mui/icons-material/Nightlight';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
 
-const Header = ({ onNavigate, onToggleSidebar }) => {
+const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   const user = useSelector(state => state.user);
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -40,6 +42,9 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
   const userProfile = useSelector(state => state.userProfile?.data?.fetchedUsed);
   const navigate = useNavigate();
   const open = Boolean(anchorEl);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+
 
   useEffect(() => {
     dispatch(setUser({ userName: decodedToken?.userName, email: decodedToken?.email, id: decodedToken?.id }));
@@ -61,7 +66,6 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
 
   useEffect(() => {
     let token = searchParams.get("token") || localStorage.getItem("token");
-
     if (token) {
       if (searchParams.get("token")) {
         const url = new URL(window.location);
@@ -102,8 +106,12 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
     setAnchorEl(null);
   };
 
+  const toggleTheme = () => {
+    setMode(prev => prev === 'light' ? 'dark' : 'light');
+    // You would typically save this to localStorage
+  };
   return (
-    <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 1, py: { xs: 0.5, sm: 1 } }}>
+    <AppBar position="static" sx={{ bgcolor: mode === 'light' ? '#F3F4F6' : '#111827', boxShadow: 1, py: { xs: 0.5, sm: 1 } }}>
       <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3, md: 4 } }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
@@ -124,13 +132,13 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
         ) : (
           <>
             {/* Left side: logo and sidebar toggle */}
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', }}>
               {/* Sidebar Toggle Button (visible only on small screens) */}
               <IconButton
                 edge="start"
                 color="inherit"
                 aria-label="menu"
-                sx={{ mr: 2, display: { xs: 'block', md: 'none' }, color: 'text.secondary' }}
+                sx={{ mr: 2, display: { xs: 'block', md: 'none' }, color: 'text.primary' }}
                 onClick={onToggleSidebar}
               >
                 <MenuIcon />
@@ -142,7 +150,8 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
                   alignItems: 'center',
                   typography: { xs: 'h6', sm: 'h5' },
                   fontWeight: 'bold',
-                  color: 'text.primary',
+                  // color: 'text.primary',
+                  color: theme.palette.text.primary,
                   cursor: 'pointer',
                 }}
                 onClick={() => handleNavigationClick('/')}
@@ -155,13 +164,14 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
             {/* Right side: navigation buttons and user actions */}
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1, alignItems: 'center' }}>
+                <IconButton onClick={toggleTheme} sx={{ color: theme.palette.text.primary }}>
+                  {mode === 'light' ? <NightlightIcon /> : <WbSunnyIcon />}
+                </IconButton>
                 <Button
                   onClick={() => handleNavigationClick('/')}
                   variant="text"
                   sx={{
-                    color: 'text.secondary',
-                    bgcolor: 'grey.200',
-                    '&:hover': { bgcolor: 'grey.300' },
+                    color: theme.palette.text.primary,
                     px: 2,
                     py: 1,
                   }}
@@ -170,7 +180,7 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
                 </Button>
 
                 <Button
-                  onClick={() => handleNavigationClick('/templates')}
+                  onClick={() => handleNavigationClick('/Designpage')}
                   variant="contained"
                   color="primary"
                   sx={{ px: 2, py: 1 }}
@@ -241,9 +251,7 @@ const Header = ({ onNavigate, onToggleSidebar }) => {
                     onClick={() => window.location.href = `${redirect_url}/signup?appName=${app_name}&redirectUrl=${app_url}`}
                     variant="text"
                     sx={{
-                      color: 'text.secondary',
-                      bgcolor: 'grey.200',
-                      '&:hover': { bgcolor: 'grey.300' },
+                      color: theme.palette.text.primary,
                       px: 1,
                       py: 1,
                       display: { xs: 'none', sm: 'block' }

@@ -6,76 +6,137 @@
 import { createTheme } from '@mui/material/styles';
 
 // Define your custom MUI theme
-const theme = createTheme({
-  typography: {
-    fontFamily: 'Inter, sans-serif', // Set global font to Inter
-  },
-  palette: {
-    primary: {
-      main: '#2563EB', // Blue-600 equivalent for primary actions (buttons, links)
+export const getTheme = (mode) => {
+
+  return createTheme({
+    typography: {
+      fontFamily: "'Inter', sans-serif",
+      h1: { fontWeight: 700 },
+      h2: { fontWeight: 600 },
+      h3: { fontWeight: 600 },
+      button: { fontWeight: 500 },
     },
-    secondary: {
-      main: '#F59E0B', // Yellow-500 equivalent for secondary actions
-    },
-    // Custom colors matching the Tailwind equivalents for specific UI elements.
-    // These are accessible via `theme.palette.customColors.colorName`
-    customColors: {
-      black: '#374151', // Dark grey for text/backgrounds (e.g., sidebar)
-      darkBlue: '#3B82F6', // A darker blue for certain elements/template colors
-      lightBlue: '#60A5FA', // A lighter blue for certain elements/template colors
-      green: '#10B981', // For success indicators (e.g., checkmarks, completed steps)
-      orange: '#FF7F00', // For highlights/template headers
-      red: '#EF4444', // For error/attention
-      grayBg: '#F3F4F6', // For light gray backgrounds (e.g., page background)
-      grayLight: '#E5E7EB', // For light grey borders/dividers
-      textPrimary: '#1F2937', // Main text color (almost black, for headings)
-      textSecondary: '#4B5563', // Secondary text color (dark grey, for body text)
-      textMuted: '#6B7280', // Muted text color (medium grey)
-    },
-  },
-  // Component style overrides to ensure consistent UI across default MUI components.
-  // These apply global styles to all instances of these MUI components.
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: '12px', // Apply rounded corners to all buttons
-          textTransform: 'none', // Prevent uppercase text for better readability
-        },
+
+    palette: {
+      mode: mode, // 'light' ya 'dark'
+      primary: { main: "#0d6efd" },
+      secondary: { main: "#6c757d" },
+      success: { main: "#198754" },
+      info: { main: "#0dcaf0" },
+      warning: { main: "#ffc107" },
+      error: { main: "#dc3545" },
+      light: { main: "#f8f9fa" },
+      dark: { main: "#212529" },
+      background: {
+        default: mode === 'light' ? "#F3F4F6" : "#121212",
       },
+      text: {
+        primary: mode === 'light' ? "#111827" : "#F3F4F6",
+        // dark: mode === 'light' ? "#111827" : "#6610f2"
+        // secondary: "#100d0dff",
+      },
+      // Optional custom colors (indigo, purple, pink, etc.) agar chahiye to aise:
+      indigo: { main: "#6610f2" },
+      purple: { main: "#6f42c1" },
+      pink: { main: "#d63384" },
     },
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
-            borderRadius: '12px', // Apply rounded corners to text fields
+    // Component style overrides to ensure consistent UI across default MUI components.
+    // These apply global styles to all instances of these MUI components.
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: '12px',
+            textTransform: 'none',
+            fontWeight: 500,
           },
         },
       },
-    },
-    MuiAppBar: {
-      styleOverrides: {
-        root: {
-          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', // Mimics Tailwind's shadow-sm for the app bar
-        },
+     MuiCard: {
+  styleOverrides: {
+    root: ({ theme }) => ({
+      borderRadius: "12px",
+      boxShadow:
+        theme.palette.mode === "light"
+          ? "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)"
+          : "0 4px 6px -1px rgba(255,255,255,0.05), 0 2px 4px -1px rgba(255,255,255,0.04)",
+      "&:hover": {
+        boxShadow:
+          theme.palette.mode === "light"
+            ? "0 8px 16px rgba(0,0,0,0.15)"
+            : "0 8px 16px rgba(255,255,255,0.08)",
       },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: '12px', // Apply rounded corners to cards
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', // Mimics Tailwind's shadow-lg
-        },
-      },
-    },
-    MuiDialog: {
-      styleOverrides: {
-        paper: {
-          borderRadius: '12px', // Apply rounded corners to dialogs (Modals)
-        },
-      },
-    },
+      ...(theme.palette.mode === "dark" && {
+        border: "1px solid rgba(255,255,255,0.08)",
+      }),
+    }),
   },
-});
-
-export default theme;
+},
+      MuiTextField: {
+        styleOverrides: {
+          root: {
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '12px', // Apply rounded corners to text fields
+            },
+          },
+        },
+      },
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            borderRadius: '12px', // Apply rounded corners to dialogs (Modals)
+          },
+        },
+      },
+      //  MuiCard: {
+      //   styleOverrides: {
+      //     root: {
+      //       borderRadius: '12px', // Apply rounded corners to cards
+      //       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', // Mimics Tailwind's shadow-lg
+      //     },
+      //   },
+      // },
+    },
+    // components: {
+    //   MuiButton: {
+    //     styleOverrides: {
+    //       root: {
+    //         borderRadius: '12px', // Apply rounded corners to all buttons
+    //         textTransform: 'none', // Prevent uppercase text for better readability
+    //       },
+    //     },
+    //   },
+    //   MuiTextField: {
+    //     styleOverrides: {
+    //       root: {
+    //         '& .MuiOutlinedInput-root': {
+    //           borderRadius: '12px', // Apply rounded corners to text fields
+    //         },
+    //       },
+    //     },
+    //   },
+    //   MuiAppBar: {
+    //     styleOverrides: {
+    //       root: {
+    //         boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', // Mimics Tailwind's shadow-sm for the app bar
+    //       },
+    //     },
+    //   },
+    //   MuiCard: {
+    //     styleOverrides: {
+    //       root: {
+    //         borderRadius: '12px', // Apply rounded corners to cards
+    //         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', // Mimics Tailwind's shadow-lg
+    //       },
+    //     },
+    //   },
+    //   MuiDialog: {
+    //     styleOverrides: {
+    //       paper: {
+    //         borderRadius: '12px', // Apply rounded corners to dialogs (Modals)
+    //       },
+    //     },
+    //   },
+    // },
+  });
+}

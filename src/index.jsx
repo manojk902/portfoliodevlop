@@ -1,26 +1,27 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.jsx'; // Import the App component
-// Material-UI Imports for global theming and baseline CSS
+import App from './App.jsx';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import theme from './theme/index.js'; // Import your custom MUI theme
-// Redux Toolkit Import for global state management
 import { Provider } from 'react-redux';
-import { persistor, store } from './store/index.js'; // Import your Redux store
+import { persistor, store } from './store/index.js';
 import { BrowserRouter } from 'react-router-dom';
 import { PersistGate } from 'redux-persist/integration/react';
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+import { getTheme } from './theme/index.js';
+
+function Root() {
+  const [mode, setMode] = useState("dark"); // ✅ hook inside component
+  return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </ThemeProvider>
+        <ThemeProvider theme={getTheme(mode)}>
+          <CssBaseline />
+          <BrowserRouter>
+            <App mode={mode} setMode={setMode} /> {/* pass props */}
+          </BrowserRouter>
+        </ThemeProvider>
       </PersistGate>
     </Provider>
-  </React.StrictMode>,
-);
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Root />);

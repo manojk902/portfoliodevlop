@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setSelectedTemplate } from '../../store/features/resume/resumeSlice';
 // import Footer from '../../Components/Layout/Footer';
 
-const AppProvider = ({ onToggleSidebar }) => {
+const AppProvider = ({ mode, setMode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const selectedTemplateId = useSelector((state) => state.resume.selectedTemplateId);
@@ -47,9 +47,10 @@ const AppProvider = ({ onToggleSidebar }) => {
       backgroundColor: 'customColors.grayBg',
       minHeight: '100vh',
       position: 'relative',
-      pb: 20,
+      // pb: 20,
     }}>
-      <Header onNavigate={navigate} onToggleSidebar={toggleSidebar} />
+      <Header onNavigate={navigate} mode={mode}
+        setMode={setMode} onToggleSidebar={toggleSidebar} />
 
       {/* --- Crucial: handleChooseTemplate is passed as a prop to AppRoutes --- */}
       <AppRoutes
@@ -60,7 +61,7 @@ const AppProvider = ({ onToggleSidebar }) => {
       />
       {/* --- End Crucial --- */}
       {/* <Footer/> footer work later */}
-      <Box
+      {/* <Box
         sx={{
           position: 'absolute',
           bottom: 16,
@@ -79,7 +80,7 @@ const AppProvider = ({ onToggleSidebar }) => {
         }}
       >
         😊
-      </Box>
+      </Box> */}
     </Box>
   );
 };

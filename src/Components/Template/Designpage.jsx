@@ -40,7 +40,7 @@ function DesignPage() {
   const [defaultTemplate, setDefaultTemplate] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [cvInfoId, setCvInfoId] = useState();
-  const [res, setRes] = useState();
+  // const [res, setRes] = useState();
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
   const userId = userProfile?.fetchedUsed?.userId;
@@ -49,7 +49,7 @@ function DesignPage() {
     const fetchDefaultCv = async () => {
       try {
         const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
-        setRes(res);
+        // setRes(res);
         const templateName = res.data?.fetchedCvInfo?.templateName;
         setCvInfoId(res.data?.fetchedCvInfo?.cvInfoId);
         // setCvTemp(res.data?.fetchedCvInfo?.cvInfoId);
@@ -72,7 +72,7 @@ function DesignPage() {
 
   const handleSetDefault = async (templateName) => {
     try {
-      const response = await axios.put(`${apiUrl}/updateDefaultCvId`, {
+      await axios.put(`${apiUrl}/updateDefaultCvId`, {
         userId: userId,
         templateName: templateName,
         cvInfoId: cvInfoId,
