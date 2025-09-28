@@ -430,7 +430,7 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
                         color: 'inherit',                // use your text color
                         padding: 0,                      // optional
                       }}
-                      source={award.description || ""} />
+                      source={`description :${award.description|| ""}`} />
 
                   </Typography>
                   <Typography variant="body2" color="text.secondary">

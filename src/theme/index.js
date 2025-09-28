@@ -31,9 +31,9 @@ export const getTheme = (mode) => {
       error: { main: "#dc3545" },
       light: { main: "#f8f9fa" },
       dark: { main: "#212529" },
-      background: {
-        default: mode === 'light' ? "#F3F4F6" : "#121212",
-      },
+      // background: {
+      //   default: mode === 'light' ? "#f3f4f692" : "#121212",
+      // },
       text: {
         primary: mode === 'light' ? "#111827" : "#F3F4F6",
         // dark: mode === 'light' ? "#111827" : "#6610f2"
@@ -60,19 +60,25 @@ export const getTheme = (mode) => {
         styleOverrides: {
           root: ({ theme }) => ({
             borderRadius: "12px",
+            variants: "outlined",
             boxShadow:
               theme.palette.mode === "light"
-                ? "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)"
-                : "0 4px 6px -1px rgba(255,255,255,0.05), 0 2px 4px -1px rgba(255,255,255,0.04)",
+                ? "0 4px 12px rgba(0, 0, 0, 0.08)" // soft subtle light mode
+                : "0 4px 12px rgba(102, 16, 242, 0.25), 0 0 20px rgba(102, 16, 242, 0.15)", // purple glow in dark
+
             "&:hover": {
               boxShadow:
                 theme.palette.mode === "light"
-                  ? "0 8px 16px rgba(0,0,0,0.15)"
-                  : "0 8px 16px rgba(255,255,255,0.08)",
+                  ? "0 6px 16px rgba(0, 0, 0, 0.12)" // slightly stronger hover in light
+                  : "0 6px 16px rgba(102, 16, 242, 0.35), 0 0 25px rgba(102, 16, 242, 0.25)", // stronger purple glow
+              transform: "translateY(-3px)", // smooth lift on hover
+              // transition: "all 0.3s ease-in-out",
             },
-            ...(theme.palette.mode === "dark" && {
-              border: "1px solid rgba(255,255,255,0.08)",
-            }),
+
+            border:
+              theme.palette.mode === "dark"
+                ? "1px solid rgba(103, 16, 242, 0.22)" // purple border in dark
+                : "1px solid rgba(0, 0, 0, 0.08)", // light subtle border
           }),
         },
       },

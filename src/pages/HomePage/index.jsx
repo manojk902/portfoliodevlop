@@ -121,14 +121,11 @@ const HomePage = ({ mode }) => {
                   display: 'flex',
                   flexDirection: 'column',
                   borderRadius: '12px',
-                  // boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  // border: '1px solid',
-                  borderColor: 'divider',
                   overflow: 'hidden',
                   transition: 'transform 0.3s, box-shadow 0.3s',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 16px rgba(0,0,0,0.15)'
+                    // boxShadow: '0 8px 16px rgba(185, 35, 205, 0.18)'
                   }
                 }}
               >
