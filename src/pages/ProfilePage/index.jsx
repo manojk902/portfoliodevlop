@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -7,54 +7,75 @@ import {
   Grid,
   Button,
   Stack,
-  Divider,
   Skeleton,
 } from '@mui/material';
-import SettingsIcon from '@mui/icons-material/Settings';
-import LogoutIcon from '@mui/icons-material/Logout';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import ShareIcon from '@mui/icons-material/Share';
+import CakeIcon from '@mui/icons-material/Cake';
+import PersonIcon from '@mui/icons-material/Person';
+import PhoneIcon from '@mui/icons-material/Phone';
+import EmailIcon from '@mui/icons-material/Email';
+import LinkIcon from '@mui/icons-material/Link';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
+import NightlightIcon from '@mui/icons-material/Nightlight';
+
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import { useState } from 'react';
 import { setUserProfile } from '../../store/features/userProfileSlice';
 import { apiUrl } from '../../utils/common';
- import { format, parseISO } from 'date-fns';
-
-
-
+import { format, parseISO } from 'date-fns';
 
 const user1 = {
   profilePhoto: '',
-  firstName: 'dummy data',
-  lastName: 'dummy data',
-  designation: 'dummy data',
-  dob: 'dummy data',
-  gender: 'dummy data',
-  phoneNo: 'dummy data',
-  email: 'john@example.com',
+  firstName: 'Manoj',
+  lastName: 'Kumar',
+  designation: 'Backend & Frontend Developer',
+  dob: '2025-09-17T00:00:00Z',
+  gender: 'Male',
+  phoneNo: '8851513692',
+  email: 'manojkumar6448@gmail.com',
   socialLinks: ['https://linkedin.com/in/johndeo'],
-  city: 'New York',
-  state: 'NY',
-  pincode: '10001',
+  city: 'Gurgaon',
+  state: 'Haryana',
+  pincode: '122001',
+  about: 'A passionate developer with experience in building scalable web applications. Loves to explore new technologies and contribute to open source projects.',
 };
 
-export default function ProfilePage() {
-  const [hasCV, setHasCV] = useState(false)
+function ProfilePage() {
+  const [hasCV, setHasCV] = useState(false);
   const [loading, setLoading] = useState(true);
-  const dispatch = useDispatch();
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const userProfile = useSelector(state => state.userProfile.data);
-  const username = userProfile?.fetchedUsed?.userName
+  const userProfile = useSelector((state) => state.userProfile.data);
+  const username = userProfile?.fetchedUsed?.userName;
+
+  // Functionality remains the same
   const editProfile = () => {
-    navigate("/editprofile", { state: { isUpdate: true } });
+    navigate('/editprofile', { state: { isUpdate: true } });
   };
-  const signOut = () => {
-    localStorage.removeItem("token")
-    navigate("/")
-  }
+
+  const handleCVAction = async () => {
+    try {
+      await axios.get(`${apiUrl}/cv-details/${username}`);
+      navigate('/edit');
+    } catch (error) {
+      navigate('/edit');
+    }
+  };
+
+  const toggleTheme = () => {
+    setIsDarkMode((prev) => !prev);
+    // You would typically save this to localStorage
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -62,369 +83,362 @@ export default function ProfilePage() {
         dispatch(setUserProfile(updated.data));
         setLoading(false);
       } catch (error) {
-        console.log("thi is profile fetching erropeer", error);
+        console.log('this is profile fetching error', error);
         setLoading(false);
-
       }
-
+    };
+    if (username) {
+      fetchProfile();
+    } else {
+      setLoading(false);
     }
-    fetchProfile()
-  }, [username, dispatch])
+  }, [username, dispatch]);
 
   useEffect(() => {
     const checkCVExists = async () => {
       try {
-        const response = await axios.get(
-          `${apiUrl}/cv-details/${username}`
-        );
+        const response = await axios.get(`${apiUrl}/cv-details/${username}`);
         const exists = !!response.data;
         setHasCV(exists);
       } catch (error) {
-        console.log("CV does not exist.");
+        console.log('CV does not exist.');
         setHasCV(false);
       }
     };
-    checkCVExists();
-  }, [username]); /*this*/
-  const handleCVAction = async () => {
-    try {
-      await axios.get(
-        `${apiUrl}/cv-details/${username}`
-      );
-      navigate('/edit');
-    } catch (error) {
-      // No CV — navigate to create mode
-      navigate('/edit');
+    if (username) {
+      checkCVExists();
     }
-  };
+  }, [username]);
+
+  const primaryColor = '#4F46E5';
+  const subtextColor = isDarkMode ? '#9CA3AF' : '#6B7280';
+  const cardBgColor = isDarkMode ? '#1F2937' : '#FFFFFF';
+  const borderColor = isDarkMode ? '#374151' : '#E5E7EB';
+  const textColor = isDarkMode ? '#F9FAFB' : '#1F2937';
+
+  // Component to render info items with icons
+  const InfoItem = ({ icon, label, value }) => (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontSize: '0.875rem' }}>
+      <Box sx={{ color: subtextColor, display: 'flex', alignItems: 'center' }}>
+        {icon}
+      </Box>
+      <Box sx={{ color: textColor }}>
+        {label === 'Social Links' && Array.isArray(value) ? (
+          value.map((link, i) => (
+            <a
+              key={i}
+              href={link}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                color: primaryColor,
+                textDecoration: 'none',
+                display: 'block',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {link}
+            </a>
+          ))
+        ) : label === 'Email' ? (
+          <a
+            href={`mailto:${value}`}
+            style={{ color: primaryColor, textDecoration: 'none' }}
+          >
+            {value}
+          </a>
+        ) : (
+          <span>{value}</span>
+        )}
+      </Box>
+    </Box>
+  );
+
   return (
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(to bottom right, #1e1e2f, #3c3c78)',
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
-        pt: 6,
-        pb: 8,
-        position: 'relative',
+        justifyContent: 'center',
+        p: { xs: 2, md: 4 },
+        bgcolor: isDarkMode ? '#111827' : '#F3F4F6',
         fontFamily: 'Inter, sans-serif',
       }}
     >
-      {loading ? (
-        <>
-          {/* Skeleton for Left Sidebar Controls */}
-          <Box sx={{ position: 'absolute', top: 32, left: 32 }}>
-            <Stack spacing={2} alignItems="flex-start">
+      <Box
+        component={motion.div}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        sx={{
+          maxWidth: '960px',
+          width: '100%',
+          mx: 'auto',
+          bgcolor: cardBgColor,
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          borderRadius: '16px',
+          overflow: 'hidden',
+        }}
+      >
+        {loading ? (
+          <Box>
+            {/* Cover Photo Skeleton */}
+            <Skeleton variant="rectangular" width="100%" height={192} />
+
+            {/* Content Skeletons */}
+            <Box sx={{ p: 4, position: 'relative' }}>
               <Skeleton
                 variant="circular"
-                width={40}
-                height={40}
-                sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}
+                width={128}
+                height={128}
+                sx={{ position: 'absolute', left: 32, top: -64, border: `4px solid ${cardBgColor}` }}
               />
-              <Skeleton
-                variant="rectangular"
-                width={120}
-                height={36}
-                sx={{ bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 1 }}
-              />
-              <Skeleton
-                variant="rectangular"
-                width={120}
-                height={36}
-                sx={{ bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 1 }}
-              />
-            </Stack>
-          </Box>
-
-          {/* Skeleton for Hero Section */}
-          <Box sx={{ textAlign: 'center', mb: 2 }}>
-            <Skeleton
-              variant="circular"
-              width={140}
-              height={140}
-              sx={{ mx: 'auto', mb: 2, bgcolor: 'rgba(255,255,255,0.2)' }}
-            />
-            <Skeleton
-              variant="text"
-              width={200}
-              height={40}
-              sx={{ mx: 'auto', bgcolor: 'rgba(255,255,255,0.2)' }}
-            />
-            <Skeleton
-              variant="text"
-              width={150}
-              height={24}
-              sx={{ mx: 'auto', bgcolor: 'rgba(255,255,255,0.2)' }}
-            />
-          </Box>
-
-          {/* Skeleton for Info Card */}
-          <Box
-            sx={{
-              mt: { xs: 4, sm: 6 },
-              px: { xs: 3, sm: 5 },
-              py: 5,
-              bgcolor: 'rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(12px)',
-              borderRadius: 4,
-              boxShadow: '0 12px 32px rgba(0,0,0,0.15)',
-              maxWidth: 920,
-              width: '100%',
-            }}
-          >
-            <Skeleton
-              variant="text"
-              width={150}
-              height={28}
-              sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}
-            />
-            <Skeleton
-              variant="rectangular"
-              height={2}
-              sx={{ bgcolor: 'rgba(255,255,255,0.2)', mb: 3 }}
-            />
-            <Grid container spacing={4}>
-              {Array(8)
-                .fill()
-                .map((_, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={index}>
-                    <Skeleton
-                      variant="text"
-                      width={80}
-                      height={20}
-                      sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}
-                    />
-                    <Skeleton
-                      variant="text"
-                      width={120}
-                      height={24}
-                      sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}
-                    />
-                  </Grid>
-                ))}
-            </Grid>
-            <Box mt={5} display="flex" justifyContent="center" gap={3}>
-              <Skeleton
-                variant="rectangular"
-                width={120}
-                height={40}
-                sx={{ bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 2 }}
-              />
-              <Skeleton
-                variant="rectangular"
-                width={140}
-                height={40}
-                sx={{ bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 2 }}
-              />
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1 }}>
+                <Stack direction="row" spacing={1} sx={{ mt: { xs: 4, md: 0 } }}>
+                  <Skeleton variant="rectangular" width={120} height={40} sx={{ borderRadius: '8px' }} />
+                  <Skeleton variant="rectangular" width={140} height={40} sx={{ borderRadius: '8px' }} />
+                </Stack>
+              </Box>
+              <Box sx={{ mt: 2 }}>
+                <Skeleton variant="text" width="60%" height={32} />
+                <Skeleton variant="text" width="40%" />
+              </Box>
+              <Box sx={{ mt: 4 }}>
+                <Skeleton variant="text" width="20%" height={24} />
+                <Skeleton variant="text" width="90%" />
+              </Box>
+              <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${borderColor}` }}>
+                <Skeleton variant="text" width="30%" height={24} />
+                <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mt: 1 }}>
+                  {Array(6).fill().map((_, index) => (
+                    <Grid item xs={12} md={6} lg={4} key={index}>
+                      <Box display="flex" alignItems="center" gap={1.5}>
+                        <Skeleton variant="circular" width={24} height={24} />
+                        <Skeleton variant="text" width="70%" />
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+              <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${borderColor}` }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <Skeleton variant="rectangular" width="100%" height={48} sx={{ borderRadius: '8px' }} />
+                  <Skeleton variant="rectangular" width="100%" height={48} sx={{ borderRadius: '8px' }} />
+                </Stack>
+              </Box>
             </Box>
           </Box>
-        </>
-      ) : (
-        <>
-          {/* Left Sidebar Controls */}
-          <Box sx={{ position: 'absolute', top: 32, left: 32 }}>
-            <Stack spacing={2} alignItems="flex-start">
-              <IconButton
+        ) : (
+          <Box>
+            {/* Cover Photo Section */}
+            <Box sx={{ position: 'relative' }}>
+              <Box
+                component="img"
                 sx={{
-                  bgcolor: 'rgba(255,255,255,0.12)',
-                  color: 'white',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
-                  fontFamily: 'Inter, sans-serif',
+                  height: 192,
+                  width: '100%',
+                  objectFit: 'cover',
                 }}
-              >
-                <SettingsIcon />
-              </IconButton>
-              <Button
-                startIcon={<EditIcon />}
-                onClick={editProfile}
-                variant="outlined"
+                src="https://tse4.mm.bing.net/th/id/OIP.3pRVgDEHgJprQOdd1GsQQAHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
+                alt="Cover photo"
+              />
+              <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <IconButton
+                  onClick={toggleTheme}
+                  sx={{
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(4px)',
+                    color: 'white',
+                    '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.3)' },
+                  }}
+                >
+                  {isDarkMode ? <WbSunnyIcon /> : <NightlightIcon />}
+                </IconButton>
+                <IconButton
+                  sx={{
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(4px)',
+                    color: 'white',
+                    '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.3)' },
+                  }}
+                >
+                  <MoreHorizIcon />
+                </IconButton>
+              </Box>
+            </Box>
+
+            {/* Profile Content Section */}
+            <Box sx={{ p: { xs: 3, md: 5 }, position: 'relative' }}>
+              <Avatar
+                src={userProfile?.fetchedUsed?.profilePhoto || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBJbeYJKaFNeGPnhYHTwz0JPZjUTmEk08oJPoGNZmNKvK0D5jZL-Uv6KuyqwUiWoguYrRUYyySVtnnirl7-nFpOHFvuzBUIEq9QCN4gsnzwr53pMWe7pWzG6OjMW2RxKyotKtj7nShvTPF0cYVeSx5-hwiDucPvvS2fBhhwiI1k7a-f_Sh5c6652WhX6ZsWBk2WATdlU_EtVMXpNRLKb7eo1UVZsoovtJ9WU5kP8ptMFqRTltvj0mqhi-P3yRDmM1MaNAPUOPqnvXE'}
+                alt={userProfile?.fetchedUsed?.firstName || user1.firstName}
                 sx={{
-                  color: 'white',
-                  borderColor: 'white',
-                  textTransform: 'none',
-                  fontFamily: 'Inter, sans-serif',
-                  '&:hover': { borderColor: '#ddd', color: '#eee' },
+                  position: 'absolute',
+                  left: { xs: '50%', md: 32 },
+                  transform: { xs: 'translateX(-50%)', md: 'none' },
+                  top: { xs: -64, md: -64 },
+                  width: 128,
+                  height: 128,
+                  border: `4px solid ${cardBgColor}`,
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                 }}
-              >
-                Edit Profile
-              </Button>
-              <Button
-                startIcon={<LogoutIcon />}
-                variant="outlined"
-                onClick={signOut}
-                sx={{
-                  color: 'white',
-                  borderColor: 'white',
-                  textTransform: 'none',
-                  fontFamily: 'Inter, sans-serif',
-                  '&:hover': { borderColor: '#ddd', color: '#eee' },
-                }}
-              >
-                Sign Out
-              </Button>
-            </Stack>
-          </Box>
+              />
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', pt: 1 }}>
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    startIcon={<EditIcon sx={{ fontSize: '1rem' }} />}
+                    onClick={editProfile}
+                    sx={{
+                      bgcolor: `${primaryColor}1A`,
+                      color: primaryColor,
+                      '&:hover': { bgcolor: `${primaryColor}33` },
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      px: 2,
+                      py: 1,
+                      fontSize: '0.875rem',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    Edit Profile
+                  </Button>
+                  <Button
+                    startIcon={<AddIcon sx={{ fontSize: '1rem' }} />}
+                    onClick={handleCVAction}
+                    sx={{
+                      bgcolor: primaryColor,
+                      color: 'white',
+                      '&:hover': { bgcolor: '#4338CA' },
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      px: 2,
+                      py: 1,
+                      fontSize: '0.875rem',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    Create Portfolio
+                  </Button>
+                </Stack>
+              </Box>
 
-          {/* Hero Section */}
-          <Box sx={{ textAlign: 'center', color: 'white', mb: 2 }}>
-            <Avatar
-              src={userProfile?.fetchedUsed?.profilePhoto}
-              alt={userProfile?.fetchedUsed?.firstName}
-              sx={{
-                width: 140,
-                height: 140,
-                mx: 'auto',
-                mb: 2,
-                border: '4px solid white',
-                transition: 'transform 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.05)',
-                  boxShadow: '0 0 15px rgba(255,255,255,0.6)',
-                },
-              }}
-            />
-            <Typography variant="h4" fontWeight="bold" sx={{ fontFamily: 'Inter, sans-serif' }}>
-              {userProfile?.fetchedUsed?.firstName || 'First'} {userProfile?.fetchedUsed?.lastName || 'Last'}
-            </Typography>
-            <Typography variant="subtitle1" sx={{ color: '#f0f0f0', fontFamily: 'Inter, sans-serif' }}>
-              {userProfile?.fetchedUsed?.designation}
-            </Typography>
-          </Box>
+              {/* Name & Designation */}
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="h4" sx={{ color: textColor, fontWeight: 'bold' }}>
+                  {userProfile?.fetchedUsed?.firstName || user1.firstName}{' '}
+                  {userProfile?.fetchedUsed?.lastName || user1.lastName}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ color: subtextColor, mt: 0.5 }}>
+                  {userProfile?.fetchedUsed?.designation || user1.designation}
+                </Typography>
+              </Box>
 
-          {/* Info Card */}
-          <Box
-            component={motion.div}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            sx={{
-              mt: { xs: 4, sm: 6 },
-              px: { xs: 3, sm: 5 },
-              py: 5,
-              bgcolor: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(12px)',
-              borderRadius: 4,
-              boxShadow: '0 12px 32px rgba(0,0,0,0.15)',
-              maxWidth: 920,
-              width: '100%',
-              fontFamily: 'Inter, sans-serif',
-            }}
-          >
-            <Typography variant="h6" gutterBottom sx={{ color: 'white', fontWeight: 'bold' }}>
-              Contact Info
-            </Typography>
-            <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', mb: 3 }} />
+              {/* About Section */}
+              <Box sx={{ mt: 4 }}>
+                <Typography variant="h6" sx={{ color: textColor, fontWeight: 600, mb: 2 }}>
+                  About
+                </Typography>
+                <Typography sx={{ color: subtextColor, lineHeight: 1.6 }}>
+                  {userProfile?.fetchedUsed?.about || user1.about}
+                </Typography>
+              </Box>
 
-
-            <Grid container spacing={4}>
-              {[
-                ['Date of Birth', userProfile?.fetchedUsed?.dob || user1.dob],
-                ['Gender', userProfile?.fetchedUsed?.gender || user1.gender],
-                ['Phone', userProfile?.fetchedUsed?.phoneNo || user1.phoneNo],
-                ['Email', userProfile?.fetchedUsed?.email || user1.email],
-                ['socialLinks', userProfile?.fetchedUsed?.socialLinks || user1.socialLinks],
-                ['City', userProfile?.fetchedUsed?.city || user1.city],
-                ['State', userProfile?.fetchedUsed?.state || user1.state],
-                ['Pincode', userProfile?.fetchedUsed?.pinCode || user1.pincode],
-              ].map(([label, value]) => {
-                // Pre-format the date outside of JSX
-                if (label === 'Date of Birth' && value) {
-                  value = format(parseISO(value), 'dd-MM-yyyy'); // 22-09-2025
-                }
-
-                return (
-                  <Grid item xs={12} sm={6} md={4} key={label}>
-                    <Typography variant="caption" sx={{ color: '#ccc' }}>
-                      {label}
-                    </Typography>
-                    <Typography variant="body1" fontWeight={500} sx={{ color: 'white' }}>
-                      {label === 'socialLinks' ? (
-                        Array.isArray(value) ? (
-                          value.map((link, i) => (
-                            <a
-                              key={i}
-                              href={link}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{
-                                color: 'white',
-                                display: 'block',
-                                textDecoration: 'underline',
-                                marginBottom: 4,
-                              }}
-                            >
-                              {link}
-                            </a>
-                          ))
-                        ) : (
-                          <a
-                            href={value}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ color: 'white', textDecoration: 'underline' }}
-                          >
-                            {value}
-                          </a>
-                        )
-                      ) : (
-                        value
-                      )}
-                    </Typography>
+              {/* Contact Information Section */}
+              <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${borderColor}` }}>
+                <Typography variant="h6" sx={{ color: textColor, fontWeight: 600, mb: 3 }}>
+                  Contact Information
+                </Typography>
+                <Grid container spacing={{ xs: 2, md: 3 }}>
+                  <Grid item xs={12} md={6} lg={4}>
+                    <InfoItem
+                      icon={<CakeIcon sx={{ fontSize: '1.25rem' }} />}
+                      label="Date of Birth"
+                      value={userProfile?.fetchedUsed?.dob ? format(parseISO(userProfile.fetchedUsed.dob), 'MMMM d, yyyy') : user1.dob}
+                    />
                   </Grid>
-                );
-              })}
-            </Grid>
+                  <Grid item xs={12} md={6} lg={4}>
+                    <InfoItem
+                      icon={<PersonIcon sx={{ fontSize: '1.25rem' }} />}
+                      label="Gender"
+                      value={userProfile?.fetchedUsed?.gender || user1.gender}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={4}>
+                    <InfoItem
+                      icon={<PhoneIcon sx={{ fontSize: '1.25rem' }} />}
+                      label="Phone"
+                      value={userProfile?.fetchedUsed?.phoneNo || user1.phoneNo}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={4}>
+                    <InfoItem
+                      icon={<LocationOnIcon sx={{ fontSize: '1.25rem' }} />}
+                      label="Address"
+                      value={`${userProfile?.fetchedUsed?.city || user1.city}, ${userProfile?.fetchedUsed?.state || user1.state}`}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={8}>
+                    <InfoItem
+                      icon={<EmailIcon sx={{ fontSize: '1.25rem' }} />}
+                      label="Email"
+                      value={userProfile?.fetchedUsed?.email || user1.email}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={8}>
+                    <InfoItem
+                      icon={<LinkIcon sx={{ fontSize: '1.25rem' }} />}
+                      label="Social Links"
+                      value={userProfile?.fetchedUsed?.socialLinks || user1.socialLinks}
+                    />
+                  </Grid>
 
+                </Grid>
+              </Box>
 
-            {/* Actions */}
-            <Box mt={5} display="flex" justifyContent="center" gap={3}>
-              <Button
-                onClick={handleCVAction}
-                variant="contained"
-                sx={{
-                  background: 'linear-gradient(to right, #1a73e8, #8e2de2)',
-                  color: 'white',
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: 2,
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  fontFamily: 'Inter, sans-serif',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                  '&:hover': {
-                    boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
-                  },
-                }}
-              >
-                {hasCV ? 'UpdateInfo' : 'CreateInfo'}
-              </Button>
-              <Button
-                variant="contained"
-                component={Link}
-                to="/createportfolio"
-                sx={{
-                  background: 'linear-gradient(to right, #5f72be, #9b23ea)',
-                  color: 'white',
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: 2,
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  fontFamily: 'Inter, sans-serif',
-                  boxShadow: '0 6px 15px rgba(0,0,0,0.3)',
-                  '&:hover': {
-                    background: 'linear-gradient(to bottom right, #0f2027, #203a43, #2c5364)',
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
-                  },
-                }}
-              >
-                Create Portfolio
-              </Button>
+              {/* Bottom Buttons */}
+              <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${borderColor}` }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <Button
+                    startIcon={<UploadFileIcon />}
+                    sx={{
+                      bgcolor: `${primaryColor}1A`,
+                      color: primaryColor,
+                      '&:hover': { bgcolor: `${primaryColor}33` },
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      px: 3,
+                      py: 1.5,
+                      borderRadius: '8px',
+                      width: '100%',
+                    }}
+                  >
+                    Update CV
+                  </Button>
+                  <Button
+                    startIcon={<ShareIcon />}
+                    sx={{
+                      bgcolor: `${primaryColor}1A`,
+                      color: primaryColor,
+                      '&:hover': { bgcolor: `${primaryColor}33` },
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      px: 3,
+                      py: 1.5,
+                      borderRadius: '8px',
+                      width: '100%',
+                    }}
+                  >
+                    Share Profile
+                  </Button>
+                </Stack>
+              </Box>
             </Box>
           </Box>
-        </>
-      )}
+        )}
+      </Box>
     </Box>
   );
-}
+} export default ProfilePage;

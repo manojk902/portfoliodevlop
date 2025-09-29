@@ -1,433 +1,479 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useRef } from "react";
 import {
-  Container,
-  Typography,
-  Grid,
-  Paper,
-  Avatar,
-  CircularProgress,
+  ThemeProvider,
+  createTheme,
+  CssBaseline,
   Box,
+  Typography,
+  IconButton,
+  Avatar,
+  Grid,
   Chip,
   Divider,
-  alpha,
-  useTheme,
-  // Rating
+  Button,
+  Container
 } from "@mui/material";
 import {
-  Email,
-  Phone,
-  Cake,
-  LocationOn,
   LinkedIn,
   GitHub,
-  Language,
-  Facebook,
+  LightMode,
+  DarkMode,
+  Print,
+  Download
 } from "@mui/icons-material";
-import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
-// import { apiUrl } from "../../utils/common";
-// import { useSelector } from "react-redux";
-// import { useParams } from "react-router-dom";
-import MarkdownPreview from '@uiw/react-markdown-preview';
+import styled from "@emotion/styled";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
+const themes = [
+  {
+    name: "Black-White",
+    bg: "#FFFFFF",
+    text: "#000000",
+    accent: "#000000",
+    headerFont: "Playfair Display, serif",
+    bodyFont: "Lora, serif",
+  },
+  {
+    name: "Off-White Pink",
+    bg: "#FDF2F8",
+    text: "#111827",
+    accent: "#DB2777",
+    headerFont: "Playfair Display, serif",
+    bodyFont: "Lora, serif",
+  },
+  {
+    name: "Gray-Charcoal",
+    bg: "#F3F4F6",
+    text: "#111827",
+    accent: "#374151",
+    headerFont: "Playfair Display, serif",
+    bodyFont: "Lora, serif",
+  },
+  {
+    name: "Soft Beige",
+    bg: "#F5F5DC",
+    text: "#111827",
+    accent: "#C0A060",
+    headerFont: "Playfair Display, serif",
+    bodyFont: "Lora, serif",
+  },
+];
 
+const CVContainer = styled(Box)`
+  width: 210mm;
+  min-height: 297mm;
+  margin: auto;
+  padding: 20mm;
+  background: ${({ theme }) => theme.palette.background.default};
+  box-sizing: border-box;
+  position: relative;
 
-const Cv3 = ({ UserData }) => {
-  const [cvData,] = useState(UserData);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const theme = useTheme();
-  // const userProfile = useSelector((state) => state.userProfile.data);
-  // const username = userProfile?.fetchedUsed?.userName;
-  // const name = useParams()
-  console.log(cvData, "cvData from cv3");
+  @media print {
+    box-shadow: none;
+    padding: 20mm !important;
+    width: 210mm !important;
+    margin: 0 !important;
+    min-height: auto;
+  }
+`;
 
-  useEffect(() => {
-    const fetchCV = async () => {
-      try {
-        // const res = await fetch(
-        //   // `${apiUrl}/defaultCv/${username}`
-        //   // `${apiUrl}/defaultCv/${username}`
-        // );
-        // const data = await res.json();
-        // setCvData(data.fetchedCvInfo.defaultCvInfo);
-        // setCvData(UserData?.data?.fetchedCvInfo?.defaultCvInfo);
+const BorderBox = styled(Box)`
+  border: 1px solid ${({ theme }) => theme.palette.primary.main}30;
+  border-radius: 0px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  transition: all 0.3s ease;
 
-      } catch (err) {
-        setError("Failed to fetch CV data");
-      } finally {
-        setLoading(false);
+  &:hover {
+    border-color: ${({ theme }) => theme.palette.primary.main}80;
+    background: ${({ theme }) =>
+    theme.palette.mode === 'light'
+      ? 'rgba(0,0,0,0.02)'
+      : 'rgba(255,255,255,0.02)'};
+  }
+
+  @media print {
+    border: 1px solid #00000020;
+    padding: 1rem !important;
+  }
+`;
+
+const SectionTitle = styled(Typography)`
+  font-weight: 700 !important;
+  margin-bottom: 1rem !important;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 4px;
+  border-bottom: 2px solid ${({ theme }) => theme.palette.primary.main};
+`;
+
+const PrintHide = styled(Box)`
+  @media print {
+    display: none !important;
+  }
+`;
+
+const ExperienceItem = styled(Box)`
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding-left: 16px;
+  border-left: 2px solid ${({ theme }) => theme.palette.primary.main};
+  
+  &::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: ${({ theme }) => theme.palette.primary.main};
+  }
+`;
+
+export default function Cv3() {
+  const [themeIndex, setThemeIndex] = useState(0);
+  const active = themes[themeIndex];
+  const cvRef = useRef();
+
+  const theme = createTheme({
+    palette: {
+      mode: "light",
+      background: { default: active.bg, paper: active.bg },
+      text: { primary: active.text },
+      primary: { main: active.accent },
+    },
+    typography: {
+      fontFamily: active.bodyFont,
+      h3: {
+        fontFamily: active.headerFont,
+        fontWeight: 700,
+        letterSpacing: 0.5,
+      },
+      h5: {
+        fontFamily: active.headerFont,
+        fontWeight: 600,
+        letterSpacing: 0.5,
+      },
+      body1: {
+        lineHeight: 1.6,
+      },
+    },
+    components: {
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            marginRight: 1,
+            marginBottom: 1,
+            borderRadius: 4,
+          }
+        }
       }
-    };
+    }
+  });
 
-    fetchCV();
-  }, [UserData?.data?.fetchedCvInfo?.defaultCvInfo]);
+  const nextTheme = () => setThemeIndex((prev) => (prev + 1) % themes.length);
 
-  if (loading) return (
-    <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-      <CircularProgress />
-    </Box>
-  );
-
-  if (error) return (
-    <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-      <Typography color="error" variant="h6">{error}</Typography>
-    </Box>
-  );
-
-  if (!cvData) return (
-    <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-      <Typography variant="h6">No CV data available</Typography>
-    </Box>
-  );
-
-  const {
-    firstName,
-    lastName,
-    designation,
-    dob,
-    email,
-    gender,
-    phoneNo,
-    profilePhoto,
-    socialLinks,
-    sections,
-  } = cvData;
-
-  // Helper function to render social links with icons
-  const renderSocialLinks = () => {
-    if (!socialLinks || socialLinks.length === 0) return null;
-
-    return (
-      <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
-        {socialLinks.map((link, index) => {
-          let icon = <Language />;
-          if (link.includes("linkedin")) icon = <LinkedIn />;
-          if (link.includes("github")) icon = <GitHub />;
-          if (link.includes("facebook")) icon = <Facebook />;
-          if (link.includes("gmail")) icon = <AlternateEmailIcon />;
-
-          return (
-            <Chip
-              key={index}
-              icon={icon}
-              label={link}
-              onClick={() => window.open(link, "_blank")}
-              size="small"
-              variant="outlined"
-            />
-          );
-        })}
-      </Box>
-    );
+  const handlePrint = () => {
+    window.print();
   };
 
-  // Helper function to render sections
-  const renderSection = (section) => {
-    if (!section || !section.data || section.data.length === 0) return null;
+  const handleDownload = async () => {
+    if (!cvRef.current) return;
 
-    switch (section.name) {
-      case "Summary":
-        return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Professional Summary
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
-              {section.data}
-            </Typography>
-          </Paper>
-        );
-      case "Skill":
-        return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Skills
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {section.data.map((skill, idx) => (
-                <Chip
-                  key={idx}
-                  label={skill.skill ? `${skill.skill} (${skill.rating}/5)` : skill.skill}
-                  variant="outlined"
-                  color="primary"
-                  sx={{ mb: 1 }}
-                />
-              ))}
-            </Box>
-          </Paper>
-        );
-      case "Experience":
-        return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Work Experience
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            {section.data.map((exp, idx) => (
-              <Box key={idx} mb={3}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {exp.jobTitle}
-                </Typography>
-                <Typography variant="subtitle2" color="text.secondary">
-                  {exp.company} | {exp.location}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
-                  {exp.startDate} - {exp.endDate}
-                </Typography>
-                <Typography variant="body2" component="div" sx={{ lineHeight: 1.6 }}>
-                  <MarkdownPreview
-                    style={{
-                      backgroundColor: 'transparent',  // removes black
-                      color: 'inherit',                // use your text color
-                      padding: 0,                      // optional
-                    }}
-                    source={exp.description || ""} />
-                </Typography>
-                {idx < section.data.length - 1 && <Divider sx={{ mt: 2 }} />}
-              </Box>
-            ))}
-          </Paper>
-        );
-      case "Education":
-        return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Education
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            {section.data.map((edu, idx) => (
-              <Box key={idx} mb={3}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {edu.course}
-                </Typography>
-                <Typography variant="subtitle2" color="text.secondary">
-                  {edu.college} | {edu.fieldOfStudy}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
-                  {edu.startDate} - {edu.endDate} | Grade: {edu.grade}
-                </Typography>
-                <Typography variant="body2">
-                  Location: {edu.location}
-                </Typography>
-                {idx < section.data.length - 1 && <Divider sx={{ mt: 2 }} />}
-              </Box>
-            ))}
-          </Paper>
-        );
-      case "Project":
-        return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Projects
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            {section.data.map((proj, idx) => (
-              <Box key={idx} mb={3}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {proj.name}
-                </Typography>
-                <Typography variant="body2" component="div" sx={{ mb: 1, lineHeight: 1.6 }}>
-                  <MarkdownPreview
-                    style={{
-                      backgroundColor: 'transparent',  // removes black
-                      color: 'inherit',                // use your text color
-                      padding: 0,                      // optional
-                    }}
-                    source={proj.description || ""} />
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  <Box component="span" sx={{ fontWeight: 600 }}>Technologies: </Box>
-                  {proj.technologies.join(", ")}
-                </Typography>
-                {proj.url && (
-                  <Typography variant="body2">
-                    <Box component="span" sx={{ fontWeight: 600 }}>URL: </Box>
-                    <Box
-                      component="a"
-                      href={proj.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      sx={{ color: "primary.main", textDecoration: "none" }}
-                    >
-                      {proj.url}
-                    </Box>
-                  </Typography>
-                )}
-                {idx < section.data.length - 1 && <Divider sx={{ mt: 2 }} />}
-              </Box>
-            ))}
-          </Paper>
-        );
-      case "Certification":
-        return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Certifications
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            {section.data.map((cert, idx) => (
-              <Box key={idx} mb={2}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {cert.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {cert.institute}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Issued: {cert.issueDate}
-                </Typography>
-              </Box>
-            ))}
-          </Paper>
-        );
-      case "Language":
-        return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Languages
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-              {section.data.map((lang, idx) => (
-                <Box key={idx}>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    {lang.language}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {lang.proficiency}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        );
-      case "Award":
-        return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Awards
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-              {section.data.map((award, idx) => (
-                <Box key={idx}>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    Title: {award.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Issuer: {award.issuer}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Description {award.description}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Issued: {award.date}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        );
-      case "Achievement":
-        return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Achievement
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-              {section.data.map((Achievement, idx) => (
-                <Box key={idx}>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    {idx + 1}: {Achievement}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        );
-      case "Interest":
-        return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Interests
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-              {section.data.map((interest, idx) => (
-                <Box key={idx}>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    {idx + 1}: {interest}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        );
-      default:
-        return null;
+    const element = cvRef.current;
+    const originalWidth = element.style.width;
+    const originalHeight = element.style.height;
+
+    try {
+      // Set fixed dimensions for capture
+      element.style.width = '210mm';
+      element.style.height = 'auto';
+
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // Capture the element
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Add additional pages if needed
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // Save the PDF
+      pdf.save('neha-bhatt-cv.pdf');
+
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      // Restore original dimensions
+      element.style.width = originalWidth;
+      element.style.height = originalHeight;
     }
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header Section */}
-      <Paper elevation={2} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-        <Grid container spacing={4} alignItems="center">
-          <Grid item xs={12} md={3} sx={{ display: "flex", justifyContent: "center" }}>
-            <Avatar
-              src={profilePhoto || ""}
-              alt={`${firstName} ${lastName}`}
-              sx={{ width: 180, height: 180, border: `4px solid ${theme.palette.primary.main}` }}
-            />
-          </Grid>
-          <Grid item xs={12} md={9}>
-            <Typography variant="h3" gutterBottom sx={{ fontWeight: 700 }}>
-              {firstName} {lastName}
-            </Typography>
-            <Typography variant="h5" color="primary" gutterBottom sx={{ fontWeight: 600 }}>
-              {designation}
-            </Typography>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Container sx={{ '@media print': { padding: 0 } }}>
+        <PrintHide display="flex" justifyContent="flex-end" mb={2}>
+          <IconButton onClick={nextTheme} color="primary" sx={{ mr: 1 }}>
+            {themeIndex % 2 === 0 ? <DarkMode /> : <LightMode />}
+          </IconButton>
+          <Button
+            variant="outlined"
+            startIcon={<Print />}
+            onClick={handlePrint}
+            sx={{ mr: 1 }}
+          >
+            Print
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Download />}
+            onClick={handleDownload}
+          >
+            Download PDF
+          </Button>
+        </PrintHide>
 
-            <Grid container spacing={2} sx={{ mt: 1 }}>
+        <CVContainer ref={cvRef}>
+          {/* Header */}
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            <Typography variant="h3">Neha Bhatt</Typography>
+            <Typography variant="h6" color="textSecondary">
+              Senior Editorial Designer
+            </Typography>
+          </Box>
+
+          <Grid container spacing={4} alignItems="center" mb={3}>
+            <Grid item xs={12} md={8}>
+              <Typography variant="body1" sx={{ maxWidth: "80%", fontStyle: 'italic' }}>
+                "Bringing editorial elegance to digital design. Detail obsessed, story driven."
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={4} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+              <Avatar
+                src="https://via.placeholder.com/200"
+                sx={{
+                  width: 180,
+                  height: 180,
+                  border: `3px solid ${active.accent}`
+                }}
+              />
+            </Grid>
+          </Grid>
+
+          {/* Contact */}
+          <BorderBox>
+            <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <Email sx={{ mr: 1, color: "primary.main" }} />
-                  <Typography variant="body1">{email}</Typography>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <Phone sx={{ mr: 1, color: "primary.main" }} />
-                  <Typography variant="body1">{phoneNo}</Typography>
-                </Box>
+                <Typography>Phone: +91 9876001234</Typography>
+                <Typography>Email: neha.bhatt@email.com</Typography>
+                <Typography>Kolkata, WB, India</Typography>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <Cake sx={{ mr: 1, color: "primary.main" }} />
-                  <Typography variant="body1">
-                    {new Date(dob).toLocaleDateString()} ({gender})
-                  </Typography>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <LocationOn sx={{ mr: 1, color: "primary.main" }} />
-                  <Typography variant="body1">
-                    {cvData?.address?.city}, {cvData?.address?.state}, {cvData?.address?.country}
-                  </Typography>
-                </Box>
+              <Grid item xs={12} md={6} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                <IconButton color="primary"><LinkedIn /></IconButton>
+                <IconButton color="primary"><GitHub /></IconButton>
               </Grid>
             </Grid>
-            {renderSocialLinks()}
+          </BorderBox>
+
+          {/* 2-Column Layout */}
+          <Grid container spacing={4}>
+            {/* Left Column */}
+            <Grid item xs={12} md={4}>
+              <BorderBox>
+                <SectionTitle variant="h5">Skills</SectionTitle>
+                <Grid container spacing={1}>
+                  {[
+                    "Editorial Design", "UX Writing", "Figma", "Adobe Suite",
+                    "Content Strategy", "Typography", "Layout Design",
+                    "Brand Identity", "Art Direction", "Visual Storytelling"
+                  ].map(skill => (
+                    <Grid item xs={12} key={skill}>
+                      <Typography>— {skill}</Typography>
+                    </Grid>
+                  ))}
+                </Grid>
+              </BorderBox>
+
+              <BorderBox>
+                <SectionTitle variant="h5">Languages</SectionTitle>
+                <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
+                  <Chip label="English (Fluent)" color="primary" />
+                  <Chip label="Bengali (Native)" color="primary" />
+                  <Chip label="Hindi (Fluent)" color="primary" />
+                </Box>
+              </BorderBox>
+
+              <BorderBox>
+                <SectionTitle variant="h5">Interests</SectionTitle>
+                <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
+                  <Chip label="📷 Photography" color="primary" />
+                  <Chip label="📝 Fashion Blogging" color="primary" />
+                  <Chip label="✍️ Creative Writing" color="primary" />
+                  <Chip label="🎨 Art Exhibitions" color="primary" />
+                </Box>
+              </BorderBox>
+
+              <BorderBox>
+                <SectionTitle variant="h5">Awards</SectionTitle>
+                <Box mt={1}>
+                  <Typography fontWeight={500}>🏆 Editorial Designer of the Year</Typography>
+                  <Typography variant="body2" color="textSecondary">Design Excellence Awards, 2023</Typography>
+
+                  <Typography fontWeight={500} mt={2}>🏅 Best Digital Publication</Typography>
+                  <Typography variant="body2" color="textSecondary">India Design Forum, 2022</Typography>
+                </Box>
+              </BorderBox>
+            </Grid>
+
+            {/* Right Column */}
+            <Grid item xs={12} md={8}>
+              <BorderBox>
+                <SectionTitle variant="h5">Professional Profile</SectionTitle>
+                <Typography>
+                  Editorial designer with 7+ years of experience creating visually compelling narratives
+                  for print and digital media. Specialized in transforming complex stories into elegant
+                  visual experiences. Passionate about typography, layout composition, and brand storytelling.
+                </Typography>
+              </BorderBox>
+
+              <BorderBox>
+                <SectionTitle variant="h5">Experience</SectionTitle>
+
+                <ExperienceItem>
+                  <Typography variant="subtitle1" fontWeight={600}>Design Lead</Typography>
+                  <Typography color="primary" fontStyle="italic">Vogue Digital | 2021–Present</Typography>
+                  <Typography variant="body2" mt={1}>
+                    • Led redesign of digital magazine increasing engagement by 45%<br />
+                    • Developed design system for 12+ editorial products<br />
+                    • Managed team of 8 designers and illustrators<br />
+                    • Collaborated with editors on visual storytelling strategies
+                  </Typography>
+                </ExperienceItem>
+
+                <ExperienceItem>
+                  <Typography variant="subtitle1" fontWeight={600}>Senior Designer</Typography>
+                  <Typography color="primary" fontStyle="italic">HarperCollins India | 2018–2021</Typography>
+                  <Typography variant="body2" mt={1}>
+                    • Designed 50+ book covers and interior layouts<br />
+                    • Created visual identity for 3 new imprint launches<br />
+                    • Developed template system reducing production time by 30%<br />
+                    • Mentored junior designers in editorial best practices
+                  </Typography>
+                </ExperienceItem>
+
+                <ExperienceItem>
+                  <Typography variant="subtitle1" fontWeight={600}>Design Associate</Typography>
+                  <Typography color="primary" fontStyle="italic">The Telegraph | 2016–2018</Typography>
+                  <Typography variant="body2" mt={1}>
+                    • Designed daily newspaper layouts and special sections<br />
+                    • Created infographics for complex data stories<br />
+                    • Won internal design competition 3 times consecutively
+                  </Typography>
+                </ExperienceItem>
+              </BorderBox>
+
+              <BorderBox>
+                <SectionTitle variant="h5">Education</SectionTitle>
+                <Box mb={2}>
+                  <Typography fontWeight={600}>MA Mass Communication</Typography>
+                  <Typography>Jadavpur University | 2014–2016</Typography>
+                  <Typography color="textSecondary">Specialization: Visual Communication</Typography>
+                </Box>
+                <Box>
+                  <Typography fontWeight={600}>BFA Graphic Design</Typography>
+                  <Typography>Government College of Art & Craft | 2011–2014</Typography>
+                </Box>
+              </BorderBox>
+
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <BorderBox>
+                    <SectionTitle variant="h5">Projects</SectionTitle>
+                    <Box mt={1}>
+                      <Typography fontWeight={600}>Digital Magazine Redesign</Typography>
+                      <Typography variant="body2">
+                        Complete visual overhaul for premium lifestyle magazine
+                      </Typography>
+
+                      <Typography fontWeight={600} mt={2}>Storytelling Platform</Typography>
+                      <Typography variant="body2">
+                        Interactive digital platform for long-form journalism
+                      </Typography>
+
+                      <Typography fontWeight={600} mt={2}>Art Book Series</Typography>
+                      <Typography variant="body2">
+                        Limited edition book series for contemporary artists
+                      </Typography>
+                    </Box>
+                  </BorderBox>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <BorderBox>
+                    <SectionTitle variant="h5">Certificates</SectionTitle>
+                    <Box mt={1}>
+                      <Typography>• Adobe Certified Expert</Typography>
+                      <Typography>• Typography Masterclass (TypeEd)</Typography>
+                      <Typography>• Editorial Design (Domestika)</Typography>
+                      <Typography>• UX Writing Fundamentals</Typography>
+                    </Box>
+                  </BorderBox>
+
+                  <BorderBox>
+                    <SectionTitle variant="h5">Achievements</SectionTitle>
+                    <Box mt={1}>
+                      <Typography>• Speaker at Design India Summit 2023</Typography>
+                      <Typography>• Featured in Creative Review Annual</Typography>
+                      <Typography>• Judge for National Design Awards</Typography>
+                    </Box>
+                  </BorderBox>
+                </Grid>
+              </Grid>
+            </Grid>
           </Grid>
-        </Grid>
-      </Paper>
 
-      {/* Sections */}
-      {sections?.map((section, idx) => (
-        <React.Fragment key={idx}>{renderSection(section)}</React.Fragment>
-      ))}
-    </Container>
+          {/* Footer */}
+          <Divider sx={{ my: 4, borderColor: "primary.main" }} />
+          <Box textAlign="center">
+            <Typography variant="body2">
+              Page 2 of 2 — Neha Bhatt
+            </Typography>
+          </Box>
+        </CVContainer>
+      </Container>
+    </ThemeProvider>
   );
-};
-
-export default Cv3;
+}

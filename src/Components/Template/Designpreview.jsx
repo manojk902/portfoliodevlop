@@ -4,23 +4,27 @@ import React, { useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 
-import CV1 from "./Cv1";
-import CV2 from "./Cv2";
-import CV3 from "./Cv3";
-import CV4 from "./Cv4";
-import CV5 from "./Cv5";
-import CV6 from "./Cv6";
+
+
+import Cv1 from "./Cv1";
+import Cv3 from "./Cv3";
+import Cv4 from "./Cv4";
+import DefaultCvDesign from "./DefaultCvDesign";
+import Cv2 from "./Cv2";
+import Cv6 from "./Cv6";
+// import CV6 from "./Cv5";
 
 export default function Designpreview() {
   const { id } = useParams();
 
   const cvDesigns = [
-    { id: 1, Component: CV1 },
-    { id: 2, Component: CV2 },
-    { id: 3, Component: CV3 },
-    { id: 4, Component: CV4 },
-    { id: 5, Component: CV5 },
-    { id: 6, Component: CV6 },
+    { id: 1, Component: Cv1 },
+    { id: 2, Component: Cv2 },
+    { id: 3, Component: Cv3 },
+    { id: 4, Component: Cv4 },
+    { id: 5, Component: DefaultCvDesign },
+    { id: 6, Component: Cv6 },
+
   ];
 
   // ✅ Safe find with memo + console log
