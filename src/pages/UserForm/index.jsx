@@ -120,16 +120,36 @@ function UserForm() {
       const res = await axios[method](url, data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
+
       if (res.data.status === "success") {
+        // refresh profile in redux
         const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
         dispatch(setUserProfile(updated.data));
         setSuccess(true);
-        resetForm();
-        setTimeout(() => {
+
+        // fetch CVs
+        const cvRes = await axios.get(`${apiUrl}/cv-details/${user.userName}`);
+        console.log(cvRes.data.fetchedCv.cvInfo, "fetchedCv");
+
+        const defaultCv = cvRes.data.fetchedCv.cvInfo?.[0]; // first CV if exists
+
+        if (isEdit) {
+          // ✅ existing user → go to edit dashboard
           navigate("/edit");
-        }, 1000);
+        } else {
+          // ✅ new user → open the first CV in edit mode if available
+          if (defaultCv) {
+            navigate(`/edit/add-group?groupId=${defaultCv.cvInfoId}&edit=true`);
+          } else {
+            // fallback: no CV yet, open create mode
+            navigate("/edit/add-group?edit=false");
+          }
+        }
+
+        resetForm();
       }
       setStep(1);
+
     } catch (err) {
 
       setError(`${err.response.data.error.errorResponse.errmsg}`);
