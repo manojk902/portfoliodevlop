@@ -201,11 +201,12 @@ function DesignPage() {
                     },
                   }}
                 >
+
                   {/* Default Label */}
                   {isDefault && (
                     <Chip
                       icon={<CheckCircleIcon />}
-                      label="Default"
+                      label="Selected"
                       size="small"
                       sx={{
                         position: "absolute",
@@ -304,7 +305,7 @@ function DesignPage() {
                         variant="outlined"
                         onClick={() => handleSetDefault(name)}
                       >
-                        Set as Default
+                        Publish This
                       </Button>
                     )}
                   </Box>

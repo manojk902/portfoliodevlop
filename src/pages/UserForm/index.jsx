@@ -19,8 +19,6 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { format } from 'date-fns';
 
-
-
 // 1. Validation schema using Yup
 const validationSchema = Yup.object({
   firstName: Yup.string().required('First Name is required'),
@@ -47,9 +45,7 @@ function UserForm() {
   const navigate = useNavigate();
   const [info, setInfo] = useState();
 
-  // useEffect(() => {
-  //   setProfileEmail(user?.email)
-  // }, [user?.email])
+
 
   useEffect(() => {
     setInfo(!!fetchedUser ? "Update" : "Create");
@@ -58,7 +54,6 @@ function UserForm() {
   // 2. Handle file upload
   const handleFileChange = (e, setFieldValue) => {
     setFieldValue('profilePhoto', e.target.files[0]);
-    // console.log(`=>=>${e.target.files[0]}`);
   };
 
   const isEdit = !!fetchedUser;
@@ -72,7 +67,6 @@ function UserForm() {
     designation: fetchedUser?.designation || '',
     email: fetchedUser?.email || '',
     phoneNo: fetchedUser?.phoneNo || '',
-    // socialLink: fetchedUser?.socialLinks || '',
     socialLink: Array.isArray(fetchedUser?.socialLinks)
       ? fetchedUser?.socialLinks.join(', ')
       : (fetchedUser?.socialLinks || ''),
@@ -95,12 +89,10 @@ function UserForm() {
         .map(s => s.trim())
         .filter(Boolean);
     })();
-    // console.log("sss", fetchedUser);
     try {
       const data = new FormData();
       data.append('firstName', values?.firstName);
       data.append('lastName', values.lastName);
-      // data.append('dob', values?.dob);
       data.append(
         'dob',
         values.dob ? format(new Date(values.dob), "yyyy-MM-dd") : ""
@@ -109,7 +101,6 @@ function UserForm() {
       data.append('designation', values.designation);
       data.append('email', values?.email);
       data.append('phoneNo', Number(values.phoneNo));
-      // data.append('socialLink', values.socialLink);
       socialArray.forEach(link => data.append('socialLinks[]', link));
       data.append('city', values.city);
       data.append('state', values.state);
@@ -135,16 +126,14 @@ function UserForm() {
         setSuccess(true);
         resetForm();
         setTimeout(() => {
-          navigate('/edit');
+          navigate("/edit");
         }, 1000);
       }
-      // navigate('/profile');
-      // window.location.reload();
       setStep(1);
     } catch (err) {
-      // setError(err.response?.data?.message || 'Submission failed');
-      setError('Failed to submit form. Please try again.');
-      setError(false);
+
+      setError(`${err.response.data.error.errorResponse.errmsg}`);
+      // setError(true);
     } finally {
       setSubmitting(false);
     }
@@ -441,8 +430,8 @@ function UserForm() {
           )}
         </Formik>
 
-        <Snackbar open={!!error} autoHideDuration={4000} onClose={() => setError('')}>
-          <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }}>
+        <Snackbar open={!!error} autoHideDuration={2000} onClose={() => setError(false)}>
+          <Alert severity="error" sx={{ width: '100%' }}>
             {error}
           </Alert>
         </Snackbar>

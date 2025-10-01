@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { AppBar, Toolbar, Button, IconButton, Box, Skeleton, useMediaQuery, useTheme } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu'; // Hamburger icon for sidebar toggle
 import DescriptionIcon from '@mui/icons-material/Description'; // Icon for "Resume Now." logo
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'; // Import useNavigate hook
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'; // Import useNavigate hook
 import { jwtDecode } from "jwt-decode";
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
@@ -27,9 +27,14 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleNavigationClick = (path) => {
-    onNavigate(path);
+    // onNavigate(path);
+    if (!userProfile?.firstName && path !== "/editprofile") {
+      // Agar profile incomplete hai to force editprofile
+      navigate("/editprofile", { replace: true });
+      return;
+    }
+    navigate(path);
   };
-
   const app_name = process.env.REACT_APP_APP_NAME;
   const app_url = process.env.REACT_APP_APP_URL;
   const redirect_url = process.env.REACT_APP_REDIRECT_URL;
@@ -38,8 +43,13 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [searchParams] = useSearchParams();
   const [decodedToken, setDecodedToken] = useState(null);
+  const [redirected, setRedirected] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const userProfile = useSelector(state => state.userProfile?.data?.fetchedUsed);
+  const [profileFetched, setProfileFetched] = useState(false);
+  console.log(userProfile?.firstName, "userProfile");
+
+  const location = useLocation();
   const navigate = useNavigate();
   const open = Boolean(anchorEl);
 
@@ -57,11 +67,26 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
           console.log("Server error->", error);
         } finally {
           setLoading(false);
+          setProfileFetched(true);
         }
       };
       fetchUser();
     }
   }, [isLoggedIn, decodedToken?.userName, dispatch]);
+useEffect(() => {
+  if (
+    isLoggedIn &&
+    profileFetched &&   // ✅ wait till API done
+    !loading &&
+    !userProfile?.firstName && // ✅ check after fetch
+    !redirected &&
+    location.pathname !== "/editprofile"
+  ) {
+    setRedirected(true);
+    navigate("/editprofile", { replace: true });
+  }
+}, [isLoggedIn, profileFetched, loading, userProfile, redirected, location.pathname, navigate]);
+
 
   useEffect(() => {
     let token = searchParams.get("token") || localStorage.getItem("token");
@@ -99,6 +124,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
+
   };
 
   const handleMenuClose = () => {
@@ -187,7 +213,6 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                   Templates
                 </Button>
               </Box>
-
               {isLoggedIn ? (
                 loading ? (
                   <Skeleton variant="circular" width={40} height={40} />
@@ -234,14 +259,15 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                   ) : (
                     <>
                       <Button onClick={handleLogout} sx={{ display: { xs: 'none', sm: 'block' } }}>Logout</Button>
-                      <Button
-                        onClick={() => handleNavigationClick('/editprofile')}
+                      {/* <Button
+                        // onClick={() => handleNavigationClick('/editprofile')}
                         variant="contained"
+
                         color="primary"
                         sx={{ px: { xs: 1, sm: 2 }, py: 1 }}
                       >
                         Create Profile
-                      </Button>
+                      </Button> */}
                     </>
                   )
               ) : (

@@ -23,7 +23,7 @@ export const getTheme = (mode) => {
       cardBgColor: mode === "dark" ? '#1F2937' : '#FFFFFF',
       borderColor: mode === "dark" ? '#374151' : '#E5E7EB',
       textColor: mode === "dark" ? '#F9FAFB' : '#1F2937',
-      primary: { main: "#0d6efd" },
+      primary: { main: "#1976d2" },
       secondary: { main: "#6c757d" },
       success: { main: "#198754" },
       info: { main: "#0dcaf0" },

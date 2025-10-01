@@ -8,12 +8,13 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  useTheme,
 } from '@mui/material';
 import MDEditor from "@uiw/react-md-editor";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 // import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
+// import * as Yup from "yup";
 import { ExpandMore, ExpandLess, DragIndicator } from '@mui/icons-material';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -211,6 +212,7 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
 // Main form component
 const GroupForm = () => {
   const userProfile = useSelector(state => state.userProfile.data);
+  const theme = useTheme()
   const username = userProfile?.fetchedUsed?.userName
   const userId = userProfile?.fetchedUsed?.userId
   const [searchParams] = useSearchParams();
@@ -245,6 +247,9 @@ const GroupForm = () => {
       try {
         const response = await axios.get(`${apiUrl}/getSingleCv/${username}/${groupId}`);
         const cvData = response.data.singleCv;
+        // console.log();
+        console.log('CV Data:', cvData);
+        
         if (cvData) {
           const updatedSections = cvData.sections.map(section => {
             if (section.name.toLowerCase() === 'summary') {
@@ -715,7 +720,7 @@ const GroupForm = () => {
             />
           ))}
           {/* Add Section Button */}
-          <Button sx={{ bgcolor: '#388e3c', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => setShowModal(true)}>
+          <Button sx={{ bgcolor:theme.palette.primary.main, color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => setShowModal(true)}>
             Add Section
           </Button>
           {/* Modal for Adding Sections */}
@@ -753,7 +758,7 @@ const GroupForm = () => {
             <Button sx={{ color: '#666', textTransform: 'none', fontSize: '0.875rem' }} onClick={handleCancel}>
               Cancel
             </Button>
-            <Button sx={{ bgcolor: '#1976d2', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} type="submit">
+            <Button sx={{bgcolor:theme.palette.success.main, color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} type="submit">
               Save
             </Button>
           </Box>

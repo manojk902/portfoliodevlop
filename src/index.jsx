@@ -9,7 +9,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { getTheme } from './theme/index.js';
 import { motion } from "framer-motion";
 function Root() {
-  const [mode, setMode] = useState("dark"); // ✅ hook inside component
+  const [mode, setMode] = useState("light"); // ✅ hook inside component
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
