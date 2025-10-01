@@ -86,7 +86,7 @@ function ProfilePage() {
     }
   }, [username, dispatch]);
 
-  const primaryColor = '#4F46E5';
+  // const primaryColor = '#4F46E5';
 
 
   // Component to render info items with icons
@@ -104,7 +104,7 @@ function ProfilePage() {
               target="_blank"
               rel="noreferrer"
               style={{
-                color: primaryColor,
+                color: theme.palette.primary.main,
                 textDecoration: 'none',
                 display: 'block',
                 overflow: 'hidden',
@@ -118,7 +118,7 @@ function ProfilePage() {
         ) : label === 'Email' ? (
           <a
             href={`mailto:${value}`}
-            style={{ color: primaryColor, textDecoration: 'none' }}
+            style={{ color: theme.palette.primary.main, textDecoration: 'none' }}
           >
             {value}
           </a>
@@ -264,9 +264,9 @@ function ProfilePage() {
                     startIcon={<EditIcon sx={{ fontSize: '1rem' }} />}
                     onClick={editProfile}
                     sx={{
-                      bgcolor: `${primaryColor}1A`,
-                      color: primaryColor,
-                      '&:hover': { bgcolor: `${primaryColor}33` },
+                      bgcolor: `${theme.palette.primary.main}1A`,
+                      color: theme.palette.primary.main,
+                      '&:hover': { bgcolor: `${theme.palette.primary.main}33` },
                       textTransform: 'none',
                       fontWeight: 600,
                       px: 2,
@@ -281,7 +281,7 @@ function ProfilePage() {
                     startIcon={<AddIcon sx={{ fontSize: '1rem' }} />}
                     onClick={handleCVAction}
                     sx={{
-                      bgcolor: primaryColor,
+                      bgcolor: theme.palette.primary.main,
                       color: 'white',
                       '&:hover': { bgcolor: '#4338CA' },
                       textTransform: 'none',
@@ -376,9 +376,9 @@ function ProfilePage() {
                   <Button
                     startIcon={<UploadFileIcon />}
                     sx={{
-                      bgcolor: `${primaryColor}1A`,
-                      color: primaryColor,
-                      '&:hover': { bgcolor: `${primaryColor}33` },
+                      bgcolor: `${theme.palette.primary.main}1A`,
+                      color: theme.palette.primary.main,
+                      '&:hover': { bgcolor: `${theme.palette.primary.main}33` },
                       textTransform: 'none',
                       fontWeight: 600,
                       px: 3,
@@ -392,9 +392,9 @@ function ProfilePage() {
                   <Button
                     startIcon={<ShareIcon />}
                     sx={{
-                      bgcolor: `${primaryColor}1A`,
-                      color: primaryColor,
-                      '&:hover': { bgcolor: `${primaryColor}33` },
+                      bgcolor: `${theme.palette.primary.main}1A`,
+                      color: theme.palette.primary.main,
+                      '&:hover': { bgcolor: `${theme.palette.primary.main}33` },
                       textTransform: 'none',
                       fontWeight: 600,
                       px: 3,
