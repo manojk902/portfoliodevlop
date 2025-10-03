@@ -4,13 +4,14 @@ import {
   Typography,
   Grid,
   Paper,
-  Avatar,
+  // Avatar,
   CircularProgress,
   Box,
   Chip,
   Divider,
   alpha,
   useTheme,
+  Tooltip,
   // Rating
 } from "@mui/material";
 import {
@@ -22,8 +23,21 @@ import {
   GitHub,
   Language,
   Facebook,
+  CardMembership
 } from "@mui/icons-material";
+
+// import {AlternateEmailIcon} from '@mui/icons-material';
 import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
+import WorkOutlineSharpIcon from '@mui/icons-material/WorkOutlineSharp';
+import SchoolSharpIcon from '@mui/icons-material/SchoolSharp';
+import EmojiEventsSharpIcon from '@mui/icons-material/EmojiEventsSharp';
+import HomeRepairServiceSharpIcon from '@mui/icons-material/HomeRepairServiceSharp';
+import InterestsSharpIcon from '@mui/icons-material/InterestsSharp';
+import MilitaryTechSharpIcon from '@mui/icons-material/MilitaryTechSharp';
+import LanguageSharpIcon from '@mui/icons-material/LanguageSharp';
+
+// import WorkOutlineSharpIcon from '@material-ui/icons/WorkOutlineSharp';
+
 // import { apiUrl } from "../../utils/common";
 // import { useSelector } from "react-redux";
 // import { useParams } from "react-router-dom";
@@ -119,7 +133,6 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
     email,
     gender,
     phoneNo,
-    profilePhoto,
     socialLinks,
     sections,
   } = cvData;
@@ -159,10 +172,13 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
     switch (section.name) {
       case "Summary":
         return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Professional Summary
-            </Typography>
+          <Paper elevation={2} sx={{ p: 3, mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
+              <WorkOutlineSharpIcon sx={{ mr: 1, color: "primary.main" }} />
+              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                Professional Summary
+              </Typography>
+            </Box>
             <Divider sx={{ mb: 2 }} />
             <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
               {section.data}
@@ -171,10 +187,13 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
         );
       case "Skill":
         return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Skills
-            </Typography>
+          <Paper elevation={2} sx={{ p: 3, mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
+              <WorkOutlineSharpIcon sx={{ mr: 1, color: "primary.main" }} />
+              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                Skills
+              </Typography>
+            </Box>
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
               {section.data.map((skill, idx) => (
@@ -191,73 +210,115 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
         );
       case "Experience":
         return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Work Experience
-            </Typography>
+          <Paper elevation={2} sx={{ p: 3, mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
+              <HomeRepairServiceSharpIcon sx={{ mr: 1, color: "primary.main" }} />
+              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                Work Experience
+              </Typography>
+            </Box>
             <Divider sx={{ mb: 2 }} />
             {section.data.map((exp, idx) => (
-              <Box key={idx} mb={3}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {exp.jobTitle}
-                </Typography>
-                <Typography variant="subtitle2" color="text.secondary">
-                  {exp.company} | {exp.location}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
-                  {exp.startDate} - {exp.endDate}
-                </Typography>
-                <Typography variant="body2" component="div" sx={{ lineHeight: 1.6 }}>
-                  <MarkdownPreview
-                    style={{
-                      backgroundColor: 'transparent',  // removes black
-                      color: 'inherit',                // use your text color
-                      padding: 0,                      // optional
-                    }}
-                    source={exp.description || ""} />
-                </Typography>
-                {idx < section.data.length - 1 && <Divider sx={{ mt: 2 }} />}
-              </Box>
+              <React.Fragment key={idx}>
+                <Box key={idx} mb={3}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                        {exp.jobTitle}
+                      </Typography>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        {exp.company}
+                      </Typography>
+                    </Box>
+
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
+                        {exp.startDate} - {exp.endDate}
+                      </Typography>
+                      <Typography sx={{ fontWeight: 600, textAlign: "end" }} variant="body2" color="text.secondary">
+                        {exp.location}
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" component="div" sx={{ lineHeight: 1.6 }}>
+                      <MarkdownPreview
+                        style={{
+                          backgroundColor: 'transparent',  // removes black
+                          color: 'inherit',                // use your text color
+                          padding: 0,                      // optional
+                        }}
+                        source={exp.description || ""} />
+                    </Typography>
+                  </Box>
+
+                  {idx < section.data.length - 1 && <Divider sx={{ mt: 2 }} />}
+
+                </Box>
+              </React.Fragment>
+
             ))}
           </Paper>
         );
       case "Education":
         return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Education
-            </Typography>
+          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
+              <Tooltip title="Education Section" placement="top">
+                <SchoolSharpIcon sx={{ mr: 1, color: "primary.main" }} />
+              </Tooltip>
+              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                Education
+              </Typography>
+            </Box>
             <Divider sx={{ mb: 2 }} />
+
             {section.data.map((edu, idx) => (
-              <Box key={idx} mb={3}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {edu.course}
-                </Typography>
-                <Typography variant="subtitle2" color="text.secondary">
-                  {edu.college} | {edu.fieldOfStudy}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
-                  {edu.startDate} - {edu.endDate} | Grade: {edu.grade}
-                </Typography>
-                <Typography variant="body2">
-                  Location: {edu.location}
-                </Typography>
-                {idx < section.data.length - 1 && <Divider sx={{ mt: 2 }} />}
-              </Box>
+              //  console.log(edu.grade,"Grade"),
+              <React.Fragment key={idx}>
+                <Box mb={3} sx={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      {edu.course}
+                    </Typography>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      {edu.college}
+                    </Typography>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      {edu.fieldOfStudy}
+                    </Typography>
+                    {edu.grade ? (<Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
+                      Grade: {edu.grade}
+                    </Typography>) : null}
+
+                  </Box>
+
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
+                      {edu.startDate} - {edu.endDate}
+                    </Typography>
+                    <Typography sx={{ fontWeight: 600, textAlign: "end" }} variant="body2" color="text.secondary">
+                      {edu.location}
+                    </Typography>
+                  </Box>
+                </Box>
+                {idx < section.data.length - 1 && <Divider sx={{ my: 2 }} />}
+              </React.Fragment>
             ))}
           </Paper>
+
         );
       case "Project":
         return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
+          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
             <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
               Projects
             </Typography>
             <Divider sx={{ mb: 2 }} />
             {section.data.map((proj, idx) => (
+              // console.log(proj.technologies,"jjjj"),
+
               <Box key={idx} mb={3}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {proj.name}
+                 {idx+1}. {proj.name}
                 </Typography>
                 <Typography variant="body2" component="div" sx={{ mb: 1, lineHeight: 1.6 }}>
                   <MarkdownPreview
@@ -268,10 +329,12 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
                     }}
                     source={proj.description || ""} />
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  <Box component="span" sx={{ fontWeight: 600 }}>Technologies: </Box>
-                  {proj.technologies.join(", ")}
-                </Typography>
+                {proj.technologies && proj.technologies.length > 0 ? (
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    <Box component="span" sx={{ fontWeight: 600 }}>Technologies: </Box>
+                    {proj.technologies.join(", ")}
+                  </Typography>
+                ) : null}
                 {proj.url && (
                   <Typography variant="body2">
                     <Box component="span" sx={{ fontWeight: 600 }}>URL: </Box>
@@ -293,10 +356,13 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
         );
       case "Certification":
         return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Certifications
-            </Typography>
+          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
+              <CardMembership sx={{ mr: 1, color: "primary.main" }} />
+              <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
+                Certifications
+              </Typography>
+            </Box>
             <Divider sx={{ mb: 2 }} />
             {section.data.map((cert, idx) => (
               <Box key={idx} mb={2}>
@@ -315,10 +381,13 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
         );
       case "Language":
         return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Languages
-            </Typography>
+          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
+              <LanguageSharpIcon sx={{ mr: 1, color: "primary.main" }} />
+              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                Languages
+              </Typography>
+            </Box>
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
               {section.data.map((lang, idx) => (
@@ -336,10 +405,13 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
         );
       case "Award":
         return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Awards
-            </Typography>
+          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
+              <EmojiEventsSharpIcon sx={{ mr: 1, color: "primary.main" }} />
+              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                Awards
+              </Typography>
+            </Box>
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
               {section.data.map((award, idx) => (
@@ -350,8 +422,16 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
                   <Typography variant="body2" color="text.secondary">
                     Issuer: {award.issuer}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Description {award.description}
+
+                  <Typography variant="body2" component="div" color="text.secondary">
+                    <MarkdownPreview
+                      style={{
+                        backgroundColor: 'transparent',  // removes black
+                        color: 'inherit',                // use your text color
+                        padding: 0,                      // optional
+                      }}
+                      source={`description :${award.description|| ""}`} />
+
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Issued: {award.date}
@@ -363,10 +443,13 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
         );
       case "Achievement":
         return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Achievement
-            </Typography>
+          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
+              <MilitaryTechSharpIcon sx={{ mr: 1, color: "primary.main" }} />
+              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                Achievement
+              </Typography>
+            </Box>
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
               {section.data.map((Achievement, idx) => (
@@ -381,14 +464,19 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
         );
       case "Interest":
         return (
-          <Paper elevation={0} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Interests
-            </Typography>
+          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
+              <InterestsSharpIcon sx={{ mr: 1, color: "primary.main" }} />
+              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                Interests
+              </Typography>
+            </Box>
+
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
               {section.data.map((interest, idx) => (
                 <Box key={idx}>
+
                   <Typography variant="body1" sx={{ fontWeight: 600 }}>
                     {idx + 1}: {interest}
                   </Typography>
@@ -407,13 +495,6 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
       {/* Header Section */}
       <Paper elevation={2} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
         <Grid container spacing={4} alignItems="center">
-          <Grid item xs={12} md={3} sx={{ display: "flex", justifyContent: "center" }}>
-            <Avatar
-              src={profilePhoto || ""}
-              alt={`${firstName} ${lastName}`}
-              sx={{ width: 180, height: 180, border: `4px solid ${theme.palette.primary.main}` }}
-            />
-          </Grid>
           <Grid item xs={12} md={9}>
             <Typography variant="h3" gutterBottom sx={{ fontWeight: 700 }}>
               {firstName} {lastName}

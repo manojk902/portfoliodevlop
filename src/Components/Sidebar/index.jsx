@@ -19,6 +19,7 @@ const Sidebar = () => {
         width: 200, // Reduced width for minimal look
         bgcolor: '#f5f5f5',
         height: '100vh',
+        display:{xs:'none',sm:'block'},
         p: 1, // Minimal padding
       }}
     >

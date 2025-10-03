@@ -8,6 +8,7 @@ import {
   Button,
   Stack,
   Skeleton,
+  useTheme,
 } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import EditIcon from '@mui/icons-material/Edit';
@@ -20,42 +21,37 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import LinkIcon from '@mui/icons-material/Link';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import WbSunnyIcon from '@mui/icons-material/WbSunny';
-import NightlightIcon from '@mui/icons-material/Nightlight';
-
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { setUserProfile } from '../../store/features/userProfileSlice';
 import { apiUrl } from '../../utils/common';
 import { format, parseISO } from 'date-fns';
-
+import { useNavigate } from 'react-router-dom';
 const user1 = {
   profilePhoto: '',
-  firstName: 'Manoj',
-  lastName: 'Kumar',
-  designation: 'Backend & Frontend Developer',
-  dob: '2025-09-17T00:00:00Z',
-  gender: 'Male',
-  phoneNo: '8851513692',
-  email: 'manojkumar6448@gmail.com',
-  socialLinks: ['https://linkedin.com/in/johndeo'],
-  city: 'Gurgaon',
-  state: 'Haryana',
-  pincode: '122001',
-  about: 'A passionate developer with experience in building scalable web applications. Loves to explore new technologies and contribute to open source projects.',
+  firstName: 'Alpha',
+  lastName: 'Zero',
+  designation: 'System Architect',
+  dob: '2000-01-01T00:00:00Z',
+  gender: 'Unspecified',
+  phoneNo: '0000000000',
+  email: 'alpha.zero@nowhere.test',
+  socialLinks: ['https://placeholder.link/alpha'],
+  city: 'NullCity',
+  state: 'NowhereState',
+  pincode: '000000',
+  about: 'An abstract persona used for testing purposes. Does not belong to any country or real entity.',
 };
 
 function ProfilePage() {
-  const [hasCV, setHasCV] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
+  // const [isDarkMode, setIsDarkMode] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
+  const theme = useTheme();
 
   // Functionality remains the same
   const editProfile = () => {
@@ -64,17 +60,13 @@ function ProfilePage() {
 
   const handleCVAction = async () => {
     try {
-      await axios.get(`${apiUrl}/cv-details/${username}`);
       navigate('/edit');
     } catch (error) {
       navigate('/edit');
     }
   };
 
-  const toggleTheme = () => {
-    setIsDarkMode((prev) => !prev);
-    // You would typically save this to localStorage
-  };
+
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -94,35 +86,16 @@ function ProfilePage() {
     }
   }, [username, dispatch]);
 
-  useEffect(() => {
-    const checkCVExists = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}/cv-details/${username}`);
-        const exists = !!response.data;
-        setHasCV(exists);
-      } catch (error) {
-        console.log('CV does not exist.');
-        setHasCV(false);
-      }
-    };
-    if (username) {
-      checkCVExists();
-    }
-  }, [username]);
+  // const primaryColor = '#4F46E5';
 
-  const primaryColor = '#4F46E5';
-  const subtextColor = isDarkMode ? '#9CA3AF' : '#6B7280';
-  const cardBgColor = isDarkMode ? '#1F2937' : '#FFFFFF';
-  const borderColor = isDarkMode ? '#374151' : '#E5E7EB';
-  const textColor = isDarkMode ? '#F9FAFB' : '#1F2937';
 
   // Component to render info items with icons
   const InfoItem = ({ icon, label, value }) => (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontSize: '0.875rem' }}>
-      <Box sx={{ color: subtextColor, display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ color: theme.palette.subtextColor, display: 'flex', alignItems: 'center' }}>
         {icon}
       </Box>
-      <Box sx={{ color: textColor }}>
+      <Box sx={{ color: theme.palette.textColor }}>
         {label === 'Social Links' && Array.isArray(value) ? (
           value.map((link, i) => (
             <a
@@ -131,7 +104,7 @@ function ProfilePage() {
               target="_blank"
               rel="noreferrer"
               style={{
-                color: primaryColor,
+                color: theme.palette.primary.main,
                 textDecoration: 'none',
                 display: 'block',
                 overflow: 'hidden',
@@ -145,7 +118,7 @@ function ProfilePage() {
         ) : label === 'Email' ? (
           <a
             href={`mailto:${value}`}
-            style={{ color: primaryColor, textDecoration: 'none' }}
+            style={{ color: theme.palette.primary.main, textDecoration: 'none' }}
           >
             {value}
           </a>
@@ -164,8 +137,7 @@ function ProfilePage() {
         alignItems: 'center',
         justifyContent: 'center',
         p: { xs: 2, md: 4 },
-        bgcolor: isDarkMode ? '#111827' : '#F3F4F6',
-        fontFamily: 'Inter, sans-serif',
+        bgcolor: theme.palette.background.default,
       }}
     >
       <Box
@@ -177,7 +149,7 @@ function ProfilePage() {
           maxWidth: '960px',
           width: '100%',
           mx: 'auto',
-          bgcolor: cardBgColor,
+          bgcolor: theme.palette.cardBgColor,
           boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
           borderRadius: '16px',
           overflow: 'hidden',
@@ -194,7 +166,7 @@ function ProfilePage() {
                 variant="circular"
                 width={128}
                 height={128}
-                sx={{ position: 'absolute', left: 32, top: -64, border: `4px solid ${cardBgColor}` }}
+                sx={{ position: 'absolute', left: 32, top: -64, border: `4px solid ${theme.palette.cardBgColor}` }}
               />
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 1 }}>
                 <Stack direction="row" spacing={1} sx={{ mt: { xs: 4, md: 0 } }}>
@@ -210,7 +182,7 @@ function ProfilePage() {
                 <Skeleton variant="text" width="20%" height={24} />
                 <Skeleton variant="text" width="90%" />
               </Box>
-              <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${borderColor}` }}>
+              <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${theme.palette.borderColor}` }}>
                 <Skeleton variant="text" width="30%" height={24} />
                 <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mt: 1 }}>
                   {Array(6).fill().map((_, index) => (
@@ -223,7 +195,7 @@ function ProfilePage() {
                   ))}
                 </Grid>
               </Box>
-              <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${borderColor}` }}>
+              <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${theme.palette.borderColor}` }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <Skeleton variant="rectangular" width="100%" height={48} sx={{ borderRadius: '8px' }} />
                   <Skeleton variant="rectangular" width="100%" height={48} sx={{ borderRadius: '8px' }} />
@@ -247,7 +219,7 @@ function ProfilePage() {
               />
               <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <IconButton
-                  onClick={toggleTheme}
+                  // onClick={toggleTheme}
                   sx={{
                     bgcolor: 'rgba(255, 255, 255, 0.2)',
                     backdropFilter: 'blur(4px)',
@@ -255,7 +227,7 @@ function ProfilePage() {
                     '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.3)' },
                   }}
                 >
-                  {isDarkMode ? <WbSunnyIcon /> : <NightlightIcon />}
+                  {/* {isDarkMode ? <WbSunnyIcon /> : <NightlightIcon />} */}
                 </IconButton>
                 <IconButton
                   sx={{
@@ -282,7 +254,7 @@ function ProfilePage() {
                   top: { xs: -64, md: -64 },
                   width: 128,
                   height: 128,
-                  border: `4px solid ${cardBgColor}`,
+                  border: `4px solid ${theme.palette.cardBgColor}`,
                   boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                 }}
               />
@@ -292,9 +264,9 @@ function ProfilePage() {
                     startIcon={<EditIcon sx={{ fontSize: '1rem' }} />}
                     onClick={editProfile}
                     sx={{
-                      bgcolor: `${primaryColor}1A`,
-                      color: primaryColor,
-                      '&:hover': { bgcolor: `${primaryColor}33` },
+                      bgcolor: `${theme.palette.primary.main}1A`,
+                      color: theme.palette.primary.main,
+                      '&:hover': { bgcolor: `${theme.palette.primary.main}33` },
                       textTransform: 'none',
                       fontWeight: 600,
                       px: 2,
@@ -309,7 +281,7 @@ function ProfilePage() {
                     startIcon={<AddIcon sx={{ fontSize: '1rem' }} />}
                     onClick={handleCVAction}
                     sx={{
-                      bgcolor: primaryColor,
+                      bgcolor: theme.palette.primary.main,
                       color: 'white',
                       '&:hover': { bgcolor: '#4338CA' },
                       textTransform: 'none',
@@ -327,28 +299,28 @@ function ProfilePage() {
 
               {/* Name & Designation */}
               <Box sx={{ mt: 2 }}>
-                <Typography variant="h4" sx={{ color: textColor, fontWeight: 'bold' }}>
+                <Typography variant="h4" sx={{ color: theme.palette.textColor, fontWeight: 'bold' }}>
                   {userProfile?.fetchedUsed?.firstName || user1.firstName}{' '}
                   {userProfile?.fetchedUsed?.lastName || user1.lastName}
                 </Typography>
-                <Typography variant="subtitle1" sx={{ color: subtextColor, mt: 0.5 }}>
+                <Typography variant="subtitle1" sx={{ color: theme.palette.subtextColor, mt: 0.5 }}>
                   {userProfile?.fetchedUsed?.designation || user1.designation}
                 </Typography>
               </Box>
 
               {/* About Section */}
               <Box sx={{ mt: 4 }}>
-                <Typography variant="h6" sx={{ color: textColor, fontWeight: 600, mb: 2 }}>
+                <Typography variant="h6" sx={{ color: theme.palette.textColor, fontWeight: 600, mb: 2 }}>
                   About
                 </Typography>
-                <Typography sx={{ color: subtextColor, lineHeight: 1.6 }}>
+                <Typography sx={{ color: theme.palette.subtextColor, lineHeight: 1.6 }}>
                   {userProfile?.fetchedUsed?.about || user1.about}
                 </Typography>
               </Box>
 
               {/* Contact Information Section */}
-              <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${borderColor}` }}>
-                <Typography variant="h6" sx={{ color: textColor, fontWeight: 600, mb: 3 }}>
+              <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${theme.palette.borderColor}` }}>
+                <Typography variant="h6" sx={{ color: theme.palette.textColor, fontWeight: 600, mb: 3 }}>
                   Contact Information
                 </Typography>
                 <Grid container spacing={{ xs: 2, md: 3 }}>
@@ -399,14 +371,14 @@ function ProfilePage() {
               </Box>
 
               {/* Bottom Buttons */}
-              <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${borderColor}` }}>
+              <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${theme.palette.borderColor}` }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <Button
                     startIcon={<UploadFileIcon />}
                     sx={{
-                      bgcolor: `${primaryColor}1A`,
-                      color: primaryColor,
-                      '&:hover': { bgcolor: `${primaryColor}33` },
+                      bgcolor: `${theme.palette.primary.main}1A`,
+                      color: theme.palette.primary.main,
+                      '&:hover': { bgcolor: `${theme.palette.primary.main}33` },
                       textTransform: 'none',
                       fontWeight: 600,
                       px: 3,
@@ -420,9 +392,9 @@ function ProfilePage() {
                   <Button
                     startIcon={<ShareIcon />}
                     sx={{
-                      bgcolor: `${primaryColor}1A`,
-                      color: primaryColor,
-                      '&:hover': { bgcolor: `${primaryColor}33` },
+                      bgcolor: `${theme.palette.primary.main}1A`,
+                      color: theme.palette.primary.main,
+                      '&:hover': { bgcolor: `${theme.palette.primary.main}33` },
                       textTransform: 'none',
                       fontWeight: 600,
                       px: 3,
