@@ -10,7 +10,7 @@ import {
   Box,
   Chip,
   Divider,
-  Avatar,
+  // Avatar,
   CircularProgress,
   useTheme,
   alpha,
@@ -124,16 +124,6 @@ const DefaultCvDesign = ({ UserDataFromDesignPage }) => {
   // Left Column Components
   const PersonalInfo = () => (
     <Box>
-      <Avatar
-        src={cvData.profilePhoto || ""}
-        sx={{
-          width: 150,
-          height: 150,
-          border: `4px solid ${theme.palette.primary.main}`,
-          mx: 'auto',
-          mb: 2
-        }}
-      />
       <Typography variant="h4" fontWeight="bold" gutterBottom align="center">
         {cvData.firstName} {cvData.lastName}
       </Typography>

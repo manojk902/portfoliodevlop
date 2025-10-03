@@ -28,7 +28,7 @@ function UserInfo() {
 
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
-  
+
   const navigate = useNavigate();
 
   const fetchUsers = async () => {
@@ -93,9 +93,9 @@ function UserInfo() {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ py: 3, pr: { xs: 1, sm: 2, md: 3, lg: 4 }, pl: { xs: 1, sm: 2, md: 3, lg: 4 }, }}>
       {/* <UserBreadcrumb current={groupId ? 'Edit' : 'Add'} /> */}
-      <Grid container spacing={2}>
+      <Grid sx={{ flexDirection: { xs: "column", sm: "column", md: "row", lg: "row" } }} container spacing={2}>
         {loading ? (
           // Skeletons while loading
           Array.from(new Array(4)).map((_, index) => (
@@ -130,7 +130,30 @@ function UserInfo() {
               const isDefault = defaultUser?.cvInfoId === user.cvInfoId;
               return (
                 <Grid item xs={12} sm={6} md={3} key={key}>
-                  <Card sx={{ p: 2, height: "100%" }}>
+                  <Card sx={{
+                    p: 2,
+                    // width: {
+                    //   xs: "100%",   // 👈 Mobile (0px+)
+                    //   sm: "400px",  // 👈 Small screens (600px+)
+                    //   md: "600px",  // 👈 Medium screens (900px+)
+                    //   lg: "800px",  // 👈 Large screens (1200px+)
+                    //   xl: "1000px", // 👈 Extra Large (1536px+)
+                    // },
+                    width: { xs: "88%", sm: 400, md: 600 },
+                    mx: { xs: "auto", sm: "0" }, // center align on mobile
+                    maxWidth: "100%", // safety guard       // center align
+                    // bgcolor: {
+                    //   xs: "red",    // Mobile
+                    //   sm: "orange", // Tablet
+                    //   md: "yellow", // Laptop
+                    //   lg: "green",  // Desktop
+                    //   xl: "blue",   // Wide screens
+                    // },
+                    //  mx: "", // center horizontally
+                    height: "100%",
+
+                    // bgcolor: isDefault ? "lightgreen" : "white" 
+                  }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom noWrap>
                         {user.designation}
@@ -171,7 +194,7 @@ function UserInfo() {
                           {updatingCvId === user.cvInfoId
                             ? "Updating..."
                             : isDefault
-                              ? "Default"
+                              ? "Selected"
                               : "Set as Default"}
                         </Button>
 
@@ -204,6 +227,8 @@ function UserInfo() {
                   justifyContent: "center",
                   cursor: "pointer",
                   border: "2px dashed #aaa",
+                  width: { xs: "88%", sm: 400, md: 600 },
+                  mx: { xs: "auto", sm: "0" },
                 }}
                 onClick={handleAddNew}
               >
@@ -218,7 +243,7 @@ function UserInfo() {
           </>
         )}
       </Grid>
-    </Box>
+    </Box >
   );
 }
 

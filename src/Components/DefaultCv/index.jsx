@@ -47,7 +47,7 @@ const DefaultCv = ({ template = 'defaultCv' }) => {
     Cv3: Cv3,
     Cv4: Cv4,
     Cv6: Cv6,
-    
+
   }
 
   const Component = cvOptions[cvt || template];
