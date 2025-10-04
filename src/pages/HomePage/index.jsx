@@ -173,9 +173,10 @@ const HomePage = ({ mode }) => {
                   <CardContent sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                     <Box sx={{
                       display: 'flex',
-                      flexDirection: 'column', // Stacks children vertically
-                      alignItems: 'center', // Centers children horizontally within the column
-                      mb: 2,
+                      flexDirection:{ xs: 'row', md: 'column', lg: 'column', xl: 'column'}, // Stacks children vertically
+                      alignItems:{ xs: 'flex-start', md: 'center', lg: 'center', xl: 'center'}, // Centers children horizontally within the column
+                      // alignItems: 'center', // Centers children horizontally within the column
+                      mb: { xs: 0, md: 3, lg: 2, xl: 2 },
                       textAlign: 'center' // Ensures text inside the inner box is also centered
                     }}>
                       <Avatar
@@ -193,8 +194,8 @@ const HomePage = ({ mode }) => {
                       >
                         {(!user?.profilePhoto) && `${user?.firstName?.charAt(0)?.toUpperCase()}${user?.lastName?.charAt(0)?.toUpperCase()}`}
                       </Avatar>
-                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                        <Typography variant="h6" noWrap sx={{ fontWeight: 'bold', mb: '-10px' }}>
+                      <Box sx={{ flexGrow: 1, minWidth: 0 ,pt: { xs: 0.5, md: 1, lg: 0, xl: 0 } }}>
+                        <Typography variant="h6" noWrap sx={{ fontWeight: 'bold', mb: '-10px', }}>
                           {`${user?.firstName} ${user?.lastName}`}
                         </Typography>
                         <Typography variant="caption" sx={{ color: theme.palette.text.primary }} noWrap>
@@ -232,11 +233,14 @@ const HomePage = ({ mode }) => {
                       </Box>
                     </Box>
 
+
+{/* 18602662666 */}
+
                     {/* View CV Button */}
                     <Box sx={{ mt: 2, textAlign: "center" }}>
                       <Button
                         component={Link}
-                        to={`/${user?.userName}?cv=true`}
+                        to={`/${user?.userName}`}
                         variant="contained"
                         color="primary"
                         fullWidth

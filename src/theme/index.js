@@ -11,11 +11,14 @@ export const getTheme = (mode) => {
   return createTheme({
     typography: {
       fontFamily: "'Inter', sans-serif",
-      h1: { fontWeight: 700 },
-      h2: { fontWeight: 600 },
-      h3: { fontWeight: 600 },
-      button: { fontWeight: 500 },
+      h1: { fontWeight: 700, fontSize: "2.25rem", lineHeight: 1.3 },
+      h2: { fontWeight: 600, fontSize: "1.875rem", lineHeight: 1.35 },
+      h3: { fontWeight: 600, fontSize: "1.5rem", lineHeight: 1.4 },
+      body1: { fontSize: "1rem", lineHeight: 1.6 },
+      body2: { fontSize: "0.875rem", lineHeight: 1.5 },
+      button: { fontWeight: 500, textTransform: "none" },
     },
+
 
     palette: {
       mode: mode, // 'light' ya 'dark'
@@ -30,10 +33,10 @@ export const getTheme = (mode) => {
       warning: { main: "#ffc107" },
       error: { main: "#dc3545" },
       light: { main: "#f8f9fa" },
-      dark: { main: "#212529" },
-      // background: {
-      //   default: mode === 'light' ? "#f3f4f692" : "#121212",
-      // },
+      dark: { main: "#938f38ff" },
+      background: {
+       backgroundColor:  mode === 'light' ? "#f3f4f692" : "#1a181881",
+      },
       text: {
         primary: mode === 'light' ? "#111827" : "#F3F4F6",
         // dark: mode === 'light' ? "#111827" : "#6610f2"

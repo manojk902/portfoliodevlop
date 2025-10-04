@@ -9,7 +9,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { getTheme } from './theme/index.js';
 import { motion } from "framer-motion";
 function Root() {
-  const [mode, setMode] = useState("light"); // ✅ hook inside component
+  const [mode, setMode] = useState("dark"); // ✅ hook inside component
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
@@ -19,7 +19,7 @@ function Root() {
             <motion.div
               initial={false} // prevent re-init on toggle
               animate={{
-                backgroundColor:  mode === 'light' ? "#f3f4f692" : "#121212",
+                backgroundColor:  mode === 'light' ? "#f3f4f692" : "#1a181881",
                 color: mode === "light" ? "#000000" : "#ffffff",
               }}
               transition={{
