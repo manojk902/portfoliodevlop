@@ -1,5 +1,5 @@
 // Sidebar.jsx
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Box, List, ListItem, ListItemButton, ListItemText, Collapse, useTheme } from "@mui/material";
 import { ExpandMore, ExpandLess } from "@mui/icons-material";
@@ -20,8 +20,9 @@ const Sidebar = ({ variant = "permanent", onClose }) => {
     <Box
       sx={{
         width: 160,
-        bgcolor:theme.palette.background.backgroundColor,
+        bgcolor: theme.palette.background.backgroundColor,
         boxShadow: theme.palette.borderColor ? `2px 0 5px -2px ${theme.palette.borderColor}` : 'none',
+        color: theme.palette.textColor,
         height: "100%",
         p: 1,
       }}
@@ -34,9 +35,9 @@ const Sidebar = ({ variant = "permanent", onClose }) => {
             onClick={() => setCvOpen(!cvOpen)}
             sx={{
               py: 0.5,
-              bgcolor: location.pathname.startsWith("/edit") ? "#e3f2fd" : "transparent",
-              color: location.pathname.startsWith("/edit") ? "#1976d2" : "#fff",
-              "&:hover": { bgcolor: "#bbdefb" },
+              bgcolor: location.pathname.startsWith("/edit") ? theme.palette.background.light : "transparent",
+              color: location.pathname.startsWith("/edit") ? theme.palette.primary.main : theme.palette.textColor,
+              "&:hover": { bgcolor: theme.palette.background.hover },
             }}
           >
             <ListItemText primary="CV" primaryTypographyProps={{ fontSize: "1rem", fontWeight: 500 }} />
@@ -51,7 +52,7 @@ const Sidebar = ({ variant = "permanent", onClose }) => {
                 sx={{
                   py: 0.5,
                   bgcolor: location.pathname === item.path ? "#1976d2" : "transparent",
-                  color: location.pathname === item.path ? "#fff" : "#eee",
+                  color: location.pathname === item.path ? "#f4ebebff" : "#150808ff",
                   "&:hover": {
                     bgcolor: location.pathname === item.path ? "#1565c0" : "#444",
                   },
