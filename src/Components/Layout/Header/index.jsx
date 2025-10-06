@@ -3,7 +3,7 @@
 // src/components/Layout/Header/index.jsx
 // This component renders the top application bar with navigation and sidebar toggle.
 import { useEffect, useState } from 'react';
-import { AppBar, Toolbar, Button, IconButton, Box, Skeleton, useMediaQuery, useTheme, Grid } from '@mui/material';
+import { AppBar, Toolbar, Snackbar, Alert, Button, IconButton, Box, Skeleton, useMediaQuery, useTheme, Grid, DialogContent, Dialog, DialogTitle, DialogContentText, DialogActions } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu'; // Hamburger icon for sidebar toggle
 import DescriptionIcon from '@mui/icons-material/Description'; // Icon for "Resume Now." logo
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'; // Import useNavigate hook
@@ -25,6 +25,8 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const handleNavigationClick = (path) => {
     // onNavigate(path);
@@ -115,10 +117,10 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
     setIsLoggedIn(false);
     setDecodedToken(null);
     persistor.purge();
-    alert("logout successful");
     const url = new URL(window.location);
     url.searchParams.delete("token");
     window.history.replaceState({}, document.title, url.pathname + url.search);
+    setSnackbarOpen(true);
     navigate("/");
   };
 
@@ -160,7 +162,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
               {/* Left side: logo and sidebar toggle */}
               <Box sx={{ display: 'flex', alignItems: 'center', }}>
                 {/* Sidebar Toggle Button (visible only on small screens) */}
-                <IconButton
+                {/* <IconButton
                   edge="start"
                   color="inherit"
                   aria-label="menu"
@@ -168,7 +170,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                   onClick={onToggleSidebar}
                 >
                   <MenuIcon />
-                </IconButton>
+                </IconButton> */}
                 {/* "Resume Now." Logo/Title */}
                 <Box
 
@@ -255,12 +257,18 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                               BuilderPage
                             </Link>
                           </MenuItem>
-                          <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                          <MenuItem onClick={() => {
+                            handleMenuClose();
+                            setLogoutConfirmOpen(true);
+                          }}>Logout</MenuItem>
                         </Menu>
                       </>
                     ) : (
                       <>
-                        <Button onClick={handleLogout} sx={{ display: { xs: 'none', sm: 'block' } }}>Logout</Button>
+                        <Button onClick={() => setLogoutConfirmOpen(true)} sx={{ display: { xs: 'none', sm: 'block' } }}>
+                          Logout
+                        </Button>
+
                         {/* <Button
                         // onClick={() => handleNavigationClick('/editprofile')}
                         variant="contained"
@@ -304,6 +312,51 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
           )}
         </Toolbar>
       </AppBar>
+      {/* 🔥 Logout Confirmation Dialog */}
+      <Dialog
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+      >
+        <DialogTitle>Confirm Logout</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to log out?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLogoutConfirmOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              setLogoutConfirmOpen(false);
+              handleLogout();
+            }}
+            color="error"
+            variant="contained"
+          >
+            Logout
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ✅ Snackbar for success message */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity="success"
+          sx={{ width: '100%' }}
+        >
+          Logout successful!
+        </Alert>
+      </Snackbar>
+
+
     </Grid>
   );
 };

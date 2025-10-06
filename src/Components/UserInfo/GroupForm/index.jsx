@@ -248,8 +248,8 @@ const GroupForm = () => {
         const response = await axios.get(`${apiUrl}/getSingleCv/${username}/${groupId}`);
         const cvData = response.data.singleCv;
         // console.log();
-        console.log('CV Data:', cvData);
-        
+        // console.log('CV Data:', cvData);
+
         if (cvData) {
           const updatedSections = cvData.sections.map(section => {
             if (section.name.toLowerCase() === 'summary') {
@@ -290,7 +290,7 @@ const GroupForm = () => {
           );
         }
       } catch (err) {
-        console.error('Error fetching group:', err);
+        // console.error('Error fetching group:', err);
       }
     };
     fetchGroup();
@@ -607,7 +607,7 @@ const GroupForm = () => {
         }
         try {
           const response = await axios.post(`${apiUrl}/create-cv`, payloadCreateCv);
-          console.log(response, "this from cv");
+          // console.log(response, "this from cv");
           navigate('/edit');
         }
         catch {
@@ -720,7 +720,7 @@ const GroupForm = () => {
             />
           ))}
           {/* Add Section Button */}
-          <Button sx={{ bgcolor:theme.palette.primary.main, color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => setShowModal(true)}>
+          <Button sx={{ bgcolor: theme.palette.primary.main, color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => setShowModal(true)}>
             Add Section
           </Button>
           {/* Modal for Adding Sections */}
@@ -758,7 +758,7 @@ const GroupForm = () => {
             <Button sx={{ color: '#666', textTransform: 'none', fontSize: '0.875rem' }} onClick={handleCancel}>
               Cancel
             </Button>
-            <Button sx={{bgcolor:theme.palette.success.main, color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} type="submit">
+            <Button sx={{ bgcolor: theme.palette.success.main, color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} type="submit">
               Save
             </Button>
           </Box>

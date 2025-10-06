@@ -24,6 +24,7 @@ function UserInfo() {
   const [userid, setUserId] = useState();
   const [updatingCvId, setUpdatingCvId] = useState(null);
   const [deletingCvId, setDeletingCvId] = useState(null);
+
   // const [groupId] = useState(true);
 
   const userProfile = useSelector((state) => state.userProfile.data);
@@ -95,7 +96,12 @@ function UserInfo() {
   return (
     <Box sx={{ py: 3, pr: { xs: 1, sm: 2, md: 3, lg: 4 }, pl: { xs: 1, sm: 2, md: 3, lg: 4 }, }}>
       {/* <UserBreadcrumb current={groupId ? 'Edit' : 'Add'} /> */}
-      <Grid sx={{ flexDirection: { xs: "column", sm: "column", md: "row", lg: "row" } }} container spacing={2}>
+      <Grid sx={{
+        flexDirection: { xs: "column", sm: "column", md: "row", lg: "row" },
+        justifyContent: { md: "center", },
+        // flexWrap: "wrap", // ✅ allow wrapping
+
+      }} container spacing={2}>
         {loading ? (
           // Skeletons while loading
           Array.from(new Array(4)).map((_, index) => (
@@ -131,7 +137,7 @@ function UserInfo() {
               return (
                 <Grid item xs={12} sm={6} md={3} key={key}>
                   <Card sx={{
-                    p: 2,
+                    p: { xs: 0, sm: 2, md: 2, lg: 2 },
                     // width: {
                     //   xs: "100%",   // 👈 Mobile (0px+)
                     //   sm: "400px",  // 👈 Small screens (600px+)
@@ -139,11 +145,11 @@ function UserInfo() {
                     //   lg: "800px",  // 👈 Large screens (1200px+)
                     //   xl: "1000px", // 👈 Extra Large (1536px+)
                     // },
-                    width: { xs: "88%", sm: 400, md: 600 },
+                    width: { xs: "88%", sm: 400, md: 230, lg: 290, xl: 300 }, // fixed width
                     mx: { xs: "auto", sm: "0" }, // center align on mobile
                     maxWidth: "100%", // safety guard       // center align
                     // bgcolor: {
-                    //   xs: "red",    // Mobile
+                    //   // xs: "red",    // Mobile
                     //   sm: "orange", // Tablet
                     //   md: "yellow", // Laptop
                     //   lg: "green",  // Desktop
@@ -152,7 +158,7 @@ function UserInfo() {
                     //  mx: "", // center horizontally
                     height: "100%",
 
-                    // bgcolor: isDefault ? "lightgreen" : "white" 
+                    border: isDefault ? "1px solid #6fc94b35" : "white"
                   }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom noWrap>
@@ -183,31 +189,33 @@ function UserInfo() {
                         >
                           <Edit fontSize="small" />
                         </IconButton>
-
-                        <Button
-                          variant={isDefault ? "contained" : "outlined"}
-                          color="primary"
-                          size="small"
-                          onClick={() => handleSetDefault(userid, user.cvInfoId)}
-                          disabled={updatingCvId === user.cvInfoId || isDefault}
-                        >
-                          {updatingCvId === user.cvInfoId
-                            ? "Updating..."
-                            : isDefault
-                              ? "Selected"
-                              : "Set as Default"}
-                        </Button>
-
-                        {users.length > 1 && !isDefault && (
-                          <IconButton
-                            color="error"
+                        <Box>
+                          <Button
+                            variant={isDefault ? "contained" : "outlined"}
+                            color="primary"
                             size="small"
-                            onClick={() => handleDelete(userid, user.cvInfoId)}
-                            disabled={deletingCvId === user.cvInfoId}
+                            onClick={() => handleSetDefault(userid, user.cvInfoId)}
+                            disabled={updatingCvId === user.cvInfoId || isDefault}
                           >
-                            <Delete fontSize="small" />
-                          </IconButton>
-                        )}
+                            {updatingCvId === user.cvInfoId
+                              ? "Updating..."
+                              : isDefault
+                                ? "Selected"
+                                : "Set as Default"}
+                          </Button>
+
+                          {users.length > 1 && !isDefault && (
+                            <IconButton
+                              color="error"
+                              size="small"
+                              onClick={() => handleDelete(userid, user.cvInfoId)}
+                              disabled={deletingCvId === user.cvInfoId}
+                            >
+                              <Delete fontSize="small" />
+                            </IconButton>
+                          )}
+                        </Box>
+
 
                       </Box>
                     </CardContent>
@@ -217,7 +225,7 @@ function UserInfo() {
             })}
 
             {/* Add New card */}
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={6}>
               <Card
                 sx={{
                   p: 2,
@@ -227,7 +235,8 @@ function UserInfo() {
                   justifyContent: "center",
                   cursor: "pointer",
                   border: "2px dashed #aaa",
-                  width: { xs: "88%", sm: 400, md: 600 },
+                  // width: { xs: "88%", s  m: 400, md: 600 },
+                  width: { xs: "88%", sm: 400, md: 250, lg: 290, xl: 300 },
                   mx: { xs: "auto", sm: "0" },
                 }}
                 onClick={handleAddNew}

@@ -37,7 +37,6 @@ import MilitaryTechSharpIcon from '@mui/icons-material/MilitaryTechSharp';
 import LanguageSharpIcon from '@mui/icons-material/LanguageSharp';
 
 // import WorkOutlineSharpIcon from '@material-ui/icons/WorkOutlineSharp';
-
 // import { apiUrl } from "../../utils/common";
 // import { useSelector } from "react-redux";
 // import { useParams } from "react-router-dom";
@@ -108,6 +107,7 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
     fetchCvData();
 
   }, [cvPublicView, username, userNameRedux]);
+
   if (loading) {
     return (
       <Box sx={{ p: 2, textAlign: 'center' }}>
@@ -318,7 +318,7 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
 
               <Box key={idx} mb={3}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                 {idx+1}. {proj.name}
+                  {idx + 1}. {proj.name}
                 </Typography>
                 <Typography variant="body2" component="div" sx={{ mb: 1, lineHeight: 1.6 }}>
                   <MarkdownPreview
@@ -430,7 +430,7 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
                         color: 'inherit',                // use your text color
                         padding: 0,                      // optional
                       }}
-                      source={`description :${award.description|| ""}`} />
+                      source={`description :${award.description || ""}`} />
 
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
