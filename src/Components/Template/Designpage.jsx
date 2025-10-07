@@ -30,8 +30,7 @@ import Cv3 from "./Cv3";
 import Cv4 from "./Cv4";
 import Cv6 from "./Cv6";
 import Cv7 from "./Cv7";
-// import Cv6 from "./Cv5";
-
+import Cv8 from "./Cv8";
 
 function DesignPage() {
   const theme = useTheme();
@@ -79,7 +78,6 @@ function DesignPage() {
         cvInfoId: cvInfoId,
       });
 
-
       setDefaultTemplate(templateName);
       // localStorage.setItem("defaultCvTemplate", templateName);
       setShowSnackbar(true);
@@ -102,6 +100,7 @@ function DesignPage() {
     { id: 5, name: "defaultCv", Component: DefaultCvDesign },
     { id: 6, name: "Cv6", Component: Cv6 },
     { id: 7, name: "Cv7", Component: Cv7 },
+    { id: 8, name: "Cv8", Component: Cv8 },
   ];
 
   return (
@@ -136,8 +135,8 @@ function DesignPage() {
               mx: "auto",
             }}
           >
-            Select a professionally designed template to showcase your skills and
-            experience
+            Select a professionally designed template to showcase your skills
+            and experience
           </Typography>
         </Box>
 

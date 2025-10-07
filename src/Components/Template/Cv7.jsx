@@ -1,633 +1,829 @@
-import React, { useRef } from 'react';
-import { useReactToPrint } from 'react-to-print';
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState, useRef } from "react";
+import { Box, CircularProgress, Typography } from "@mui/material";
+import axios from "axios";
+import { apiUrl } from "../../utils/common";
+import { useParams, useSearchParams } from "react-router-dom";
+import MarkdownPreview from "@uiw/react-markdown-preview";
+import { useSelector } from "react-redux";
 
-const ClassicProfessionalCV = () => {
-  const cvRef = useRef();
+const Cv7 = ({ UserDataFromDesignPage }) => {
+  const componentRef = useRef();
 
-  const cvData = {
-    personalInfo: {
-      name: "Jatin Sharma",
-      jobTitle: "Frontend Developer | React.js Specialist",
-      email: "jatin200336@gmail.com",
-      phone: "+91 8860133659",
-      linkedin: "linkedin.com/in/jatin-developer",
-      location: "Gurgaon, Haryana",
-      portfolio: "jatinsharma.dev"
-    },
-    summary: "Results-driven Frontend Developer with 6 months of hands-on experience specializing in React.js and modern JavaScript ecosystems. Proven ability to develop responsive, user-friendly web applications using cutting-edge technologies. Strong collaborator with expertise in Material-UI, REST APIs, and version control systems. Committed to writing clean, maintainable code and continuously enhancing technical skills to deliver high-impact solutions.",
-    skills: {
-      "Frontend Technologies": ["JavaScript (ES6+)", "React.js", "HTML5", "CSS3", "Material-UI", "Bootstrap"],
-      "Tools & Platforms": ["Git/GitHub", "REST APIs", "Webpack", "Jest", "VS Code", "Chrome DevTools"],
-      "Professional Skills": ["Responsive Design", "Problem Solving", "Team Collaboration", "Agile Methodology", "Code Review"]
-    },
-    experience: [
-      {
-        company: "SainiCollection",
-        role: "Frontend Developer",
-        duration: "Feb 2025 - Present",
-        location: "Remote",
-        responsibilities: [
-          "Engineered responsive web applications using React.js and Material-UI, improving user engagement by 25%",
-          "Implemented modern UI/UX designs that enhanced user experience and reduced bounce rates by 15%",
-          "Collaborated with development team using Git version control, ensuring code quality and efficient workflow",
-          "Conducted thorough testing and debugging, reducing production bugs by 30%",
-          "Integrated RESTful APIs to enable dynamic content rendering and improve application performance"
-        ]
-      }
-    ],
-    education: [
-      {
-        institution: "Maharaja Agresen Himalayan Garhwal University",
-        degree: "Bachelor of Arts",
-        duration: "2021 - 2024",
-        location: "Uttarakhand"
-      },
-      {
-        institution: "Subharti University",
-        degree: "MBA in Information Technology (Ongoing)",
-        duration: "2024 - Present",
-        location: "Meerut, Uttar Pradesh"
-      },
-      {
-        institution: "Govt Sr. Secondary School",
-        degree: "Senior Secondary (11th - 12th)",
-        duration: "2019 - 2021",
-        location: "Gurgaon, Haryana"
-      },
-      {
-        institution: "Santoshi High School",
-        degree: "Secondary Education (10th)",
-        duration: "2018 - 2019",
-        location: "Gurgaon, Haryana"
-      }
-    ],
-    certifications: [
-      {
-        name: "Responsive Web Design",
-        issuer: "FreeCodeCamp",
-        year: "2025",
-        credential: "FCC-RWD-2025"
-      },
-      {
-        name: "JavaScript Algorithms and Data Structures",
-        issuer: "FreeCodeCamp",
-        year: "2025",
-        credential: "FCC-JS-2025"
-      }
-    ],
-    languages: [
-      { language: "Hindi", proficiency: "Native" },
-      { language: "English", proficiency: "Professional Working Proficiency" }
-    ],
-    projects: [
-      {
-        name: "E-commerce Dashboard",
-        description: "Built a comprehensive admin dashboard with React and Material-UI featuring real-time analytics",
-        technologies: ["React", "Material-UI", "Chart.js", "REST APIs"]
-      },
-      {
-        name: "Portfolio Website",
-        description: "Developed a responsive portfolio website with modern animations and dark mode functionality",
-        technologies: ["React", "CSS3", "Framer Motion"]
-      }
-    ]
+  // --- 1. Identify Context (URL & Redux) ---
+  const [searchParams] = useSearchParams({ UserDataFromDesignPage });
+  const { username } = useParams();
+  const cvPublicView = searchParams.get("cv");
+
+  const userProfile = useSelector(
+    (state) => state.userProfile?.data?.fetchedUsed
+  );
+  const userNameRedux = userProfile?.userName;
+
+  // --- 2. State Management ---
+  const [cvData, setCvData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // SIMPLE PRINT FUNCTION - NO RELOAD
+  const handlePrint = () => {
+    window.print();
   };
 
-  const handlePrint = useReactToPrint({
-    content: () => cvRef.current,
-    documentTitle: `${cvData.personalInfo.name.replace(/\s+/g, '_')}_Professional_CV`,
-    onAfterPrint: () => console.log("PDF generated successfully!"),
-    removeAfterPrint: true
-  });
+  useEffect(() => {
+    const fetchCvData = async () => {
+      setLoading(true);
+      let usernameToFetch = null;
+      let isDifferentUser =
+        username && userNameRedux && username !== userNameRedux;
 
-  const handleDownloadPDF = () => handlePrint();
-  const handlePrintDirectly = () => window.print();
+      if (
+        username &&
+        (isDifferentUser || cvPublicView === "true" || !userNameRedux)
+      ) {
+        usernameToFetch = username;
+      } else if (userNameRedux) {
+        usernameToFetch = userNameRedux;
+      }
 
-  return (
-    <div style={{
-      maxWidth: '210mm',
-      margin: '0 auto',
-      padding: '20px',
-      background: '#f8f9fa',
-      fontFamily: "'Georgia', 'Times New Roman', serif",
-      minHeight: '100vh'
-    }} className="cv-app-container">
-      {/* Global Styles */}
-      <style>
-        {`
-          /* Print Styles - Critical for PDF/Print */
-          @media print {
-            @page {
-              size: A4;
-              margin: 15mm;
-              marks: none;
-            }
-            
-            /* Hide browser headers and footers */
-            @page :header { display: none !important; }
-            @page :footer { display: none !important; }
-            
-            body {
-              margin: 0 !important;
-              padding: 0 !important;
-              background: white !important;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-              width: 210mm !important;
-              height: 297mm !important;
-            }
-            
-            /* Hide all elements except CV content */
-            body * {
-              visibility: hidden;
-            }
-            
-            .cv-print-container, 
-            .cv-print-container * {
-              visibility: visible !important;
-            }
-            
-            .cv-print-container {
-              position: absolute !important;
-              left: 0 !important;
-              top: 0 !important;
-              width: 100% !important;
-              height: 100% !important;
-              margin: 0 !important;
-              padding: 0 !important;
-              background: white !important;
-            }
-            
-            /* Hide non-print elements */
-            .no-print,
-            .page-label,
-            .action-buttons {
-              display: none !important;
-            }
-            
-            /* Page styling for print */
-            .cv-page {
-              width: 210mm !important;
-              min-height: 297mm !important;
-              margin: 0 !important;
-              padding: 15mm !important;
-              box-shadow: none !important;
-              background: white !important;
-              page-break-after: always !important;
-              position: relative !important;
-              box-sizing: border-box !important;
-            }
-            
-            .cv-page:last-child {
-              page-break-after: auto !important;
-            }
-            
-            /* Prevent content from breaking mid-section */
-            .section {
-              page-break-inside: avoid !important;
-              break-inside: avoid !important;
-            }
-            
-            /* Ensure proper spacing in print */
-            .experience-item,
-            .education-item {
-              page-break-inside: avoid !important;
-              break-inside: avoid !important;
-            }
-          }
+      if (usernameToFetch) {
+        try {
+          const res = await axios.get(`${apiUrl}/defaultCv/${usernameToFetch}`);
+          setCvData(res?.data?.fetchedCvInfo?.defaultCvInfo);
+        } catch (err) {
+          console.error(`❌ Error fetching CV for ${usernameToFetch}:`, err);
+          setCvData(null);
+        }
+      } else {
+        setCvData(null);
+      }
+      setLoading(false);
+    };
 
-          /* Screen Styles - For Browser View */
-          @media screen {
-            .cv-page {
-              width: 210mm;
-              min-height: 297mm;
-              margin: 10px auto;
-              padding: 20mm;
-              background: white;
-              box-shadow: 0 0 20px rgba(0,0,0,0.1);
-              box-sizing: border-box;
-              position: relative;
-            }
+    fetchCvData();
+  }, [cvPublicView, username, userNameRedux]);
 
-            .page-label {
-              position: absolute;
-              top: 10px;
-              right: 20px;
-              font-size: 11px;
-              color: #666;
-              font-style: italic;
-              background: rgba(255,255,255,0.9);
-              padding: 2px 8px;
-              border-radius: 3px;
-            }
-          }
+  if (loading) {
+    return (
+      <Box sx={{ p: 2, textAlign: "center" }}>
+        <CircularProgress size={24} />
+        <Typography variant="body2" color="text.secondary">
+          Loading CV...
+        </Typography>
+      </Box>
+    );
+  }
 
-          /* Common Styles for both screen and print */
-          .section-title {
-            color: #2c5530;
-            border-bottom: 2px solid #2c5530;
-            padding-bottom: 5px;
-            margin-bottom: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-          }
+  if (!cvData) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center", backgroundColor: "#f9f9f9" }}>
+        <Typography color="error">
+          No CV data available for this user.
+        </Typography>
+      </Box>
+    );
+  }
 
-          .contact-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
-          }
+  // Function to determine icon for social links
+  const getSocialIcon = (url) => {
+    if (url.includes("linkedin")) return "🔗";
+    if (url.includes("github")) return "🐱";
+    return "🌐";
+  };
 
-          .skill-category {
-            margin-bottom: 15px;
-          }
+  // Individual Section Components
+  const SkillsSection = () => {
+    const skillsSection = cvData.sections?.find((s) => s.name === "Skill");
+    if (!skillsSection?.data?.length) return null;
 
-          .skill-items {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 5px;
-          }
-
-          .skill-tag {
-            background: #e9ecef;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            border: 1px solid #dee2e6;
-          }
-
-          .experience-item, .education-item {
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e9ecef;
-          }
-
-          .experience-item:last-child, .education-item:last-child {
-            border-bottom: none;
-          }
-
-          .company-header, .education-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-          }
-
-          .responsibilities {
-            list-style: none;
-            padding-left: 0;
-            margin-top: 10px;
-          }
-
-          .responsibilities li {
-            position: relative;
-            padding-left: 20px;
-            margin-bottom: 6px;
-            line-height: 1.5;
-          }
-
-          .responsibilities li:before {
-            content: "•";
-            position: absolute;
-            left: 8px;
-            color: #2c5530;
-            font-weight: bold;
-          }
-
-          .project-item {
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 5px;
-            margin-bottom: 12px;
-            border-left: 3px solid #2c5530;
-          }
-
-          .print-button:hover {
-            background: #1a472a !important;
-            transform: translateY(-1px);
-          }
-
-          .download-button:hover {
-            background: #0056b3 !important;
-            transform: translateY(-1px);
-          }
-
-          @media (max-width: 768px) {
-            .cv-page {
-              margin: 5px;
-              padding: 15px;
-            }
-            .company-header, .education-header {
-              flex-direction: column;
-              gap: 5px;
-            }
-          }
-        `}
-      </style>
-
-      {/* Action Buttons - Visible only in browser */}
-      <div style={{
-        textAlign: 'center',
-        marginBottom: '30px',
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '15px',
-        flexWrap: 'wrap'
-      }} className="no-print action-buttons">
-        <button
-          onClick={handleDownloadPDF}
-          style={{
-            background: '#2c5530',
-            color: 'white',
-            border: 'none',
-            padding: '12px 24px',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '600',
-            transition: 'all 0.3s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-          className="print-button"
-        >
-          📄 Download PDF
-        </button>
-        <button
-          onClick={handlePrintDirectly}
-          style={{
-            background: '#0066cc',
-            color: 'white',
-            border: 'none',
-            padding: '12px 24px',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '600',
-            transition: 'all 0.3s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-          className="download-button"
-        >
-          🖨️ Print CV
-        </button>
+    return (
+      <div className="section">
+        <h2 className="section-title">SKILLS</h2>
+        <div className="skills-container">
+          {skillsSection.data.map((skill, i) => (
+            <div key={i} className="skill-item">
+              <div className="skill-name">{skill.skill}</div>
+              <div className="skill-rating">
+                {[...Array(5)].map((_, index) => (
+                  <span
+                    key={index}
+                    className={index < skill.rating ? "star filled" : "star"}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+    );
+  };
 
-      {/* CV Content - Special container for print/PDF */}
-      <div ref={cvRef} className="cv-print-container">
+  const ProfessionalSummary = () => {
+    const summarySection = cvData.sections?.find((s) => s.name === "Summary");
+    if (!summarySection?.data) return null;
 
-        {/* Page 1: Personal Info, Summary, Skills */}
-        <div className="cv-page">
-          <span className="page-label">Page 1 of 3</span>
+    return (
+      <div className="section">
+        <h2 className="section-title">PROFESSIONAL SUMMARY</h2>
+        <div className="summary-text">{summarySection.data}</div>
+      </div>
+    );
+  };
 
-          {/* Header Section */}
-          <div style={{ textAlign: 'center', marginBottom: '25px', paddingBottom: '20px', borderBottom: '2px solid #2c5530' }}>
-            <h1 style={{
-              fontSize: '28px',
-              fontWeight: 'bold',
-              color: '#2c5530',
-              margin: '0 0 5px 0',
-              letterSpacing: '1px'
-            }}>
-              {cvData.personalInfo.name}
-            </h1>
-            <h2 style={{
-              fontSize: '18px',
-              color: '#555',
-              margin: '0 0 15px 0',
-              fontWeight: 'normal',
-              fontStyle: 'italic'
-            }}>
-              {cvData.personalInfo.jobTitle}
-            </h2>
-            <div className="contact-info">
-              <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '15px', fontSize: '14px' }}>
-                <span>📧 {cvData.personalInfo.email}</span>
-                <span>📱 {cvData.personalInfo.phone}</span>
-                <span>💼 {cvData.personalInfo.linkedin}</span>
-                <span>📍 {cvData.personalInfo.location}</span>
-                {cvData.personalInfo.portfolio && <span>🌐 {cvData.personalInfo.portfolio}</span>}
+  const ExperienceSection = () => {
+    const experienceSection = cvData.sections?.find(
+      (s) => s.name === "Experience"
+    );
+    if (!experienceSection?.data?.length) return null;
+
+    return (
+      <div className="section">
+        <h2 className="section-title">WORK EXPERIENCE</h2>
+        {experienceSection.data.map((exp, i) => (
+          <div key={i} className="experience-item">
+            <div className="job-header">
+              <h3 className="job-title">{exp.jobTitle}</h3>
+              <div className="job-company">
+                {exp.company} | {exp.location}
+              </div>
+              <div className="job-dates">
+                {exp.startDate} - {exp.endDate}
+              </div>
+            </div>
+            <div className="job-description">
+              <MarkdownPreview
+                style={{
+                  backgroundColor: "transparent",
+                  color: "inherit",
+                  padding: 0,
+                  fontSize: "14px",
+                  lineHeight: "1.5",
+                  fontFamily: "Arial, sans-serif",
+                }}
+                source={exp.description || ""}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const EducationSection = () => {
+    const educationSection = cvData.sections?.find(
+      (s) => s.name === "Education"
+    );
+    if (!educationSection?.data?.length) return null;
+
+    return (
+      <div className="section">
+        <h2 className="section-title">EDUCATION</h2>
+        {educationSection.data.map((edu, i) => (
+          <div key={i} className="education-item">
+            <h3 className="education-course">{edu.course}</h3>
+            <div className="education-college">{edu.college}</div>
+            <div className="education-dates">
+              {edu.startDate} - {edu.endDate}
+            </div>
+            <div className="education-details">
+              <div>
+                <strong>Field:</strong> {edu.fieldOfStudy}
+              </div>
+              <div>
+                <strong>Grade:</strong> {edu.grade}
+              </div>
+              <div>
+                <strong>Location:</strong> {edu.location}
               </div>
             </div>
           </div>
+        ))}
+      </div>
+    );
+  };
 
-          {/* Professional Summary */}
-          <section className="section">
-            <h3 className="section-title">Professional Summary</h3>
-            <p style={{ lineHeight: '1.6', textAlign: 'justify', fontSize: '14px' }}>
-              {cvData.summary}
-            </p>
-          </section>
+  const ProjectsSection = () => {
+    const projectsSection = cvData.sections?.find((s) => s.name === "Project");
+    if (!projectsSection?.data?.length) return null;
 
-          {/* Technical Skills */}
-          <section className="section">
-            <h3 className="section-title">Technical Skills</h3>
-            {Object.entries(cvData.skills).map(([category, skills]) => (
-              <div key={category} className="skill-category">
-                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#555', fontWeight: '600' }}>
-                  {category}
-                </h4>
-                <div className="skill-items">
-                  {skills.map((skill, index) => (
-                    <span key={index} className="skill-tag">{skill}</span>
-                  ))}
-                </div>
+    return (
+      <div className="section">
+        <h2 className="section-title">PROJECTS</h2>
+        {projectsSection.data.map((proj, i) => (
+          <div key={i} className="project-item">
+            <h3 className="project-name">{proj.name}</h3>
+            <div className="project-description">
+              <MarkdownPreview
+                style={{
+                  backgroundColor: "transparent",
+                  color: "inherit",
+                  padding: 0,
+                  fontSize: "14px",
+                  lineHeight: "1.5",
+                  fontFamily: "Arial, sans-serif",
+                }}
+                source={proj.description || ""}
+              />
+            </div>
+            {proj.technologies?.length > 0 && (
+              <div className="project-technologies">
+                <strong>Technologies:</strong> {proj.technologies.join(", ")}
               </div>
-            ))}
-          </section>
-
-          {/* Projects */}
-          <section className="section">
-            <h3 className="section-title">Key Projects</h3>
-            {cvData.projects.map((project, index) => (
-              <div key={index} className="project-item">
-                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#2c5530' }}>
-                  {project.name}
-                </h4>
-                <p style={{ margin: '0 0 8px 0', fontSize: '13px', lineHeight: '1.4' }}>
-                  {project.description}
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {project.technologies.map((tech, techIndex) => (
-                    <span key={techIndex} style={{
-                      background: '#e9ecef',
-                      padding: '2px 8px',
-                      borderRadius: '10px',
-                      fontSize: '11px',
-                      border: '1px solid #dee2e6'
-                    }}>
-                      {tech}
-                    </span>
-                  ))}
-                </div>
+            )}
+            {proj.url && (
+              <div className="project-url">
+                <strong>URL:</strong> {proj.url}
               </div>
-            ))}
-          </section>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const CertificationsSection = () => {
+    const certificationsSection = cvData.sections?.find(
+      (s) => s.name === "Certification"
+    );
+    if (!certificationsSection?.data?.length) return null;
+
+    return (
+      <div className="section">
+        <h2 className="section-title">CERTIFICATIONS</h2>
+        {certificationsSection.data.map((cert, i) => (
+          <div key={i} className="certification-item">
+            <h3 className="certification-name">{cert.name}</h3>
+            <div className="certification-institute">{cert.institute}</div>
+            <div className="certification-date">Issued: {cert.issueDate}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // NEW SECTIONS - Language, Achievement, Interest, Award
+  const LanguageSection = () => {
+    const languageSection = cvData.sections?.find((s) => s.name === "Language");
+    if (!languageSection?.data?.length) return null;
+
+    return (
+      <div className="section">
+        <h2 className="section-title">LANGUAGES</h2>
+        <div className="languages-container">
+          {languageSection.data.map((lang, i) => (
+            <div key={i} className="language-item">
+              <div className="language-name">{lang.language}</div>
+              <div className="language-proficiency">
+                {lang.proficiency === "excellent" && "★★★★★"}
+                {lang.proficiency === "good" && "★★★★☆"}
+                {lang.proficiency === "normal" && "★★★☆☆"}
+                {lang.proficiency === "basic" && "★★☆☆☆"}
+                {lang.proficiency === "beginner" && "★☆☆☆☆"}
+                {!["excellent", "good", "normal", "basic", "beginner"].includes(
+                  lang.proficiency
+                ) && lang.proficiency}
+              </div>
+            </div>
+          ))}
         </div>
+      </div>
+    );
+  };
 
-        {/* Page 2: Experience & Education */}
-        <div className="cv-page">
-          <span className="page-label">Page 2 of 3</span>
+  const AchievementSection = () => {
+    const achievementSection = cvData.sections?.find(
+      (s) => s.name === "Achievement"
+    );
+    if (!achievementSection?.data?.length) return null;
 
-          {/* Professional Experience */}
-          <section className="section">
-            <h3 className="section-title">Professional Experience</h3>
-            {cvData.experience.map((exp, index) => (
-              <div key={index} className="experience-item">
-                <div className="company-header">
-                  <div>
-                    <h4 style={{ margin: '0', fontSize: '16px', color: '#2c5530', fontWeight: 'bold' }}>
-                      {exp.company}
-                    </h4>
-                    <p style={{ margin: '2px 0', fontSize: '14px', color: '#555', fontStyle: 'italic' }}>
-                      {exp.role}
-                    </p>
-                    <p style={{ margin: '2px 0', fontSize: '12px', color: '#777' }}>
-                      {exp.location}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ margin: '0', fontSize: '14px', color: '#2c5530', fontWeight: '600' }}>
-                      {exp.duration}
-                    </p>
-                  </div>
-                </div>
-                <ul className="responsibilities">
-                  {exp.responsibilities.map((resp, idx) => (
-                    <li key={idx} style={{ fontSize: '13px' }}>{resp}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </section>
-
-          {/* Education */}
-          <section className="section">
-            <h3 className="section-title">Education</h3>
-            {cvData.education.map((edu, index) => (
-              <div key={index} className="education-item">
-                <div className="education-header">
-                  <div>
-                    <h4 style={{ margin: '0', fontSize: '15px', color: '#2c5530', fontWeight: 'bold' }}>
-                      {edu.institution}
-                    </h4>
-                    <p style={{ margin: '2px 0', fontSize: '14px', color: '#555' }}>
-                      {edu.degree}
-                    </p>
-                    <p style={{ margin: '2px 0', fontSize: '12px', color: '#777' }}>
-                      {edu.location}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ margin: '0', fontSize: '14px', color: '#2c5530', fontWeight: '600' }}>
-                      {edu.duration}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </section>
+    return (
+      <div className="section">
+        <h2 className="section-title">ACHIEVEMENTS</h2>
+        <div className="achievements-container">
+          {achievementSection.data.map((achievement, i) => (
+            <div key={i} className="achievement-item">
+              <span className="achievement-icon">🏆</span>
+              <span className="achievement-text">{achievement}</span>
+            </div>
+          ))}
         </div>
+      </div>
+    );
+  };
 
-        {/* Page 3: Certifications, Languages & Additional Info */}
-        <div className="cv-page">
-          <span className="page-label">Page 3 of 3</span>
+  const InterestSection = () => {
+    const interestSection = cvData.sections?.find((s) => s.name === "Interest");
+    if (!interestSection?.data?.length) return null;
 
-          {/* Certifications */}
-          <section className="section">
-            <h3 className="section-title">Certifications</h3>
-            {cvData.certifications.map((cert, index) => (
-              <div key={index} style={{
-                marginBottom: '12px',
-                padding: '12px',
-                background: '#f8f9fa',
-                borderRadius: '5px',
-                borderLeft: '3px solid #2c5530'
-              }}>
-                <h4 style={{ margin: '0 0 5px 0', fontSize: '14px', color: '#2c5530' }}>
-                  {cert.name}
-                </h4>
-                <p style={{ margin: '0', fontSize: '13px', color: '#555' }}>
-                  <strong>Issued by:</strong> {cert.issuer} • <strong>Year:</strong> {cert.year}
-                </p>
-                {cert.credential && (
-                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#777', fontStyle: 'italic' }}>
-                    Credential ID: {cert.credential}
-                  </p>
-                )}
-              </div>
-            ))}
-          </section>
+    return (
+      <div className="section">
+        <h2 className="section-title">INTERESTS</h2>
+        <div className="interests-container">
+          {interestSection.data.map((interest, i) => (
+            <div key={i} className="interest-item">
+              <span className="interest-icon">🎯</span>
+              <span className="interest-text">{interest}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
-          {/* Languages */}
-          <section className="section">
-            <h3 className="section-title">Languages</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-              {cvData.languages.map((lang, index) => (
-                <div key={index} style={{
-                  padding: '12px',
-                  background: '#f8f9fa',
-                  borderRadius: '5px',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#2c5530' }}>
-                    {lang.language}
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                    {lang.proficiency}
-                  </div>
-                </div>
+  const AwardSection = () => {
+    const awardSection = cvData.sections?.find((s) => s.name === "Award");
+    if (!awardSection?.data?.length) return null;
+
+    return (
+      <div className="section">
+        <h2 className="section-title">AWARDS</h2>
+        {awardSection.data.map((award, i) => (
+          <div key={i} className="award-item">
+            <h3 className="award-title">{award.title}</h3>
+            <div className="award-issuer">{award.issuer}</div>
+            <div className="award-date">{award.date}</div>
+            {award.description && (
+              <div className="award-description">{award.description}</div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // CV Content - Single source for both screen and print
+  const CVContent = () => (
+    <div className="cv-container" ref={componentRef}>
+      {/* Page 1 */}
+      <div className="cv-page page-1">
+        <div className="page-label no-print">Page 1</div>
+
+        {/* Personal Info Header */}
+        <div className="personal-info">
+          <h1 className="name">
+            {cvData.firstName} {cvData.lastName}
+          </h1>
+          <div className="designation">{cvData.designation}</div>
+          <div className="contact-info">
+            <span>📧 {cvData.email}</span>
+            <span>📱 {cvData.phoneNo}</span>
+            <span>
+              📍 {cvData.address?.city}, {cvData.address?.state}
+            </span>
+          </div>
+          {cvData.socialLinks?.length > 0 && (
+            <div className="social-links">
+              {cvData.socialLinks.map((link, i) => (
+                <span key={i} className="social-link">
+                  {getSocialIcon(link)} {link}
+                </span>
               ))}
             </div>
-          </section>
+          )}
+        </div>
 
-          {/* Additional Information */}
-          <section className="section">
-            <h3 className="section-title">Additional Information</h3>
-            <div style={{
-              padding: '15px',
-              background: '#f8f9fa',
-              borderRadius: '5px',
-              border: '1px solid #e9ecef'
-            }}>
-              <p style={{ margin: '0 0 10px 0', fontSize: '13px', lineHeight: '1.5' }}>
-                <strong>Availability:</strong> Immediately available for full-time opportunities
-              </p>
-              <p style={{ margin: '0 0 10px 0', fontSize: '13px', lineHeight: '1.5' }}>
-                <strong>Work Authorization:</strong> Eligible to work in India
-              </p>
-              <p style={{ margin: '0', fontSize: '13px', lineHeight: '1.5' }}>
-                <strong>References:</strong> Available upon request
-              </p>
-            </div>
-          </section>
+        <div className="page-content">
+          <div className="left-column">
+            <SkillsSection />
+            <LanguageSection />
+            <InterestSection />
+          </div>
 
-          {/* Footer */}
-          <div style={{
-            textAlign: 'center',
-            marginTop: '30px',
-            paddingTop: '15px',
-            borderTop: '1px solid #e9ecef',
-            fontSize: '11px',
-            color: '#666'
-          }}>
-            <p>This CV was generated on {new Date().toLocaleDateString('en-IN', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}</p>
+          <div className="right-column">
+            <ProfessionalSummary />
+            <ExperienceSection />
           </div>
         </div>
       </div>
+
+      {/* Page 2 - Only show if there's content for it */}
+      {(cvData.sections?.find((s) => s.name === "Education")?.data?.length >
+        0 ||
+        cvData.sections?.find((s) => s.name === "Project")?.data?.length > 0 ||
+        cvData.sections?.find((s) => s.name === "Certification")?.data?.length >
+          0 ||
+        cvData.sections?.find((s) => s.name === "Achievement")?.data?.length >
+          0 ||
+        cvData.sections?.find((s) => s.name === "Award")?.data?.length > 0) && (
+        <div className="cv-page page-2">
+          <div className="page-label no-print">Page 2</div>
+          <div className="page-content">
+            <div className="left-column">
+              <EducationSection />
+              <AchievementSection />
+            </div>
+            <div className="right-column">
+              <ProjectsSection />
+              <CertificationsSection />
+              <AwardSection />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+  );
+
+  return (
+    <Box>
+      {/* Simple Print Button Only */}
+      <Box
+        sx={{
+          textAlign: "center",
+          py: 2,
+          backgroundColor: "#f5f5f5",
+          borderBottom: "1px solid #ddd",
+        }}
+        className="no-print"
+      >
+        <button onClick={handlePrint} className="print-button">
+          🖨️ Print CV
+        </button>
+      </Box>
+
+      {/* CV Content - Same for both screen and print */}
+      <CVContent />
+
+      {/* CSS Styles */}
+      <style jsx>{`
+        /* === SCREEN STYLES === */
+        .cv-container {
+          width: 100%;
+          max-width: 210mm;
+          margin: 0 auto;
+          background: white;
+          position: relative;
+        }
+
+        .cv-page {
+          width: 100%;
+          min-height: 297mm;
+          padding: 15mm;
+          background: white;
+          box-sizing: border-box;
+          font-family: "Arial", sans-serif;
+          font-size: 14px;
+          line-height: 1.5;
+          color: #333;
+          position: relative;
+          margin-bottom: 20px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          /* Ensure pages stack vertically on screen */
+          display: block;
+        }
+
+        .cv-container {
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+          margin-bottom: 20px;
+        }
+
+        /* Page Label */
+        .page-label {
+          position: absolute;
+          top: 10px;
+          right: 15mm;
+          font-size: 12px;
+          color: #666;
+          font-weight: bold;
+        }
+
+        /* Personal Info */
+        .personal-info {
+          text-align: center;
+          margin-bottom: 20px;
+          padding-bottom: 15px;
+          border-bottom: 2px solid #2c3e50;
+        }
+
+        .name {
+          font-size: 28px;
+          font-weight: bold;
+          margin: 0 0 5px 0;
+          color: #2c3e50;
+        }
+
+        .designation {
+          font-size: 18px;
+          color: #666;
+          margin-bottom: 10px;
+          font-weight: 500;
+        }
+
+        .contact-info {
+          display: flex;
+          justify-content: center;
+          gap: 20px;
+          flex-wrap: wrap;
+          margin-bottom: 10px;
+          font-size: 13px;
+        }
+
+        .contact-info span {
+          white-space: nowrap;
+        }
+
+        .social-links {
+          display: flex;
+          justify-content: center;
+          gap: 15px;
+          flex-wrap: wrap;
+          font-size: 12px;
+        }
+
+        .social-link {
+          word-break: break-all;
+        }
+
+        .page-content {
+          display: flex;
+          gap: 20px;
+          margin-top: 10px;
+        }
+
+        .left-column {
+          flex: 1;
+          max-width: 35%;
+        }
+
+        .right-column {
+          flex: 2;
+          max-width: 65%;
+        }
+
+        /* Sections */
+        .section {
+          margin-bottom: 20px;
+        }
+
+        .section-title {
+          font-size: 16px;
+          font-weight: bold;
+          color: #2c3e50;
+          border-bottom: 1px solid #2c3e50;
+          padding-bottom: 3px;
+          margin-bottom: 12px;
+          text-transform: uppercase;
+        }
+
+        /* Languages */
+        .languages-container {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .language-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .language-name {
+          font-weight: bold;
+          font-size: 13px;
+        }
+
+        .language-proficiency {
+          font-size: 12px;
+          color: #2c3e50;
+        }
+
+        /* Achievements */
+        .achievements-container {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .achievement-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+        }
+
+        .achievement-text {
+          font-size: 13px;
+          line-height: 1.4;
+        }
+
+        /* Interests */
+        .interests-container {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .interest-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+        }
+
+        .interest-text {
+          font-size: 13px;
+          line-height: 1.4;
+        }
+
+        /* Awards */
+        .award-item {
+          margin-bottom: 15px;
+        }
+
+        .award-title {
+          font-size: 15px;
+          font-weight: bold;
+          color: #2c3e50;
+          margin: 0 0 5px 0;
+        }
+
+        .award-issuer {
+          font-size: 13px;
+          color: #666;
+          font-weight: 500;
+          margin-bottom: 3px;
+        }
+
+        .award-date {
+          font-size: 12px;
+          color: #888;
+          font-style: italic;
+          margin-bottom: 6px;
+        }
+
+        .award-description {
+          font-size: 13px;
+          line-height: 1.5;
+        }
+
+        /* Skills */
+        .skills-container {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .skill-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .skill-name {
+          font-weight: bold;
+          font-size: 13px;
+        }
+
+        .skill-rating {
+          display: flex;
+          gap: 2px;
+        }
+
+        .star {
+          color: #ddd;
+          font-size: 12px;
+        }
+
+        .star.filled {
+          color: #2c3e50;
+        }
+
+        /* Experience & Education */
+        .experience-item,
+        .education-item,
+        .project-item,
+        .certification-item {
+          margin-bottom: 15px;
+        }
+
+        .job-title,
+        .education-course,
+        .project-name,
+        .certification-name {
+          font-size: 15px;
+          font-weight: bold;
+          color: #2c3e50;
+        }
+
+        .job-company,
+        .education-college,
+        .certification-institute {
+          font-size: 13px;
+          color: #666;
+          font-weight: 500;
+        }
+
+        .job-dates,
+        .education-dates,
+        .certification-date {
+          font-size: 12px;
+          color: #888;
+          font-style: italic;
+          margin-bottom: 6px;
+        }
+
+        .summary-text {
+          font-size: 13px;
+          line-height: 1.5;
+          text-align: justify;
+        }
+
+        /* Print Button */
+        .print-button {
+          padding: 10px 20px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: bold;
+          transition: background-color 0.3s;
+          background-color: #2c3e50;
+          color: white;
+        }
+
+        .print-button:hover {
+          background-color: #1a252f;
+        }
+
+        /* === PRINT STYLES === */
+        @media print {
+          header,
+          footer,
+          .site-header,
+          .site-footer,
+          .footer,
+          .no-print {
+            display: none !important;
+          }
+
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .cv-container {
+            width: 210mm !important;
+            margin: 0 auto !important;
+            box-shadow: none !important;
+            background: white !important;
+          }
+
+          .cv-page {
+            width: 210mm !important;
+            min-height: 297mm !important;
+            height: 297mm !important;
+            padding: 15mm !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            page-break-after: always;
+            /* Reset display for print */
+            display: block !important;
+            /* Prevent extra pages */
+            overflow: hidden !important;
+          }
+
+          .cv-page:last-child {
+            page-break-after: auto !important;
+          }
+
+          /* Prevent empty pages */
+          .cv-page:empty {
+            display: none !important;
+          }
+
+          /* Prevent content from breaking */
+          .section {
+            page-break-inside: avoid;
+          }
+
+          .experience-item,
+          .education-item,
+          .project-item {
+            page-break-inside: avoid;
+          }
+
+          @page {
+            margin: 0;
+            size: A4;
+          }
+        }
+
+        /* === SCREEN MEDIA QUERY for proper page display === */
+        @media screen {
+          .cv-page {
+            /* Ensure proper A4 aspect ratio on screen */
+            height: auto;
+            min-height: 297mm;
+            /* Add visual separation between pages */
+            border: 1px solid #e0e0e0;
+          }
+        }
+      `}</style>
+    </Box>
   );
 };
 
-export default ClassicProfessionalCV;
+export default Cv7;
