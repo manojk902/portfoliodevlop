@@ -27,7 +27,11 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
 
   // SIMPLE PRINT FUNCTION - NO RELOAD
   const handlePrint = () => {
-    window.print();
+    document.body.classList.add("print-mode");
+    setTimeout(() => {
+      window.print();
+      document.body.classList.remove("print-mode");
+    }, 300);
   };
 
   useEffect(() => {
@@ -384,44 +388,33 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
           )}
         </div>
 
+        <ProfessionalSummary />
+        <ExperienceSection />
+        <AchievementSection />
+      </div>
+
+      {/* Page 2 */}
+      <div className="cv-page page-2">
+        <div className="page-label no-print">Page 2</div>
+        <EducationSection />
+        <ProjectsSection />
+        <CertificationsSection />
+      </div>
+
+      {/* Page 3 - Additional Sections */}
+      <div className="cv-page page-3">
+        <div className="page-label no-print">Page 3</div>
         <div className="page-content">
           <div className="left-column">
             <SkillsSection />
             <LanguageSection />
             <InterestSection />
           </div>
-
           <div className="right-column">
-            <ProfessionalSummary />
-            <ExperienceSection />
+            <AwardSection />
           </div>
         </div>
       </div>
-
-      {/* Page 2 - Only show if there's content for it */}
-      {(cvData.sections?.find((s) => s.name === "Education")?.data?.length >
-        0 ||
-        cvData.sections?.find((s) => s.name === "Project")?.data?.length > 0 ||
-        cvData.sections?.find((s) => s.name === "Certification")?.data?.length >
-          0 ||
-        cvData.sections?.find((s) => s.name === "Achievement")?.data?.length >
-          0 ||
-        cvData.sections?.find((s) => s.name === "Award")?.data?.length > 0) && (
-        <div className="cv-page page-2">
-          <div className="page-label no-print">Page 2</div>
-          <div className="page-content">
-            <div className="left-column">
-              <EducationSection />
-              <AchievementSection />
-            </div>
-            <div className="right-column">
-              <ProjectsSection />
-              <CertificationsSection />
-              <AwardSection />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 
@@ -469,7 +462,6 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
           position: relative;
           margin-bottom: 20px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-          /* Ensure pages stack vertically on screen */
           display: block;
         }
 
@@ -535,6 +527,7 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
           word-break: break-all;
         }
 
+        /* Page 3 Layout */
         .page-content {
           display: flex;
           gap: 20px;
@@ -543,17 +536,12 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
 
         .left-column {
           flex: 1;
-          max-width: 35%;
+          max-width: 48%;
         }
 
         .right-column {
-          flex: 2;
-          max-width: 65%;
-        }
-
-        /* Sections */
-        .section {
-          margin-bottom: 20px;
+          flex: 1;
+          max-width: 48%;
         }
 
         .section-title {
@@ -561,9 +549,14 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
           font-weight: bold;
           color: #2c3e50;
           border-bottom: 1px solid #2c3e50;
-          padding-bottom: 3px;
-          margin-bottom: 12px;
+          padding-bottom: 4px;
+          margin-bottom: 10px;
           text-transform: uppercase;
+        }
+
+        .section {
+          margin-bottom: 20px;
+          page-break-inside: avoid;
         }
 
         /* Languages */
@@ -694,6 +687,7 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
         .project-item,
         .certification-item {
           margin-bottom: 15px;
+          page-break-inside: avoid;
         }
 
         .job-title,
@@ -723,9 +717,9 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
         }
 
         .summary-text {
-          font-size: 13px;
-          line-height: 1.5;
           text-align: justify;
+          color: #444;
+          font-size: 14px;
         }
 
         /* Print Button */
@@ -737,25 +731,17 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
           font-size: 14px;
           font-weight: bold;
           transition: background-color 0.3s;
-          background-color: #2c3e50;
+          background-color: #2563eb;
           color: white;
         }
 
         .print-button:hover {
-          background-color: #1a252f;
+          background-color: #053e78ff;
         }
 
-        /* === PRINT STYLES === */
+        /* === PRINT STYLES - FIXED === */
         @media print {
-          header,
-          footer,
-          .site-header,
-          .site-footer,
-          .footer,
-          .no-print {
-            display: none !important;
-          }
-
+          /* --- Reset body for print --- */
           body {
             margin: 0 !important;
             padding: 0 !important;
@@ -764,60 +750,113 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
             print-color-adjust: exact !important;
           }
 
-          .cv-container {
-            width: 210mm !important;
-            margin: 0 auto !important;
-            box-shadow: none !important;
-            background: white !important;
+          /* --- Hide everything except CV content --- */
+          body * {
+            visibility: hidden;
           }
 
+          .cv-container,
+          .cv-container * {
+            visibility: visible;
+          }
+
+          /* --- Hide non-print elements --- */
+          .no-print,
+          .print-button,
+          .page-label {
+            display: none !important;
+            visibility: hidden !important;
+          }
+
+          /* --- CV Container --- */
+          .cv-container {
+            width: 210mm !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            box-shadow: none !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+          }
+
+          /* --- Each Page --- */
           .cv-page {
             width: 210mm !important;
             min-height: 297mm !important;
             height: 297mm !important;
             padding: 15mm !important;
             margin: 0 !important;
+            background: white !important;
             box-shadow: none !important;
-            page-break-after: always;
-            /* Reset display for print */
+            border: none !important;
+            page-break-after: always !important;
+            page-break-inside: avoid !important;
+            position: relative !important;
             display: block !important;
-            /* Prevent extra pages */
-            overflow: hidden !important;
           }
 
+          /* Last page should not have page break after */
           .cv-page:last-child {
             page-break-after: auto !important;
           }
 
-          /* Prevent empty pages */
-          .cv-page:empty {
-            display: none !important;
-          }
-
-          /* Prevent content from breaking */
-          .section {
-            page-break-inside: avoid;
-          }
-
+          /* Prevent elements from breaking across pages */
+          .section,
           .experience-item,
           .education-item,
-          .project-item {
-            page-break-inside: avoid;
+          .project-item,
+          .certification-item {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
 
+          /* Page 3 Layout for Print */
+          .page-content {
+            display: flex !important;
+            gap: 20px !important;
+          }
+
+          .left-column,
+          .right-column {
+            flex: 1 !important;
+            max-width: 48% !important;
+          }
+
+          /* --- Page Setup --- */
           @page {
-            margin: 0;
             size: A4;
+            margin: 0;
+          }
+
+          @page :first {
+            margin-top: 0;
+          }
+
+          @page :last {
+            margin-bottom: 0;
           }
         }
 
-        /* === SCREEN MEDIA QUERY for proper page display === */
+        /* === RESPONSIVE STYLES === */
+        @media (max-width: 210mm) {
+          .page-content {
+            flex-direction: column;
+          }
+
+          .left-column,
+          .right-column {
+            max-width: 100% !important;
+            width: 100% !important;
+          }
+        }
+
+        /* === SCREEN STYLES === */
         @media screen {
           .cv-page {
-            /* Ensure proper A4 aspect ratio on screen */
             height: auto;
             min-height: 297mm;
-            /* Add visual separation between pages */
             border: 1px solid #e0e0e0;
           }
         }

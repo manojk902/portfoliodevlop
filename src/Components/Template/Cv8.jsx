@@ -12,19 +12,12 @@ import {
   Avatar,
   CircularProgress,
   useTheme,
-  alpha,
   Button,
 } from "@mui/material";
 import {
   Email,
   Phone,
   LocationOn,
-  Cake,
-  Work,
-  School,
-  Code,
-  Star,
-  CardMembership,
   LinkedIn,
   GitHub,
   Public,
@@ -639,52 +632,51 @@ const Cv8 = ({ UserDataFromDesignPage }) => {
         </Grid>
       </Paper>
 
-      {/* Print Styles */}
       <style>
         {`
-          @media print {
-            @page {
-              size: A4;
-              margin: 10mm;
-            }
+          // @media print {
+          //   @page {
+          //     size: A4;
+          //     margin: 10mm;
+          //   }
             
-            body {
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-              background: white !important;
-            }
+            // body {
+            //   -webkit-print-color-adjust: exact;
+            //   print-color-adjust: exact;
+            //   background: white !important;
+            // }
             
-            .MuiContainer-root {
-              padding: 0 !important;
-              margin: 0 !important;
-              max-width: none !important;
-            }
+            // .MuiContainer-root {
+            //   padding: 0 !important;
+            //   margin: 0 !important;
+            //   max-width: none !important;
+            // }
             
-            .MuiPaper-root {
-              box-shadow: none !important;
-              margin: 0 !important;
-              padding: 2.5mm !important;
-              min-height: 297mm !important;
-            }
+            // .MuiPaper-root {
+            //   box-shadow: none !important;
+            //   margin: 0 !important;
+            //   padding: 2.5mm !important;
+            //   min-height: 297mm !important;
+            // }
             
-            /* Hide print button */
-            .MuiButton-root {
-              display: none !important;
-            }
+          //   /* Hide print button */
+          //   .MuiButton-root {
+          //     display: none !important;
+          //   }
             
-            /* Ensure good print quality */
-            * {
-              -webkit-print-color-adjust: exact;
-            }
-          }
+          //   /* Ensure good print quality */
+          //   * {
+          //     -webkit-print-color-adjust: exact;
+          //   }
+          // }
           
-          /* Screen styles */
-          @media screen {
-            .MuiPaper-root {
-              max-width: 210mm;
-              margin: 0 auto;
-            }
-          }
+          // /* Screen styles */
+          // @media screen {
+          //   .MuiPaper-root {
+          //     max-width: 210mm;
+          //     margin: 0 auto;
+          //   }
+          // }
         `}
       </style>
     </Container>
