@@ -4,12 +4,12 @@ import { Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../Components/Layout/Header';
 import AppRoutes from '../../routes/AppRoutes'; // Correct path
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setSelectedTemplate } from '../../store/features/resume/resumeSlice';
 
 const AppProvider = ({ mode, setMode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const selectedTemplateId = useSelector((state) => state.resume.selectedTemplateId);
+  // const selectedTemplateId = useSelector((state) => state.resume.selectedTemplateId);
   const dispatch = useDispatch();
   const navigateRouter = useNavigate();
   const navigate = (path, params = {}) => {
@@ -42,7 +42,7 @@ const AppProvider = ({ mode, setMode }) => {
         setMode={setMode} onToggleSidebar={toggleSidebar} />
       <AppRoutes
         navigate={navigate}
-        selectedTemplateId={selectedTemplateId}
+        // selectedTemplateId={selectedTemplateId}
         isSidebarOpen={isSidebarOpen}
       />
     </Box>

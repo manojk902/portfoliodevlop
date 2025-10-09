@@ -3,7 +3,8 @@ import {
   Box, Paper, Typography, TextField, Grid, Button, Avatar, Stack,
   Radio, RadioGroup, FormControlLabel, LinearProgress, Snackbar, Alert,
   Tooltip,
-  IconButton
+  IconButton,
+  useTheme
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -44,6 +45,8 @@ function UserForm() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [info, setInfo] = useState();
+  const theme = useTheme();
+
 
 
 
@@ -162,7 +165,7 @@ function UserForm() {
   // UI rendering unchanged
   return (
     <Box sx={{
-      bgcolor: '#f5f6f8',
+      bgcolor: theme.palette.background.backgroundColor,
       minHeight: '100vh',
       display: 'flex',
       justifyContent: 'center',

@@ -2,7 +2,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // Defaults to localStorage for web
-import resumeReducer from './features/resume/resumeSlice';
+// import resumeReducer from './features/resume/resumeSlice';
 import userReducer from './features/userSlice';
 import userProfileReducer from './features/userProfileSlice';
 
@@ -25,7 +25,6 @@ const persistedUserProfileReducer = persistReducer(userProfilePersistConfig, use
 // Configure the Redux store
 export const store = configureStore({
   reducer: {
-    resume: resumeReducer,
     // user: userReducer,
     userProfile: persistedUserProfileReducer, // Use persisted reducer
     user: persistedUserReducer, 

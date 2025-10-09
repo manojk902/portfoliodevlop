@@ -50,6 +50,10 @@ function DesignPage() {
       try {
         const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
         // setRes(res);
+        console.log(
+          res, "👈 Response from fetchDefaultCv API"
+        );
+        
         const templateName = res.data?.fetchedCvInfo?.templateName;
         setCvInfoId(res.data?.fetchedCvInfo?.cvInfoId);
         // setCvTemp(res.data?.fetchedCvInfo?.cvInfoId);
