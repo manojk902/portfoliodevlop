@@ -64,6 +64,8 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
         try {
           setLoading(true);
           const user = await axios.get(`${apiUrl}/user-details/${decodedToken?.userName}`);
+          console.log(user, "user from header");
+          
           dispatch(setUserProfile(user.data));
         } catch (error) {
           console.log("Server error->", error);
