@@ -41,7 +41,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   const app_url = process.env.REACT_APP_APP_URL;
   const redirect_url = process.env.REACT_APP_REDIRECT_URL;
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [searchParams] = useSearchParams();
   const [decodedToken, setDecodedToken] = useState(null);
@@ -64,8 +64,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
         try {
           setLoading(true);
           const user = await axios.get(`${apiUrl}/user-details/${decodedToken?.userName}`);
-          console.log(user, "user from header");
-          
+          // console.log(user, "user from header");
           dispatch(setUserProfile(user.data));
         } catch (error) {
           console.log("Server error->", error);
@@ -141,21 +140,25 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   };
   return (
     <Grid>
-      <AppBar position="static" sx={{ bgcolor: theme.palette.background.default, boxShadow: 1, py: { xs: 0.5, sm: 1 } }}>
+      <AppBar position="relative"  sx={{ bgcolor: theme.palette.background.default, boxShadow: 1, py: { xs: 0.5, sm: 1 } }}>
         <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3, md: 4 } }}>
           {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '90%' }}>
               {/* Left side: logo */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Skeleton variant="circular" width={40} height={40} />
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <Skeleton variant="text" width={120} height={30} />
               </Box>
 
               {/* Right side: buttons & avatar */}
               <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                <Skeleton variant="rectangular" width={isMobile ? 50 : 70} height={36} />
-                <Skeleton variant="rectangular" width={isMobile ? 50 : 70} height={36} />
-                {!isMobile && <Skeleton variant="rectangular" width={100} height={36} />}
+                {
+                  isMobile ? null : (
+                    <>
+                      <Skeleton variant="rectangular" width={isMobile ? 50 : 70} height={36} />
+                      <Skeleton variant="rectangular" width={isMobile ? 50 : 70} height={36} />
+                    </>
+                  )
+                }
                 <Skeleton variant="circular" width={40} height={40} />
               </Box>
             </Box>
@@ -175,13 +178,11 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                 </IconButton> */}
                 {/* "Resume Now." Logo/Title */}
                 <Box
-
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
                     typography: { xs: 'h6', sm: 'h5' },
                     fontWeight: 'bold',
-                    // color: 'text.primary',
                     color: theme.palette.text.primary,
                     cursor: 'pointer',
                   }}

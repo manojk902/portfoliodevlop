@@ -37,7 +37,13 @@ function UserInfo() {
     try {
       setLoading(true);
       const response = await axios.get(`${apiUrl}/cv-details/${username}`);
-      setUsers(response.data.fetchedCv.cvInfo || []);
+      const cvInfo = response.data.fetchedCv.cvInfo || [];
+      // for sorting latest first``
+      const sorted = cvInfo.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      )
+      setUsers(sorted);
+      // setUsers(response.data.fetchedCv.cvInfo || []);
       setUserId(response.data.fetchedCv.userId);
       setDefaultUser(response.data.fetchedCv.templateInfo || {});
     } catch (error) {

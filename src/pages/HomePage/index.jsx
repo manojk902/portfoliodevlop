@@ -28,10 +28,12 @@ import axios from 'axios';
 
 const HomePage = ({ mode }) => {
   const [users, setUsers] = useState([]);
-  const [searchField, setSearchField] = useState("name"); // default search by name
+  // const [searchField, setSearchField] = useState("name"); // default search by name
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  // console.log(users,"ppp");
+  
   const theme = useTheme();
 
   // 🔹 Debounce search input
@@ -51,21 +53,23 @@ const HomePage = ({ mode }) => {
           response = await axios.get(`${apiUrl}/search-user`);
         } else {
           // Search dynamically based on selected field
-          response = await axios.get(`${apiUrl}/search-user`, {
-            params: { [searchField]: debouncedSearch }
-          });
+          // response = await axios.get(`${apiUrl}/search-user`, {
+          //   params: { [searchField]: debouncedSearch }
+          // });
+          response = await axios.get(`${apiUrl}/search-user?q=${debouncedSearch}`);
+          // console.log(response,"pppppp;p;");
+          
         }
-        setUsers(response.data.searchedUser || response.data || []);
+        setUsers(response?.data?.data || response?.data || []);
       } catch (error) {
         console.error("API Error:", error);
         setUsers([]);
       } finally {
-        setTimeout(() => setLoading(false), 100);
+        setTimeout(() => setLoading(false), 80);
       }
     };
-
     fetchUsers();
-  }, [debouncedSearch, searchField]);
+  }, [debouncedSearch]);
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 } }}>
@@ -81,7 +85,7 @@ const HomePage = ({ mode }) => {
         {/* 🔍 Search Section */}
         <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 2 }}>
           {/* Dropdown to choose field */}
-          <TextField
+          {/* <TextField
             select
             value={searchField}
             onChange={(e) => setSearchField(e.target.value)}
@@ -95,13 +99,13 @@ const HomePage = ({ mode }) => {
             <MenuItem value="state">State</MenuItem>
             <MenuItem value="country">Country</MenuItem>
             <MenuItem value="gender">Gender</MenuItem>
-          </TextField>
+          </TextField> */}
 
           {/* Input */}
           <TextField
             fullWidth
             variant="outlined"
-            placeholder={`Search by ${searchField}`}
+            placeholder={`Search by Name ,Email,Country,State,etc.}`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             sx={{
@@ -122,13 +126,17 @@ const HomePage = ({ mode }) => {
       {loading ? (
         <Grid container spacing={3} justifyContent="center">
           {[...Array(4)].map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={4} width={"18%"} key={index}>
-              <Card sx={{ borderRadius: '12px', overflow: 'hidden' }}>
-                <CardContent sx={{ p: 2 }}>
-                  <Skeleton variant="circular" width={80} height={80} sx={{ mb: 1 }} />
-                  <Skeleton variant="text" width={120} height={24} sx={{ mb: 0.5 }} />
-                  <Skeleton variant="text" width={80} height={20} />
-                  <Skeleton variant="text" width={100} height={20} sx={{ mt: 1 }} />
+            <Grid item xs={12} sm={6} md={4} lg={4} sx={{ width: { xs: "100%", sm: "40%", md: "33.33%", lg: "18%" } }} key={index}>
+              <Card sx={{ borderRadius: '12px', overflow: 'hidden', sx: { width: { xs: "100%", sm: "40%", md: "33.33%", lg: "18%" } } }}>
+                <CardContent sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'column' }, alignItems: { xs: 'flex-start', md: 'center' }, mb: { xs: 0, md: 3 }, textAlign: 'center' }}>
+                    <Skeleton variant="circular" width={80} height={80} sx={{ mb: 1 }} />
+                    <Box sx={{ paddingLeft: { xs: 1, md: 0 }, }}>
+                      <Skeleton variant="text" width={120} height={24} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="text" width={80} height={20} />
+                      <Skeleton variant="text" width={100} height={20} sx={{ mt: 1 }} />
+                    </Box>
+                  </Box>
                   <Divider sx={{ my: 1 }} />
                   <Skeleton variant="text" width="80%" height={20} sx={{ mb: 1 }} />
                   <Skeleton variant="text" width="80%" height={20} sx={{ mb: 1 }} />
@@ -140,10 +148,11 @@ const HomePage = ({ mode }) => {
           ))}
         </Grid>
       ) : (
-        users.length > 0 ? (
+        users?.length > 0 ? (
           <Grid container spacing={3} justifyContent="center">
-            {users.map((user, index) => (
-              <Grid item xs={12} sm={6} sx={{width: { xs: "100%", sm: "40%", md: "33.33%", lg: "18%" }}} md={4} lg={3} key={index}>
+            {users?.map((user, index) => (
+              <Grid item xs={12} sm={6} sx={{ width: { xs: "100%", sm: "40%", md: "33.33%", lg: "18%" } }} md={4} lg={3} key={index}>
+                {console.log(user,"ioio")}
                 <Card
                   sx={{
                     height: '100%',

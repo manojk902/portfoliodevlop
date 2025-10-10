@@ -9,6 +9,7 @@ import {
   MenuItem,
   InputLabel,
   useTheme,
+  useThemeProps,
 } from '@mui/material';
 import MDEditor from "@uiw/react-md-editor";
 import "@uiw/react-md-editor/markdown-editor.css";
@@ -52,6 +53,7 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
     item: { index },
     collect: monitor => ({ isDragging: monitor.isDragging() }),
   });
+  const theme = useTheme();
 
   const [, drop] = useDrop({
     accept: ItemType,
@@ -65,10 +67,10 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
 
   return (
     <Card ref={node => drag(drop(node))} sx={{ mb: 1, borderRadius: 4, opacity: isDragging ? 0.5 : 1 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1, bgcolor: '#f5f5f5' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DragIndicator sx={{ color: '#666', fontSize: 20 }} />
-          <Typography sx={{ fontSize: '1rem', fontWeight: 500 }}>{sectionTypes[section.name].title}</Typography>
+          <Typography sx={{ fontSize: '1rem', fontWeight: 500, }}>{sectionTypes[section.name].title}</Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button sx={{ color: '#d32f2f', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => removeSection(section.name)}>
@@ -628,7 +630,7 @@ const GroupForm = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Box sx={{ fullWidth: true, mx: 'auto', p: 2, bgcolor: '#fff', borderRadius: 4 }}>
+      <Box sx={{ fullWidth: true, mx: 'auto', p: 2, borderRadius: 4 }}>
         <Typography sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2 }}>
           {groupId ? `Update Info of ${groupId}` : 'Add New Info'}
         </Typography>
@@ -720,9 +722,12 @@ const GroupForm = () => {
             />
           ))}
           {/* Add Section Button */}
-          <Button sx={{ bgcolor: theme.palette.primary.main, color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => setShowModal(true)}>
-            Add Section
-          </Button>
+          <Box>
+            <Button sx={{ bgcolor: theme.palette.primary.main, color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => setShowModal(true)}>
+              Add Section
+            </Button>
+          </Box>
+
           {/* Modal for Adding Sections */}
           <Dialog open={showModal} onClose={() => setShowModal(false)}>
             <DialogTitle>Add Section</DialogTitle>

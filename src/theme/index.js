@@ -67,14 +67,14 @@ export const getTheme = (mode) => {
             boxShadow:
               theme.palette.mode === "light"
                 ? "0 4px 12px rgba(0, 0, 0, 0.08)" // soft subtle light mode
-                : "0 4px 12px rgba(102, 16, 242, 0.25), 0 0 20px rgba(102, 16, 242, 0.15)", // purple glow in dark
+                : "0 4px 12px rgba(169, 149, 200, 0.25), 0 0 20px rgba(148, 130, 177, 0.15)", // purple glow in dark
 
             "&:hover": {
               boxShadow:
                 theme.palette.mode === "light"
                   ? "0 6px 16px rgba(0, 0, 0, 0.12)" // slightly stronger hover in light
-                  : "0 6px 16px rgba(102, 16, 242, 0.35), 0 0 25px rgba(102, 16, 242, 0.25)", // stronger purple glow
-              transform: "translateY(-3px)", // smooth lift on hover
+                  : "0 6px 16px rgba(178, 170, 190, 0.45), 0 0 25px rgba(195, 183, 215, 0.25)", // stronger purple glow
+              transform: "translateY(-3px)", // smooth lift on ho`ver
               // transition: "all 0.3s ease-in-out",
             },
 
