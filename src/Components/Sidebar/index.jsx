@@ -20,9 +20,10 @@ const Sidebar = ({ variant = "permanent", onClose }) => {
     <Box
       sx={{
         width: 160,
-        bgcolor: theme.palette.background.backgroundColor,
+        // bgcolor: theme.palette.background.backgroundColor,
         boxShadow: theme.palette.borderColor ? `2px 0 5px -2px ${theme.palette.borderColor}` : 'none',
         color: theme.palette.textColor,
+        bgcolor:theme.palette.background.backgroundColor,
         height: "100%",
         p: 1,
       }}

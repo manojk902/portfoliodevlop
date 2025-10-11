@@ -52,10 +52,6 @@ const HomePage = ({ mode }) => {
           // Initial load or empty input → get all users
           response = await axios.get(`${apiUrl}/search-user`);
         } else {
-          // Search dynamically based on selected field
-          // response = await axios.get(`${apiUrl}/search-user`, {
-          //   params: { [searchField]: debouncedSearch }
-          // });
           response = await axios.get(`${apiUrl}/search-user?q=${debouncedSearch}`);
           // console.log(response,"pppppp;p;");
           
@@ -152,7 +148,7 @@ const HomePage = ({ mode }) => {
           <Grid container spacing={3} justifyContent="center">
             {users?.map((user, index) => (
               <Grid item xs={12} sm={6} sx={{ width: { xs: "100%", sm: "40%", md: "33.33%", lg: "18%" } }} md={4} lg={3} key={index}>
-                {console.log(user,"ioio")}
+                {/* {console.log(user,"ioio")} */}
                 <Card
                   sx={{
                     height: '100%',
