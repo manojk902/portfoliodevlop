@@ -16,7 +16,7 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowLoading(false);
-    }, 3000);
+    }, 100);
 
     return () => clearTimeout(timer);
   }, []);
