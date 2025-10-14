@@ -41,7 +41,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   const app_url = process.env.REACT_APP_APP_URL;
   const redirect_url = process.env.REACT_APP_REDIRECT_URL;
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [searchParams] = useSearchParams();
   const [decodedToken, setDecodedToken] = useState(null);
@@ -49,8 +49,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const userProfile = useSelector(state => state.userProfile?.data?.fetchedUsed);
   const [profileFetched, setProfileFetched] = useState(false);
-  console.log(userProfile?.firstName, "userProfile");
-
+  // console.log(userProfile?.firstName, "userProfile");
   const location = useLocation();
   const navigate = useNavigate();
   const open = Boolean(anchorEl);
@@ -140,7 +139,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   };
   return (
     <Grid>
-      <AppBar position="relative"  sx={{ bgcolor: theme.palette.background.default, boxShadow: 1, py: { xs: 0.5, sm: 1 } }}>
+      <AppBar position="relative" sx={{ bgcolor: theme.palette.background.backgroundColor,zIndex:1, boxShadow: 1, py: { xs: 0.5, sm: 1 } }}>
         <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3, md: 4 } }}>
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '90%' }}>

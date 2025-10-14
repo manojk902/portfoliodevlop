@@ -186,6 +186,7 @@ function DesignPage() {
                     width: { xs: "100%", lg: "400px" },
                     position: "relative",
                     height: "560px",
+                    zIndex: 0,
                     display: "flex",
                     flexDirection: "column",
                     borderRadius: 2,
@@ -279,7 +280,7 @@ function DesignPage() {
                     </Typography>
                     <Box sx={
                       {
-                        gap:1,
+                        gap: 1,
                         display: "flex",
                         // justifyContent:"space-between"
                       }

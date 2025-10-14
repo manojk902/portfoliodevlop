@@ -53,7 +53,7 @@ const Sidebar = ({ variant = "permanent", onClose }) => {
                 sx={{
                   py: 0.5,
                   bgcolor: location.pathname === item.path ? "#1976d2" : "transparent",
-                  color: location.pathname === item.path ? "#f4ebebff" : "#150808ff",
+                  color: location.pathname === item.path ? theme.palette.textColor : theme.palette.textColor,
                   "&:hover": {
                     bgcolor: location.pathname === item.path ? "#1565c0" : "#444",
                   },
