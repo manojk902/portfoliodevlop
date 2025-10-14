@@ -23,13 +23,14 @@ import {
 import { useSelector } from 'react-redux';
 
 const CvForm = ({ formData, setFormData, onSubmit, isEditMode }) => {
-  console.log("from cvform", formData);
+  // console.log("from cvform", formData);
   const userProfile = useSelector(state => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName
 
   // alert(isEditMode);
   const [photo, setPhoto] = React.useState(null);
   const [darkMode, setDarkMode] = React.useState(false);
+
 
   const handleChange = (fieldName) => (e) => {
     setFormData(prev => ({ ...prev, [fieldName]: e.target.value }));

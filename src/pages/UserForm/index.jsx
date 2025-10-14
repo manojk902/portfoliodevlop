@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Paper, Typography, TextField, Grid, Button, Avatar, Stack,
-  Radio, RadioGroup, FormControlLabel, LinearProgress, Snackbar, Alert
+  Radio, RadioGroup, FormControlLabel, LinearProgress, Snackbar, Alert,
+  Tooltip,
+  IconButton,
+  useTheme
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
@@ -10,8 +14,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { setUserProfile } from '../../store/features/userProfileSlice';
 import { useNavigate } from 'react-router-dom';
-
-
+import { apiUrl } from '../../utils/common';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { format } from 'date-fns';
 
 // 1. Validation schema using Yup
 const validationSchema = Yup.object({
@@ -32,41 +39,40 @@ function UserForm() {
   const [step, setStep] = useState(1);
   const totalSteps = 3;
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState();
   const user = useSelector(state => state.user);
   const fetchedUser = useSelector(state => state.userProfile?.data?.fetchedUsed);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [info, setInfo] = useState();
-  const [profileEmail,setProfileEmail]=useState("")
- 
-useEffect(()=>{
-   setProfileEmail(user?.email)
-},[user?.email])
+  const theme = useTheme();
+
+
+
 
   useEffect(() => {
-    console.log("Editing mode:", !!fetchedUser);
     setInfo(!!fetchedUser ? "Update" : "Create");
   }, [fetchedUser]);
 
   // 2. Handle file upload
   const handleFileChange = (e, setFieldValue) => {
     setFieldValue('profilePhoto', e.target.files[0]);
-    console.log(`=>=>${e.target.files[0]}`);
   };
 
   const isEdit = !!fetchedUser;
-
+  // console.log(isEdit, "isEdit");
   const initialValues = {
-    profilePhoto: '',
+    profilePhoto: fetchedUser?.profilePhoto || '',
     firstName: fetchedUser?.firstName || '',
     lastName: fetchedUser?.lastName || '',
-    dob: fetchedUser?.dob || '',
+    dob: fetchedUser?.dob ? new Date(fetchedUser.dob) : null,
     gender: fetchedUser?.gender || '',
     designation: fetchedUser?.designation || '',
     email: fetchedUser?.email || '',
     phoneNo: fetchedUser?.phoneNo || '',
-    socialLink: fetchedUser?.socialLink || '',
+    socialLink: Array.isArray(fetchedUser?.socialLinks)
+      ? fetchedUser?.socialLinks.join(', ')
+      : (fetchedUser?.socialLinks || ''),
     city: fetchedUser?.city || '',
     state: fetchedUser?.state || '',
     pinCode: fetchedUser?.pinCode || '',
@@ -75,69 +81,91 @@ useEffect(()=>{
 
   // 3. Handle form submission
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
-    console.log("sss", fetchedUser);
+    const socialArray = (() => {
+      // if the value is already an array (unlikely here) use it
+      if (Array.isArray(values.socialLink)) return values.socialLink;
+      // if empty/string => create empty array
+      if (!values.socialLink || !values.socialLink.trim()) return [];
+      // split by comma, trim, and remove empty items
+      return values.socialLink
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+    })();
     try {
       const data = new FormData();
       data.append('firstName', values?.firstName);
       data.append('lastName', values.lastName);
-      data.append('dob', values?.dob);
+      data.append(
+        'dob',
+        values.dob ? format(new Date(values.dob), "yyyy-MM-dd") : ""
+      );
       data.append('gender', values.gender);
       data.append('designation', values.designation);
       data.append('email', values?.email);
       data.append('phoneNo', Number(values.phoneNo));
-      data.append('socialLink', values.socialLink);
+      socialArray.forEach(link => data.append('socialLinks[]', link));
       data.append('city', values.city);
       data.append('state', values.state);
       data.append('pinCode', Number(values.pinCode));
       data.append('country', values.country);
       data.append('userName', user.userName);
       data.append('userId', user.id);
-      // console.log("getting", user.id);
-
-      if (values.profilePhoto) {
+      if (values?.profilePhoto) {
         data.append('profilePhoto', values?.profilePhoto);
       }
       const url = isEdit
-        ? `https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/update-user`
-        : `https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/register`
+        ? `${apiUrl}/update-user`
+        : `${apiUrl}/register`
 
       const method = isEdit ? 'put' : 'post';
 
       const res = await axios[method](url, data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      if (res.data.status==="success") {
-        alert("doneer")
-        console.log("this is1 ",res.data.user.userName , user.userName);
-        const updated = await axios.get(`https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/user-details/${user.userName}`);
+
+      if (res.data.status === "success") {
+        // refresh profile in redux
+        const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
         dispatch(setUserProfile(updated.data));
-        navigate('/profile');
+        setSuccess(true);
+
+        // fetch CVs
+        const cvRes = await axios.get(`${apiUrl}/cv-details/${user.userName}`);
+        console.log(cvRes.data.fetchedCv.cvInfo, "fetchedCv");
+
+        const defaultCv = cvRes.data.fetchedCv.cvInfo?.[0]; // first CV if exists
+
+        if (isEdit) {
+          // ✅ existing user → go to edit dashboard
+          navigate("/edit");
+        } else {
+          // ✅ new user → open the first CV in edit mode if available
+          if (defaultCv) {
+            navigate(`/edit/add-group?groupId=${defaultCv.cvInfoId}&edit=true`);
+          } else {
+            // fallback: no CV yet, open create mode
+            navigate("/edit/add-group?edit=false");
+          }
+        }
+
+        resetForm();
       }
-      if (isEdit) {
-        // alert("here")
-        const updated = await axios.get(`https://portfoliobackend-tpdr.onrender.com/api/v1/portfolio/user-details/${user.userName}`);
-        dispatch(setUserProfile(updated.data));
-        // console.log("kkk",updated.data);/
-        navigate('/profile');
-      }
-      // dispatch(setUserProfile(res.data));
-      console.log("this is ressssssssssss", res.data);
-      navigate('/profile');
-      setSuccess(true);
-      setError('');
-      resetForm();
       setStep(1);
+
     } catch (err) {
-      setError(err.response?.data?.message || 'Submission failed');
-      setSuccess(false);
+
+      setError(`${err.response.data.error.errorResponse.errmsg}`);
+      // setError(true);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   // UI rendering unchanged
   return (
     <Box sx={{
-      bgcolor: '#f5f6f8',
+      bgcolor: theme.palette.background.backgroundColor,
       minHeight: '100vh',
       display: 'flex',
       justifyContent: 'center',
@@ -180,10 +208,29 @@ useEffect(()=>{
                   {step === 1 && (
                     <>
                       <Stack spacing={3} alignItems="center" mb={4}>
-                        <Avatar
-                          src={values.profilePhoto ? URL.createObjectURL(values.profilePhoto) : ''}
-                          sx={{ width: 140, height: 140 }}
-                        />
+                        <Box sx={{ position: 'relative' }}>
+                          <Avatar
+                            src={values?.profilePhoto}
+                            sx={{ width: 140, height: 140 }}
+                          />
+                          {values?.profilePhoto && (
+                            <Tooltip title="Remove photo">
+                              <IconButton
+                                size="small"
+                                onClick={() => setFieldValue('profilePhoto', '')}
+                                sx={{
+                                  position: 'absolute',
+                                  top: -6,
+                                  right: -6,
+                                  bgcolor: 'background.paper',
+                                  boxShadow: 1,
+                                }}
+                              >
+                                <CloseIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </Box>
                         <Button variant="outlined" component="label">
                           Upload Photo
                           <input
@@ -221,18 +268,20 @@ useEffect(()=>{
                           />
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                          <TextField
-                            fullWidth
-                            label="Date of Birth"
-                            name="dob"
-                            type="date"
-                            InputLabelProps={{ shrink: true }}
-                            value={values.dob}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={touched.dob && Boolean(errors.dob)}
-                            helperText={touched.dob && errors.dob}
-                          />
+                          <LocalizationProvider dateAdapter={AdapterDateFns}>
+                            <DatePicker
+                              label="Date of Birth"
+                              value={values.dob || null}
+                              onChange={(newValue) => setFieldValue("dob", newValue)}
+                              slotProps={{
+                                textField: {
+                                  fullWidth: true,
+                                  error: touched.dob && Boolean(errors.dob),
+                                  helperText: touched.dob && errors.dob,
+                                },
+                              }}
+                            />
+                          </LocalizationProvider>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                           <TextField
@@ -282,13 +331,12 @@ useEffect(()=>{
                         <Grid item xs={12}>
                           <TextField
                             fullWidth
-                            // label="Email"
+                            label="Email"
                             name="email"
-                            // disabled
-                            value={profileEmail}
+                            value={values.email}
                             onChange={handleChange}
-                            // onBlur={handleBlur}
-                            error={touched.email &&- Boolean(errors.email)}
+                            onBlur={handleBlur}
+                            error={touched.email && Boolean(errors.email)}
                             helperText={touched.email && errors.email}
                           />
                         </Grid>
@@ -405,12 +453,12 @@ useEffect(()=>{
           )}
         </Formik>
 
-        <Snackbar open={!!error} autoHideDuration={4000} onClose={() => setError('')}>
-          <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }}>
+        <Snackbar open={!!error} autoHideDuration={2000} onClose={() => setError(false)}>
+          <Alert severity="error" sx={{ width: '100%' }}>
             {error}
           </Alert>
         </Snackbar>
-        <Snackbar open={success} autoHideDuration={4000} onClose={() => setSuccess(false)}>
+        <Snackbar open={success} autoHideDuration={10000} onClose={() => setSuccess(false)}>
           <Alert onClose={() => setSuccess(false)} severity="success" sx={{ width: '100%' }}>
             Profile saved successfully!
           </Alert>

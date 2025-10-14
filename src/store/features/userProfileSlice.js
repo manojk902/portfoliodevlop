@@ -1,6 +1,7 @@
 // src/store/features/userProfileSlice.js
 import { createSlice } from '@reduxjs/toolkit';
-import axios from 'axios';
+// import axios from 'axios';
+// import { apiUrl } from '../../utils/common';
 
 const userProfileSlice = createSlice({
   name: 'userProfile',
@@ -18,19 +19,17 @@ const userProfileSlice = createSlice({
 export const { setUserProfile, clearUserProfile } = userProfileSlice.actions;
 
 // 🔧 PUT API call (edit profile)
-export const updateUserProfile = (formData) => async (dispatch) => {
-  try {
-    const response = await axios.put(
-      'https://portfoliobackend-ol8m.onrender.com/api/v1/portfolio/update',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
-    dispatch(setUserProfile(response.data));
-    console.log("✅ Profile updated successfully");
-  } catch (error) {
-    console.error("❌ Error updating profile:", error.response?.data?.message || error.message);
-  }
-};
+// export const updateUserProfile = (formData) => async (dispatch) => {
+//   try {
+//     const response = await axios.put(
+//       `${apiUrl}/update`,
+//       formData,
+//       { headers: { 'Content-Type': 'multipart/form-data' } }
+//     );
+//     dispatch(setUserProfile(response.data));
+//   } catch (error) {
+//     console.error("❌ Error updating profile:", error.response?.data?.message || error.message);
+//   }
+// };
 
 export default userProfileSlice.reducer;
-  
