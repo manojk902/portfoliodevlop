@@ -68,7 +68,7 @@ const HomePage = () => {
       .then((res) => res.json())
       .then((data) => {
         // console.log("API Response:", data.searchedUser?.[0]);
-        setUsers(data.searchedUser || data);
+        setUsers(data.data || data);
         setLoading(false);
       })
       .catch((err) => {
