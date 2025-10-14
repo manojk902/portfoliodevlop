@@ -15,8 +15,8 @@ import Cv6 from "../Template/Cv6";
 import Cv7 from "../Template/Cv7";
 import Cv8 from "../Template/Cv8";
 
-const DefaultCv = ({ template = 'defaultCv' }) => {
-  const name = useParams()
+const DefaultCv = ({ template = "defaultCv" }) => {
+  const name = useParams();
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
   const [cvt, setCvt] = useState();
@@ -29,21 +29,20 @@ const DefaultCv = ({ template = 'defaultCv' }) => {
       // console.log("res from default cv", res);
       // console.log(res,"oip");
       setData(res.data?.fetchedCvInfo?.defaultCvInfo);
-      setCvt(res.data?.fetchedCvInfo?.templateName)
+      setCvt(res.data?.fetchedCvInfo?.templateName);
       // console.log(res.data?.fetchedCvInfo?.templateName)
-    }
+    };
 
-    fetchCv()
+    fetchCv();
   }, [username]);
 
   if (dataa === undefined) {
     return <div>Loading...</div>;
-  }
-  else {
+  } else {
     // console.log(dataa, "dataa from default cv");
   }
   const cvOptions = {
-    "defaultCv": DefaultCvDesign,
+    defaultCv: DefaultCvDesign,
     Cv1: Cv1,
     Cv2: Cv2,
     Cv3: Cv3,
@@ -51,8 +50,7 @@ const DefaultCv = ({ template = 'defaultCv' }) => {
     Cv6: Cv6,
     Cv7: Cv7,
     Cv8: Cv8,
-
-  }
+  };
 
   const Component = cvOptions[cvt || template];
 
@@ -60,13 +58,11 @@ const DefaultCv = ({ template = 'defaultCv' }) => {
     return <div>Design Not Foundds</div>;
   }
 
-
   return (
     <div>
       <Component UserData={dataa} />
     </div>
   );
 };
-
 
 export default DefaultCv;

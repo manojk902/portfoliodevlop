@@ -1,7 +1,5 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState, useRef } from "react";
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import axios from "axios";
 import { apiUrl } from "../../utils/common";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -11,10 +9,17 @@ import { useSelector } from "react-redux";
 const Cv7 = ({ UserDataFromDesignPage }) => {
   const componentRef = useRef();
 
-  // --- 1. Identify Context (URL & Redux) ---
   const [searchParams] = useSearchParams({ UserDataFromDesignPage });
   const { username } = useParams();
   const cvPublicView = searchParams.get("cv");
+  const [showLoading, setShowLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoading(false);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const userProfile = useSelector(
     (state) => state.userProfile?.data?.fetchedUsed
@@ -67,23 +72,115 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
     fetchCvData();
   }, [cvPublicView, username, userNameRedux]);
 
-  if (loading) {
-    return (
-      <Box sx={{ p: 2, textAlign: "center" }}>
-        <CircularProgress size={24} />
-        <Typography variant="body2" color="text.secondary">
-          Loading CV...
-        </Typography>
-      </Box>
-    );
-  }
+  if (showLoading || !cvData) {
+    const letters = [
+      "P",
+      "o",
+      "r",
+      "t",
+      "f",
+      "o",
+      "l",
+      "i",
+      "o",
+      ".",
+      "D",
+      "r",
+      "i",
+      "v",
+      "e",
+      "O",
+      "S",
+      "x",
+    ];
 
-  if (!cvData) {
     return (
-      <Box sx={{ p: 4, textAlign: "center", backgroundColor: "#f9f9f9" }}>
-        <Typography color="error">
-          No CV data available for this user.
-        </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          backgroundColor: "#f8f9fa",
+          p: 2,
+        }}
+      >
+        {/* Animated Portfolio.DriveOSx Logo */}
+        <Box sx={{ mb: 4, textAlign: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              mb: 1,
+              flexWrap: "wrap",
+            }}
+          >
+            {letters.map((letter, index) => (
+              <Typography
+                key={index}
+                variant="h2"
+                component="span"
+                sx={{
+                  fontSize: { xs: "0.9rem", sm: "2.5rem" },
+                  fontWeight: 400,
+                  display: "inline-block",
+                  animation: `fadeInOut 2s ease-in-out infinite`,
+                  animationDelay: `${index * 0.12}s`,
+                  color:
+                    index === 0
+                      ? "#4285F4" // P - blue
+                      : index === 1
+                      ? "#EA4335" // o - red
+                      : index === 2
+                      ? "#FBBC05" // r - yellow
+                      : index === 3
+                      ? "#4285F4" // t - blue
+                      : index === 4
+                      ? "#34A853" // f - green
+                      : index === 5
+                      ? "#EA4335" // o - red
+                      : index === 6
+                      ? "#FBBC05" // l - yellow
+                      : index === 7
+                      ? "#4285F4" // i - blue
+                      : index === 8
+                      ? "#34A853" // o - green
+                      : index === 9
+                      ? "#5f6368" // . - gray
+                      : index === 10
+                      ? "#4285F4" // D - blue
+                      : index === 11
+                      ? "#EA4335" // r - red
+                      : index === 12
+                      ? "#FBBC05" // i - yellow
+                      : index === 13
+                      ? "#34A853" // v - green
+                      : index === 14
+                      ? "#EA4335" // e - red
+                      : index === 15
+                      ? "#4285F4" // O - blue
+                      : index === 16
+                      ? "#FBBC05" // S - yellow
+                      : "#34A853", // x - green
+                }}
+              >
+                {letter}
+              </Typography>
+            ))}
+          </Box>
+        </Box>
+        {/* 🔁 CSS animations */}
+        <style>
+          {`
+             @keyframes fadeInOut {
+               0% { opacity: 0; transform: translateY(10px); }
+               20% { opacity: 1; transform: translateY(0); }
+               80% { opacity: 1; transform: translateY(0); }
+               100% { opacity: 0; transform: translateY(-10px); }
+             }
+           `}
+        </style>
       </Box>
     );
   }
@@ -358,65 +455,102 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
   };
 
   // CV Content - Single source for both screen and print
-  const CVContent = () => (
-    <div className="cv-container" ref={componentRef}>
-      {/* Page 1 */}
-      <div className="cv-page page-1">
-        <div className="page-label no-print">Page 1</div>
+  const CVContent = () => {
+    // Check if sections have data
+    const hasProfessionalSummary = cvData.sections?.find(
+      (s) => s.name === "Summary"
+    )?.data;
+    const hasExperience =
+      cvData.sections?.find((s) => s.name === "Experience")?.data?.length > 0;
+    const hasAchievements =
+      cvData.sections?.find((s) => s.name === "Achievement")?.data?.length > 0;
+    const hasInterests =
+      cvData.sections?.find((s) => s.name === "Interest")?.data?.length > 0;
 
-        {/* Personal Info Header */}
-        <div className="personal-info">
-          <h1 className="name">
-            {cvData.firstName} {cvData.lastName}
-          </h1>
-          <div className="designation">{cvData.designation}</div>
-          <div className="contact-info">
-            <span>📧 {cvData.email}</span>
-            <span>📱 {cvData.phoneNo}</span>
-            <span>
-              📍 {cvData.address?.city}, {cvData.address?.state}
-            </span>
-          </div>
-          {cvData.socialLinks?.length > 0 && (
-            <div className="social-links">
-              {cvData.socialLinks.map((link, i) => (
-                <span key={i} className="social-link">
-                  {getSocialIcon(link)} {link}
-                </span>
-              ))}
+    const hasEducation =
+      cvData.sections?.find((s) => s.name === "Education")?.data?.length > 0;
+    const hasProjects =
+      cvData.sections?.find((s) => s.name === "Project")?.data?.length > 0;
+    const hasCertifications =
+      cvData.sections?.find((s) => s.name === "Certification")?.data?.length >
+      0;
+
+    const hasSkills =
+      cvData.sections?.find((s) => s.name === "Skill")?.data?.length > 0;
+    const hasLanguages =
+      cvData.sections?.find((s) => s.name === "Language")?.data?.length > 0;
+    const hasAwards =
+      cvData.sections?.find((s) => s.name === "Award")?.data?.length > 0;
+
+    // Check which pages should be displayed
+    const shouldShowPage2 = hasEducation || hasProjects || hasCertifications;
+    const shouldShowPage3 = hasSkills || hasLanguages || hasAwards;
+
+    return (
+      <div className="cv-container" ref={componentRef}>
+        {/* Page 1 - Always show (basic info is always there) */}
+        <div className="cv-page page-1">
+          <div className="page-label no-print">Page 1</div>
+
+          {/* Personal Info Header */}
+          <div className="personal-info">
+            <h1 className="name">
+              {cvData.firstName} {cvData.lastName}
+            </h1>
+            <div className="designation">{cvData.designation}</div>
+            <div className="contact-info">
+              <span>📧 {cvData.email}</span>
+              <span>📱 {cvData.phoneNo}</span>
+              <span>
+                📍 {cvData.address?.city}, {cvData.address?.state}
+              </span>
             </div>
-          )}
+            {cvData.socialLinks?.length > 0 && (
+              <div className="social-links">
+                {cvData.socialLinks.map((link, i) => (
+                  <span key={i} className="social-link">
+                    {getSocialIcon(link)} {link}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Conditional sections for Page 1 */}
+          {hasProfessionalSummary && <ProfessionalSummary />}
+          {hasExperience && <ExperienceSection />}
+          {hasAchievements && <AchievementSection />}
+          {hasInterests && <InterestSection />}
+          {hasLanguages && <LanguageSection />}
         </div>
 
-        <ProfessionalSummary />
-        <ExperienceSection />
-        <AchievementSection />
-      </div>
-
-      {/* Page 2 */}
-      <div className="cv-page page-2">
-        <div className="page-label no-print">Page 2</div>
-        <EducationSection />
-        <ProjectsSection />
-        <CertificationsSection />
-      </div>
-
-      {/* Page 3 - Additional Sections */}
-      <div className="cv-page page-3">
-        <div className="page-label no-print">Page 3</div>
-        <div className="page-content">
-          <div className="left-column">
-            <SkillsSection />
-            <LanguageSection />
-            <InterestSection />
+        {/* Page 2 - Only show if has data */}
+        {shouldShowPage2 && (
+          <div className="cv-page page-2">
+            <div className="page-label no-print">Page 2</div>
+            {hasEducation && <EducationSection />}
+            {hasProjects && <ProjectsSection />}
+            {hasCertifications && <CertificationsSection />}
           </div>
-          <div className="right-column">
-            <AwardSection />
+        )}
+
+        {/* Page 3 - Only show if has data */}
+        {shouldShowPage3 && (
+          <div className="cv-page page-3">
+            <div className="page-label no-print">Page 3</div>
+            <div className="page-content">
+              <div className="left-column">
+                {hasSkills && <SkillsSection />}
+              </div>
+              <div className="right-column">
+                {hasAwards && <AwardSection />}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <Box>
