@@ -426,38 +426,38 @@ const Cv8 = ({ UserDataFromDesignPage }) => {
                     index === 0
                       ? "#4285F4" // P - blue
                       : index === 1
-                      ? "#EA4335" // o - red
-                      : index === 2
-                      ? "#FBBC05" // r - yellow
-                      : index === 3
-                      ? "#4285F4" // t - blue
-                      : index === 4
-                      ? "#34A853" // f - green
-                      : index === 5
-                      ? "#EA4335" // o - red
-                      : index === 6
-                      ? "#FBBC05" // l - yellow
-                      : index === 7
-                      ? "#4285F4" // i - blue
-                      : index === 8
-                      ? "#34A853" // o - green
-                      : index === 9
-                      ? "#5f6368" // . - gray
-                      : index === 10
-                      ? "#4285F4" // D - blue
-                      : index === 11
-                      ? "#EA4335" // r - red
-                      : index === 12
-                      ? "#FBBC05" // i - yellow
-                      : index === 13
-                      ? "#34A853" // v - green
-                      : index === 14
-                      ? "#EA4335" // e - red
-                      : index === 15
-                      ? "#4285F4" // O - blue
-                      : index === 16
-                      ? "#FBBC05" // S - yellow
-                      : "#34A853", // x - green
+                        ? "#EA4335" // o - red
+                        : index === 2
+                          ? "#FBBC05" // r - yellow
+                          : index === 3
+                            ? "#4285F4" // t - blue
+                            : index === 4
+                              ? "#34A853" // f - green
+                              : index === 5
+                                ? "#EA4335" // o - red
+                                : index === 6
+                                  ? "#FBBC05" // l - yellow
+                                  : index === 7
+                                    ? "#4285F4" // i - blue
+                                    : index === 8
+                                      ? "#34A853" // o - green
+                                      : index === 9
+                                        ? "#5f6368" // . - gray
+                                        : index === 10
+                                          ? "#4285F4" // D - blue
+                                          : index === 11
+                                            ? "#EA4335" // r - red
+                                            : index === 12
+                                              ? "#FBBC05" // i - yellow
+                                              : index === 13
+                                                ? "#34A853" // v - green
+                                                : index === 14
+                                                  ? "#EA4335" // e - red
+                                                  : index === 15
+                                                    ? "#4285F4" // O - blue
+                                                    : index === 16
+                                                      ? "#FBBC05" // S - yellow
+                                                      : "#34A853", // x - green
                 }}
               >
                 {letter}
@@ -522,168 +522,20 @@ const Cv8 = ({ UserDataFromDesignPage }) => {
           </div>
 
           {/* Right Column - 60% */}
-          <Grid item xs={12} md={7}>
-            {/* Work Experience */}
-            {cvData.sections?.find((s) => s.name === "Experience")?.data && (
-              <Box sx={{ mb: 3 }}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontSize: "1rem",
-                    fontWeight: "bold",
-                    color: "primary.main",
-                    borderBottom: `1px solid ${theme.palette.primary.main}`,
-                    pb: 0.5,
-                    mb: 1,
-                  }}
-                >
-                  WORK EXPERIENCE
-                </Typography>
-                {cvData.sections
-                  .find((s) => s.name === "Experience")
-                  .data.map((exp, i) => (
-                    <Box key={i} sx={{ mb: 2 }}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "flex-start",
-                          mb: 0.5,
-                        }}
-                      >
-                        <Typography
-                          variant="body2"
-                          sx={{ fontSize: "0.8rem", fontWeight: "bold" }}
-                        >
-                          {exp.jobTitle}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontSize: "0.7rem",
-                            color: "text.secondary",
-                            fontStyle: "italic",
-                          }}
-                        >
-                          {exp.startDate} - {exp.endDate}
-                        </Typography>
-                      </Box>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontSize: "0.75rem",
-                          color: "text.secondary",
-                          mb: 0.5,
-                        }}
-                      >
-                        {exp.company} | {exp.location}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        component="div"
-                        sx={{
-                          lineHeight: 1.4,
-                          fontSize: "0.75rem",
-                          "& p": { margin: 0 },
-                        }}
-                      >
-                        <MarkdownPreview
-                          style={{
-                            backgroundColor: "transparent",
-                            color: "inherit",
-                            padding: 0,
-                            fontSize: "0.75rem",
-                          }}
-                          source={exp.description || ""}
-                        />
-                      </Typography>
-                      {i <
-                        cvData.sections.find((s) => s.name === "Experience")
-                          .data.length -
-                        1 && <Divider sx={{ my: 1.5 }} />}
-                    </Box>
-                  ))}
-              </Box>
-            )}
+          <div className="cv8-right-column">
+            <AwardSection />
+            <AchievementSection />
+          </div>
+        </div>
+      </div>
 
-            {/* Projects */}
-            {cvData.sections?.find((s) => s.name === "Project")?.data && (
-              <Box sx={{ mb: 3 }}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontSize: "1rem",
-                    fontWeight: "bold",
-                    color: "primary.main",
-                    borderBottom: `1px solid ${theme.palette.primary.main}`,
-                    pb: 0.5,
-                    mb: 1,
-                  }}
-                >
-                  PROJECTS
-                </Typography>
-                {cvData.sections
-                  .find((s) => s.name === "Project")
-                  .data.map((proj, i) => (
-                    <Box key={i} sx={{ mb: 2 }}>
-                      <Typography
-                        variant="body2"
-                        sx={{ fontSize: "0.8rem", fontWeight: "bold", mb: 0.5 }}
-                      >
-                        {proj.name}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        component="div"
-                        sx={{
-                          lineHeight: 1.4,
-                          fontSize: "0.75rem",
-                          mb: 0.5,
-                          "& p": { margin: 0 },
-                        }}
-                      >
-                        <MarkdownPreview
-                          style={{
-                            backgroundColor: "transparent",
-                            color: "inherit",
-                            padding: 0,
-                            fontSize: "0.75rem",
-                          }}
-                          source={proj.description || ""}
-                        />
-                      </Typography>
-                      {proj.technologies && (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 0.5,
-                            mb: 0.5,
-                          }}
-                        >
-                          {proj.technologies.map((tech, idx) => (
-                            <Chip
-                              key={idx}
-                              label={tech}
-                              size="small"
-                              variant="outlined"
-                              sx={{
-                                height: 20,
-                                fontSize: "0.6rem",
-                                "& .MuiChip-label": { px: 1 },
-                              }}
-                            />
-                          ))}
-                        </Box>
-                      )}
-                      {i <
-                        cvData.sections.find((s) => s.name === "Project").data
-                          .length -
-                        1 && <Divider sx={{ my: 1.5 }} />}
-                    </Box>
-                  ))}
-              </Box>
-            )}
+      <style jsx>{`
+        /* Global Styles */
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
 
         .cv8-container {
           max-width: 210mm;
