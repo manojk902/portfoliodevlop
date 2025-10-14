@@ -8,7 +8,9 @@ import {
   Button,
   IconButton,
   Grid,
-  Skeleton
+  Skeleton,
+  Fab,
+  Tooltip
 } from "@mui/material";
 import { Edit, Delete, Add } from "@mui/icons-material";
 import axios from "axios";
@@ -24,11 +26,12 @@ function UserInfo() {
   const [userid, setUserId] = useState();
   const [updatingCvId, setUpdatingCvId] = useState(null);
   const [deletingCvId, setDeletingCvId] = useState(null);
+
   // const [groupId] = useState(true);
 
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
-  
+
   const navigate = useNavigate();
 
   const fetchUsers = async () => {
@@ -36,7 +39,13 @@ function UserInfo() {
     try {
       setLoading(true);
       const response = await axios.get(`${apiUrl}/cv-details/${username}`);
-      setUsers(response.data.fetchedCv.cvInfo || []);
+      const cvInfo = response.data.fetchedCv.cvInfo || [];
+      // for sorting latest first``
+      const sorted = cvInfo.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      )
+      setUsers(sorted);
+      // setUsers(response.data.fetchedCv.cvInfo || []);
       setUserId(response.data.fetchedCv.userId);
       setDefaultUser(response.data.fetchedCv.templateInfo || {});
     } catch (error) {
@@ -93,9 +102,46 @@ function UserInfo() {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{
+      py: 3, pr: { xs: 1, sm: 2, md: 3, lg: 4 }, pl: { xs: 1, sm: 2, md: 3, lg: 4 },
+    }}>
       {/* <UserBreadcrumb current={groupId ? 'Edit' : 'Add'} /> */}
-      <Grid container spacing={2}>
+      <Box
+        sx={{
+          position: "relative",
+        }}
+      >
+        {/* Floating Add Button */}
+        <Tooltip title="Add New">
+          <Fab
+            color="primary"
+            aria-label="add"
+            onClick={handleAddNew}
+            sx={{
+              position: "fixed",
+              bottom: { xs: 16, sm: 24 },
+              right: { xs: 16, sm: 24 },
+              zIndex: 1200,
+              boxShadow: 4,
+              transition: "transform 0.2s ease",
+              "&:hover": {
+                transform: "scale(1.1)",
+              },
+            }}
+          >
+            <Add />
+          </Fab>
+        </Tooltip>
+
+      </Box>
+
+      <Grid sx={{
+        flexDirection: { xs: "column", sm: "column", md: "row", lg: "row" },
+        gap: 4,
+        justifyContent: { md: "flex-start", },
+        // flexWrap: "wrap", // ✅ allow wrapping
+
+      }} container spacing={2}>
         {loading ? (
           // Skeletons while loading
           Array.from(new Array(4)).map((_, index) => (
@@ -125,12 +171,60 @@ function UserInfo() {
           ))
         ) : (
           <>
+            {/* Add New card */}
+            <Grid item xs={12} sm={6} md={6}>
+              <Card
+                sx={{
+                  p: 2,
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  border: "2px dashed #aaa",
+                  // width: { xs: "88%", s  m: 400, md: 600 },
+                  width: { xs: "88%", sm: 400, md: 250, lg: 290, xl: 300 },
+                  mx: { xs: "auto", sm: "0" },
+                }}
+                onClick={handleAddNew}
+              >
+                <CardContent sx={{ textAlign: "center" }}>
+                  <Add sx={{ fontSize: 40, color: "primary.main" }} />
+                  <Typography variant="body1" color="primary">
+                    Add Group / Add Info
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
             {users.map((user) => {
               const key = user.cvInfoId ?? userid;
               const isDefault = defaultUser?.cvInfoId === user.cvInfoId;
               return (
                 <Grid item xs={12} sm={6} md={3} key={key}>
-                  <Card sx={{ p: 2, height: "100%" }}>
+                  <Card sx={{
+                    p: { xs: 0, sm: 2, md: 2, lg: 2 },
+                    // width: {
+                    //   xs: "100%",   // 👈 Mobile (0px+)
+                    //   sm: "400px",  // 👈 Small screens (600px+)
+                    //   md: "600px",  // 👈 Medium screens (900px+)
+                    //   lg: "800px",  // 👈 Large screens (1200px+)
+                    //   xl: "1000px", // 👈 Extra Large (1536px+)
+                    // },
+                    width: { xs: "88%", sm: 400, md: 230, lg: 290, xl: 300 }, // fixed width
+                    mx: { xs: "auto", sm: "0" }, // center align on mobile
+                    maxWidth: "100%", // safety guard       // center align
+                    // bgcolor: {
+                    //   // xs: "red",    // Mobile
+                    //   sm: "orange", // Tablet
+                    //   md: "yellow", // Laptop
+                    //   lg: "green",  // Desktop
+                    //   xl: "blue",   // Wide screens
+                    // },
+                    //  mx: "", // center horizontally
+                    height: "100%",
+
+                    border: isDefault ? "1px solid #6fc94b35" : "white"
+                  }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom noWrap>
                         {user.designation}
@@ -160,31 +254,33 @@ function UserInfo() {
                         >
                           <Edit fontSize="small" />
                         </IconButton>
-
-                        <Button
-                          variant={isDefault ? "contained" : "outlined"}
-                          color="primary"
-                          size="small"
-                          onClick={() => handleSetDefault(userid, user.cvInfoId)}
-                          disabled={updatingCvId === user.cvInfoId || isDefault}
-                        >
-                          {updatingCvId === user.cvInfoId
-                            ? "Updating..."
-                            : isDefault
-                              ? "Default"
-                              : "Set as Default"}
-                        </Button>
-
-                        {users.length > 1 && !isDefault && (
-                          <IconButton
-                            color="error"
+                        <Box>
+                          <Button
+                            variant={isDefault ? "contained" : "outlined"}
+                            color="primary"
                             size="small"
-                            onClick={() => handleDelete(userid, user.cvInfoId)}
-                            disabled={deletingCvId === user.cvInfoId}
+                            onClick={() => handleSetDefault(userid, user.cvInfoId)}
+                            disabled={updatingCvId === user.cvInfoId || isDefault}
                           >
-                            <Delete fontSize="small" />
-                          </IconButton>
-                        )}
+                            {updatingCvId === user.cvInfoId
+                              ? "Updating..."
+                              : isDefault
+                                ? "Selected"
+                                : "Set as Default"}
+                          </Button>
+
+                          {users.length > 1 && !isDefault && (
+                            <IconButton
+                              color="error"
+                              size="small"
+                              onClick={() => handleDelete(userid, user.cvInfoId)}
+                              disabled={deletingCvId === user.cvInfoId}
+                            >
+                              <Delete fontSize="small" />
+                            </IconButton>
+                          )}
+                        </Box>
+
 
                       </Box>
                     </CardContent>
@@ -193,32 +289,11 @@ function UserInfo() {
               );
             })}
 
-            {/* Add New card */}
-            <Grid item xs={12} sm={6} md={3}>
-              <Card
-                sx={{
-                  p: 2,
-                  height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  border: "2px dashed #aaa",
-                }}
-                onClick={handleAddNew}
-              >
-                <CardContent sx={{ textAlign: "center" }}>
-                  <Add sx={{ fontSize: 40, color: "primary.main" }} />
-                  <Typography variant="body1" color="primary">
-                    Add Group / Add Info
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+
           </>
         )}
       </Grid>
-    </Box>
+    </Box >
   );
 }
 

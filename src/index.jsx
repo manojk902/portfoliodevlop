@@ -1,26 +1,42 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.jsx'; // Import the App component
-// Material-UI Imports for global theming and baseline CSS
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import theme from './theme/index.js'; // Import your custom MUI theme
-// Redux Toolkit Import for global state management
+import App from './App.jsx';
+import { ThemeProvider, CssBaseline} from '@mui/material';
 import { Provider } from 'react-redux';
-import { persistor, store } from './store/index.js'; // Import your Redux store
+import { persistor, store } from './store/index.js';
 import { BrowserRouter } from 'react-router-dom';
 import { PersistGate } from 'redux-persist/integration/react';
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+import { getTheme } from './theme/index.js';
+import { motion } from "framer-motion";
+function Root() {
+  const [mode, setMode] = useState("dark"); // ✅ hook inside component
+  return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </ThemeProvider>
+        <ThemeProvider theme={getTheme(mode)}>
+          <CssBaseline />
+          <BrowserRouter>
+            <motion.div
+              initial={false} // prevent re-init on toggle
+              animate={{
+                backgroundColor:  mode === 'light' ? "#f3f4f692" : "#151615bd",
+                color: mode === "light" ? "#000000" : "#ffffff",
+              }}
+              transition={{
+                duration: 0.1,      // smoothness control
+                ease: "linear",  // motion curve
+              }}
+              style={{
+                minHeight: "100vh",
+              }}
+            >
+              <App mode={mode} setMode={setMode} />
+            </motion.div>
+          </BrowserRouter>
+        </ThemeProvider>
       </PersistGate>
     </Provider>
-  </React.StrictMode>,
-);
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Root />);

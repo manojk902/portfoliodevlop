@@ -8,12 +8,14 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  useTheme,
+  useThemeProps,
 } from '@mui/material';
 import MDEditor from "@uiw/react-md-editor";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 // import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
+// import * as Yup from "yup";
 import { ExpandMore, ExpandLess, DragIndicator } from '@mui/icons-material';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -51,6 +53,7 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
     item: { index },
     collect: monitor => ({ isDragging: monitor.isDragging() }),
   });
+  const theme = useTheme();
 
   const [, drop] = useDrop({
     accept: ItemType,
@@ -64,10 +67,10 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
 
   return (
     <Card ref={node => drag(drop(node))} sx={{ mb: 1, borderRadius: 4, opacity: isDragging ? 0.5 : 1 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1, bgcolor: '#f5f5f5' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DragIndicator sx={{ color: '#666', fontSize: 20 }} />
-          <Typography sx={{ fontSize: '1rem', fontWeight: 500 }}>{sectionTypes[section.name].title}</Typography>
+          <Typography sx={{ fontSize: '1rem', fontWeight: 500, }}>{sectionTypes[section.name].title}</Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button sx={{ color: '#d32f2f', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => removeSection(section.name)}>
@@ -211,6 +214,7 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
 // Main form component
 const GroupForm = () => {
   const userProfile = useSelector(state => state.userProfile.data);
+  const theme = useTheme()
   const username = userProfile?.fetchedUsed?.userName
   const userId = userProfile?.fetchedUsed?.userId
   const [searchParams] = useSearchParams();
@@ -245,6 +249,9 @@ const GroupForm = () => {
       try {
         const response = await axios.get(`${apiUrl}/getSingleCv/${username}/${groupId}`);
         const cvData = response.data.singleCv;
+        // console.log();
+        // console.log('CV Data:', cvData);
+
         if (cvData) {
           const updatedSections = cvData.sections.map(section => {
             if (section.name.toLowerCase() === 'summary') {
@@ -285,7 +292,7 @@ const GroupForm = () => {
           );
         }
       } catch (err) {
-        console.error('Error fetching group:', err);
+        // console.error('Error fetching group:', err);
       }
     };
     fetchGroup();
@@ -602,7 +609,7 @@ const GroupForm = () => {
         }
         try {
           const response = await axios.post(`${apiUrl}/create-cv`, payloadCreateCv);
-          console.log(response, "this from cv");
+          // console.log(response, "this from cv");
           navigate('/edit');
         }
         catch {
@@ -623,7 +630,7 @@ const GroupForm = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Box sx={{ fullWidth: true, mx: 'auto', p: 2, bgcolor: '#fff', borderRadius: 4 }}>
+      <Box sx={{ fullWidth: true, mx: 'auto', p: 2, borderRadius: 4 }}>
         <Typography sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2 }}>
           {groupId ? `Update Info of ${groupId}` : 'Add New Info'}
         </Typography>
@@ -715,9 +722,12 @@ const GroupForm = () => {
             />
           ))}
           {/* Add Section Button */}
-          <Button sx={{ bgcolor: '#388e3c', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => setShowModal(true)}>
-            Add Section
-          </Button>
+          <Box>
+            <Button sx={{ bgcolor: theme.palette.primary.main, color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => setShowModal(true)}>
+              Add Section
+            </Button>
+          </Box>
+
           {/* Modal for Adding Sections */}
           <Dialog open={showModal} onClose={() => setShowModal(false)}>
             <DialogTitle>Add Section</DialogTitle>
@@ -753,7 +763,7 @@ const GroupForm = () => {
             <Button sx={{ color: '#666', textTransform: 'none', fontSize: '0.875rem' }} onClick={handleCancel}>
               Cancel
             </Button>
-            <Button sx={{ bgcolor: '#1976d2', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} type="submit">
+            <Button sx={{ bgcolor: theme.palette.success.main, color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} type="submit">
               Save
             </Button>
           </Box>

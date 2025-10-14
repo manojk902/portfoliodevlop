@@ -3,7 +3,8 @@ import {
   Box, Paper, Typography, TextField, Grid, Button, Avatar, Stack,
   Radio, RadioGroup, FormControlLabel, LinearProgress, Snackbar, Alert,
   Tooltip,
-  IconButton
+  IconButton,
+  useTheme
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,8 +19,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { format } from 'date-fns';
-
-
 
 // 1. Validation schema using Yup
 const validationSchema = Yup.object({
@@ -46,10 +45,10 @@ function UserForm() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [info, setInfo] = useState();
+  const theme = useTheme();
 
-  // useEffect(() => {
-  //   setProfileEmail(user?.email)
-  // }, [user?.email])
+
+
 
   useEffect(() => {
     setInfo(!!fetchedUser ? "Update" : "Create");
@@ -58,7 +57,6 @@ function UserForm() {
   // 2. Handle file upload
   const handleFileChange = (e, setFieldValue) => {
     setFieldValue('profilePhoto', e.target.files[0]);
-    // console.log(`=>=>${e.target.files[0]}`);
   };
 
   const isEdit = !!fetchedUser;
@@ -72,7 +70,6 @@ function UserForm() {
     designation: fetchedUser?.designation || '',
     email: fetchedUser?.email || '',
     phoneNo: fetchedUser?.phoneNo || '',
-    // socialLink: fetchedUser?.socialLinks || '',
     socialLink: Array.isArray(fetchedUser?.socialLinks)
       ? fetchedUser?.socialLinks.join(', ')
       : (fetchedUser?.socialLinks || ''),
@@ -95,12 +92,10 @@ function UserForm() {
         .map(s => s.trim())
         .filter(Boolean);
     })();
-    // console.log("sss", fetchedUser);
     try {
       const data = new FormData();
       data.append('firstName', values?.firstName);
       data.append('lastName', values.lastName);
-      // data.append('dob', values?.dob);
       data.append(
         'dob',
         values.dob ? format(new Date(values.dob), "yyyy-MM-dd") : ""
@@ -109,7 +104,6 @@ function UserForm() {
       data.append('designation', values.designation);
       data.append('email', values?.email);
       data.append('phoneNo', Number(values.phoneNo));
-      // data.append('socialLink', values.socialLink);
       socialArray.forEach(link => data.append('socialLinks[]', link));
       data.append('city', values.city);
       data.append('state', values.state);
@@ -129,22 +123,40 @@ function UserForm() {
       const res = await axios[method](url, data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
+
       if (res.data.status === "success") {
+        // refresh profile in redux
         const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
         dispatch(setUserProfile(updated.data));
         setSuccess(true);
+
+        // fetch CVs
+        const cvRes = await axios.get(`${apiUrl}/cv-details/${user.userName}`);
+        console.log(cvRes.data.fetchedCv.cvInfo, "fetchedCv");
+
+        const defaultCv = cvRes.data.fetchedCv.cvInfo?.[0]; // first CV if exists
+
+        if (isEdit) {
+          // ✅ existing user → go to edit dashboard
+          navigate("/edit");
+        } else {
+          // ✅ new user → open the first CV in edit mode if available
+          if (defaultCv) {
+            navigate(`/edit/add-group?groupId=${defaultCv.cvInfoId}&edit=true`);
+          } else {
+            // fallback: no CV yet, open create mode
+            navigate("/edit/add-group?edit=false");
+          }
+        }
+
         resetForm();
-        setTimeout(() => {
-          navigate('/edit');
-        }, 1000);
       }
-      // navigate('/profile');
-      // window.location.reload();
       setStep(1);
+
     } catch (err) {
-      // setError(err.response?.data?.message || 'Submission failed');
-      setError('Failed to submit form. Please try again.');
-      setError(false);
+
+      setError(`${err.response.data.error.errorResponse.errmsg}`);
+      // setError(true);
     } finally {
       setSubmitting(false);
     }
@@ -153,7 +165,7 @@ function UserForm() {
   // UI rendering unchanged
   return (
     <Box sx={{
-      bgcolor: '#f5f6f8',
+      bgcolor: theme.palette.background.backgroundColor,
       minHeight: '100vh',
       display: 'flex',
       justifyContent: 'center',
@@ -441,8 +453,8 @@ function UserForm() {
           )}
         </Formik>
 
-        <Snackbar open={!!error} autoHideDuration={4000} onClose={() => setError('')}>
-          <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }}>
+        <Snackbar open={!!error} autoHideDuration={2000} onClose={() => setError(false)}>
+          <Alert severity="error" sx={{ width: '100%' }}>
             {error}
           </Alert>
         </Snackbar>

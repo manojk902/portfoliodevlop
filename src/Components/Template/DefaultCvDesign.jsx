@@ -10,7 +10,7 @@ import {
   Box,
   Chip,
   Divider,
-  Avatar,
+  // Avatar,
   CircularProgress,
   useTheme,
   alpha,
@@ -52,7 +52,7 @@ const DefaultCvDesign = ({ UserDataFromDesignPage }) => {
   // --- 2. State Management ---
   const [cvData, setCvData] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     const fetchCvData = async () => {
       setLoading(true);
@@ -124,16 +124,6 @@ const DefaultCvDesign = ({ UserDataFromDesignPage }) => {
   // Left Column Components
   const PersonalInfo = () => (
     <Box>
-      <Avatar
-        src={cvData.profilePhoto || ""}
-        sx={{
-          width: 150,
-          height: 150,
-          border: `4px solid ${theme.palette.primary.main}`,
-          mx: 'auto',
-          mb: 2
-        }}
-      />
       <Typography variant="h4" fontWeight="bold" gutterBottom align="center">
         {cvData.firstName} {cvData.lastName}
       </Typography>
@@ -408,7 +398,7 @@ const DefaultCvDesign = ({ UserDataFromDesignPage }) => {
         borderRadius: 2,
         background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`
       }}>
-        <Grid container sx={{ display: 'flex' , flexDirection: 'column' }} spacing={4}>
+        <Grid container sx={{ display: 'flex', flexDirection: 'column' }} spacing={4}>
           {/* Left Column */}
           <Grid item xs={12} md={4}>
             <PersonalInfo />
