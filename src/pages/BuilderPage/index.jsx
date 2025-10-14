@@ -1,16 +1,17 @@
 import React, { useState } from "react";
-import { Box, IconButton, Drawer } from "@mui/material";
+import { Box, IconButton, Drawer, useTheme } from "@mui/material";
 import { Menu } from "@mui/icons-material";
 import Sidebar from "../../Components/Sidebar"; 
 import { Outlet } from "react-router-dom";
 
 const BuilderPage = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const theme = useTheme()
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
 
   return (
-    <Box sx={{ display: "flex", height: "89vh", }}>
+    <Box sx={{ display: "flex", bgcolor:theme.palette.background.backgroundColor, height: "89vh", }}>
       {/* Mobile Drawer */}
       <Drawer
         variant="temporary"
@@ -18,19 +19,20 @@ const BuilderPage = () => {
         onClose={handleDrawerToggle}
         ModalProps={{ keepMounted: true }}
         sx={{
+          bgcolor:theme.palette.background.backgroundColor,
           display: { xs: "block", md: "none" },
           "& .MuiDrawer-paper": { boxSizing: "border-box", width: 162 },
         }}
       >
         <Sidebar variant="temporary" onClose={handleDrawerToggle} />
       </Drawer>
-
       {/* Desktop Sidebar */}
       <Box
         sx={{
           display: { xs: "none", md: "block" },
           width: 150, // 0 width so content gets full width
           flexShrink: 0,
+          bgcolor:theme.palette.background.backgroundColor
         }}
       >
         {/* Optional: permanent Sidebar for desktop */}
@@ -38,7 +40,7 @@ const BuilderPage = () => {
       </Box>
 
       {/* Main content */}
-      <Box sx={{ flexGrow: 1, overflow: "auto", p: 2 }}>
+      <Box sx={{ flexGrow: 1, bgcolor:theme.palette.background.backgroundColor, overflow: "auto" }}>
         {/* Mobile menu button */}
         <IconButton
           sx={{ display: { md: "none" }, mb: 1 }}
@@ -46,7 +48,6 @@ const BuilderPage = () => {
         >
           <Menu />
         </IconButton>
-
         <Outlet />
       </Box>
     </Box>

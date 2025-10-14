@@ -524,7 +524,7 @@ const Cv8 = ({ UserDataFromDesignPage }) => {
                       {i <
                         cvData.sections.find((s) => s.name === "Experience")
                           .data.length -
-                          1 && <Divider sx={{ my: 1.5 }} />}
+                        1 && <Divider sx={{ my: 1.5 }} />}
                     </Box>
                   ))}
               </Box>
@@ -603,7 +603,7 @@ const Cv8 = ({ UserDataFromDesignPage }) => {
                       {i <
                         cvData.sections.find((s) => s.name === "Project").data
                           .length -
-                          1 && <Divider sx={{ my: 1.5 }} />}
+                        1 && <Divider sx={{ my: 1.5 }} />}
                     </Box>
                   ))}
               </Box>

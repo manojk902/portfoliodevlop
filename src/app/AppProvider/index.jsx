@@ -1,6 +1,6 @@
 // src/app/AppProvider.jsx
 import React, { useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../Components/Layout/Header';
 import AppRoutes from '../../routes/AppRoutes'; // Correct path
@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import { setSelectedTemplate } from '../../store/features/resume/resumeSlice';
 
 const AppProvider = ({ mode, setMode }) => {
+  const theme = useTheme();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   // const selectedTemplateId = useSelector((state) => state.resume.selectedTemplateId);
   const dispatch = useDispatch();
@@ -34,15 +35,15 @@ const AppProvider = ({ mode, setMode }) => {
   return (
     <Box sx={{
       fontFamily: 'Inter, sans-serif',
-      backgroundColor: 'customColors.grayBg',
       minHeight: '100vh',
       position: 'relative',
+      bgcolor:theme.palette.background.backgroundColor,
+      // bgcolor:theme.palette.background.backgroundColor
     }}>
       <Header onNavigate={navigate} mode={mode}
         setMode={setMode} onToggleSidebar={toggleSidebar} />
       <AppRoutes
         navigate={navigate}
-        // selectedTemplateId={selectedTemplateId}
         isSidebarOpen={isSidebarOpen}
       />
     </Box>

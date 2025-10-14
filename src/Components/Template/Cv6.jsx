@@ -232,9 +232,12 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
                     </Box>
 
                     <Box>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
+                      {exp.endDate ? (<Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
                         {exp.startDate} - {exp.endDate}
-                      </Typography>
+                      </Typography>) : (<Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
+                        Present
+                      </Typography>)}
+                      
                       <Typography sx={{ fontWeight: 600, textAlign: "end" }} variant="body2" color="text.secondary">
                         {exp.location}
                       </Typography>
@@ -292,9 +295,11 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
                   </Box>
 
                   <Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
+                    {edu.endDate ? (<Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
                       {edu.startDate} - {edu.endDate}
-                    </Typography>
+                    </Typography>) : (<Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
+                      Present
+                    </Typography>)}
                     <Typography sx={{ fontWeight: 600, textAlign: "end" }} variant="body2" color="text.secondary">
                       {edu.location}
                     </Typography>

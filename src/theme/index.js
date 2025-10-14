@@ -26,17 +26,39 @@ export const getTheme = (mode) => {
       cardBgColor: mode === "dark" ? '#1F2937' : '#FFFFFF',
       borderColor: mode === "dark" ? '#374151' : '#E5E7EB',
       textColor: mode === "dark" ? '#F9FAFB' : '#1F2937',
-      primary: { main: "#1976d2" },
-      secondary: { main: "#6c757d" },
-      success: { main: "#198754" },
-      info: { main: "#0dcaf0" },
-      warning: { main: "#ffc107" },
-      error: { main: "#dc3545" },
-      light: { main: "#f8f9fa" },
-      dark: { main: "#938f38ff" },
-      background: {
-       backgroundColor:  mode === 'light' ? "#f3f4f692" : "#1a181881",
+
+      primary: {
+        main: mode === "dark" ? "#64B5F6" : "#1565C0",   // richer blue, better contrast
       },
+      secondary: {
+        main: mode === "dark" ? "#9CA3AF" : "#6C757D",   // neutral grey for secondary buttons
+      },
+      success: {
+        main: mode === "dark" ? "#34D399" : "#1B9C85",   // teal-green instead of plain green
+      },
+      info: {
+        main: mode === "dark" ? "#38BDF8" : "#0DCAF0",   // soft blue info tone
+      },
+      warning: {
+        main: mode === "dark" ? "#FACC15" : "#FFC107",   // warning yellow
+      },
+      error: {
+        main: mode === "dark" ? "#F87171" : "#DC3545",   // red error tone
+      },
+      light: {
+        main: "#F8F9FA",
+      },
+      dark: {
+        main: "#0F172A",   // refined deep navy instead of muddy olive
+      },
+      background: {
+        default: mode === "light" ? "#F5F7FA" : "#1A1C1F",  // smoother background tone
+        paper: mode === "light" ? "#FFFFFF" : "#1F2937",
+        backgroundColor: mode === "light" ? "#F3F4F6" : "#111827",
+      },
+      divider: mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+      hoverColor: mode === "light" ? "rgba(25,118,210,0.08)" : "rgba(100,181,246,0.15)",
+
       text: {
         primary: mode === 'light' ? "#111827" : "#F3F4F6",
         // dark: mode === 'light' ? "#111827" : "#6610f2"
@@ -67,14 +89,14 @@ export const getTheme = (mode) => {
             boxShadow:
               theme.palette.mode === "light"
                 ? "0 4px 12px rgba(0, 0, 0, 0.08)" // soft subtle light mode
-                : "0 4px 12px rgba(102, 16, 242, 0.25), 0 0 20px rgba(102, 16, 242, 0.15)", // purple glow in dark
+                : "0 4px 12px rgba(169, 149, 200, 0.25), 0 0 20px rgba(148, 130, 177, 0.15)", // purple glow in dark
 
             "&:hover": {
               boxShadow:
                 theme.palette.mode === "light"
                   ? "0 6px 16px rgba(0, 0, 0, 0.12)" // slightly stronger hover in light
-                  : "0 6px 16px rgba(102, 16, 242, 0.35), 0 0 25px rgba(102, 16, 242, 0.25)", // stronger purple glow
-              transform: "translateY(-3px)", // smooth lift on hover
+                  : "0 6px 16px rgba(178, 170, 190, 0.45), 0 0 25px rgba(195, 183, 215, 0.25)", // stronger purple glow
+              transform: "translateY(-3px)", // smooth lift on ho`ver
               // transition: "all 0.3s ease-in-out",
             },
 

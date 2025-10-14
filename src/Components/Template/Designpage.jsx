@@ -49,15 +49,11 @@ function DesignPage() {
     const fetchDefaultCv = async () => {
       try {
         const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
-        // setRes(res);
-        console.log(
-          res, "👈 Response from fetchDefaultCv API"
-        );
-        
+        // setRes(res);    
         const templateName = res.data?.fetchedCvInfo?.templateName;
         setCvInfoId(res.data?.fetchedCvInfo?.cvInfoId);
         // setCvTemp(res.data?.fetchedCvInfo?.cvInfoId);
-        console.log("📌 Fetched Default CV Template:", templateName);
+        // console.log("📌 Fetched Default CV Template:", templateName);
         if (templateName) {
           setDefaultTemplate(templateName);
           // localStorage.setItem("defaultCvTemplate", templateName);
@@ -83,7 +79,6 @@ function DesignPage() {
       });
 
       setDefaultTemplate(templateName);
-      // localStorage.setItem("defaultCvTemplate", templateName);
       setShowSnackbar(true);
     } catch (error) {
       console.error("❌ Error setting default CV:", error);
@@ -108,23 +103,21 @@ function DesignPage() {
   ];
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        py: 4,
-        background: "linear-gradient(to bottom, #f0f4f8, #e6edf5)",
-      }}
-    >
-      <Container maxWidth="xl" sx={{ px: isMobile ? 1 : 3 }}>
+    <Box sx={{ bgcolor: theme.palette.background.backgroundColor }}>
+      <Grid maxWidth="xl" sx={{
+        px: isMobile ? 1 : 3,
+        bgcolor: theme.palette.background.backgroundColor
+      }}>
         {/* Heading */}
-        <Box textAlign="center" mb={5}>
+        <Box textAlign="center" mb={1}>
           <Typography
             variant="h3"
             sx={{
               fontWeight: 800,
-              color: "#1a202c",
+              color: theme.palette.textColor.main,
               letterSpacing: "-0.5px",
               mb: 1,
+              pt: 6,
               fontSize: isMobile ? "2rem" : "3rem",
             }}
           >
@@ -133,14 +126,14 @@ function DesignPage() {
           <Typography
             variant="subtitle1"
             sx={{
-              color: "#4a5568",
+              color: theme.palette.subtextColor,
               fontSize: isMobile ? "0.9rem" : "1.1rem",
-              maxWidth: 600,
+              maxWidth: "100%",
+              mb: 4,
               mx: "auto",
             }}
           >
-            Select a professionally designed template to showcase your skills
-            and experience
+            Select a professionally designed template to showcase your skills and experience
           </Typography>
         </Box>
 
@@ -150,7 +143,7 @@ function DesignPage() {
             display: "flex",
             justifyContent: "center",
             mb: 5,
-            borderBottom: "1px solid #e2e8f0",
+            borderBottom: theme.palette.borderColor,
             mx: isMobile ? 0 : 4,
           }}
         >
@@ -190,14 +183,15 @@ function DesignPage() {
               <Grid item key={id} xs={12} sm={6} md={4} lg={0}>
                 <Card
                   sx={{
+                    width: { xs: "100%", lg: "400px" },
                     position: "relative",
                     height: "560px",
-                    width: "400px",
+                    zIndex: 0,
                     display: "flex",
                     flexDirection: "column",
-                    borderRadius: 3,
+                    borderRadius: 2,
                     overflow: "hidden",
-                    background: "#fff",
+                    // background: theme.palette.background,
                     boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
                     transition: "all 0.3s ease",
                     "&:hover": {
@@ -209,20 +203,24 @@ function DesignPage() {
 
                   {/* Default Label */}
                   {isDefault && (
-                    <Chip
-                      icon={<CheckCircleIcon />}
-                      label="Selected"
-                      size="small"
+                    <CheckCircleIcon
                       sx={{
                         position: "absolute",
                         top: 10,
                         right: 10,
-                        background:
-                          "linear-gradient(to right, #4c6fff, #7e5cff)",
-                        color: "white",
+                        width: 28,
+                        height: 28,
+                        borderRadius: 10,
+                        background: theme.palette.borderColor,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: theme.palette.textColor,
+                        fontSize: "0.8rem",
                         fontWeight: 600,
                       }}
-                    />
+                    >
+                    </CheckCircleIcon>
                   )}
 
                   {/* Index Badge */}
@@ -233,12 +231,12 @@ function DesignPage() {
                       left: 10,
                       width: 28,
                       height: 28,
-                      borderRadius: "50%",
-                      background: "linear-gradient(to right, #4c6fff, #7e5cff)",
+                      borderRadius: 10,
+                      background: theme.palette.borderColor,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "white",
+                      color: theme.palette.textColor,
                       fontSize: "0.8rem",
                       fontWeight: 600,
                     }}
@@ -249,7 +247,7 @@ function DesignPage() {
                   {/* Thumbnail */}
                   <Box
                     sx={{
-                      background: "#f8fafc",
+                      // background: "#f8fafc",
                       minHeight: 350,
                       display: "flex",
                       justifyContent: "center",
@@ -262,7 +260,7 @@ function DesignPage() {
                   >
                     <Box
                       sx={{
-                        transform: "scale(0.28)",
+                        transform: "scale(0.3)",
                         transformOrigin: "top center",
                         pointerEvents: "none",
                         width: "900px",
@@ -280,46 +278,79 @@ function DesignPage() {
                     >
                       {name}
                     </Typography>
+                    <Box sx={
+                      {
+                        gap: 1,
+                        display: "flex",
+                        // justifyContent:"space-between"
+                      }
+                    }>
+                      <Box width={"50%"}>
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          color={theme.palette.warning.main}
+                          disableElevation
+                          sx={{
+                            borderRadius: 2,
+                            fontWeight: 700,
+                            color: theme.palette.success.main,
+                            mb: 1,
+                          }}
+                          onClick={() => handlePreviewOpen(id)}
+                        >
+                          Preview
+                        </Button>
+                      </Box>
 
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      disableElevation
-                      sx={{
-                        fontWeight: 700,
-                        background:
-                          "linear-gradient(to right, #4c6fff, #7e5cff)",
-                        mb: 1,
-                      }}
-                      onClick={() => handlePreviewOpen(id)}
-                    >
-                      Preview
-                    </Button>
+                      <Box width={"50%"}>
+                        {isDefault ? (
+                          <Button
+                            fullWidth
+                            variant="contained"
+                            sx={
+                              {
+                                borderRadius: 2,
+                                boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+                                background: theme.palette.success.main,
+                                color: "white"
+                              }
+                            }
+                            startIcon={<CheckCircleIcon />}
+                          >
+                            Selected
+                          </Button>
+                        ) : (
+                          <Button
+                            fullWidth
+                            variant="contained"
+                            sx={
+                              {
+                                borderRadius: 2,
+                                boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+                                background: theme.palette.success.main,
+                                color: "white"
 
-                    {isDefault ? (
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        startIcon={<CheckCircleIcon />}
-                      >
-                        Selected
-                      </Button>
-                    ) : (
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        onClick={() => handleSetDefault(name)}
-                      >
-                        Publish This
-                      </Button>
-                    )}
+                              }
+                            }
+                            onClick={() => handleSetDefault(name)}
+                          >
+                            Publish
+                          </Button>
+                        )}
+                      </Box>
+
+                    </Box>
+
+
+
                   </Box>
                 </Card>
               </Grid>
             );
           })}
         </Grid>
-      </Container>
+      </Grid>
 
       {/* Snackbar */}
       <Snackbar

@@ -19,7 +19,7 @@ function Root() {
             <motion.div
               initial={false} // prevent re-init on toggle
               animate={{
-                backgroundColor:  mode === 'light' ? "#f3f4f692" : "#1a181881",
+                backgroundColor:  mode === 'light' ? "#f3f4f692" : "#151615bd",
                 color: mode === "light" ? "#000000" : "#ffffff",
               }}
               transition={{

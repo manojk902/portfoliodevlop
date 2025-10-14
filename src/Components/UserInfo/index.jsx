@@ -8,7 +8,9 @@ import {
   Button,
   IconButton,
   Grid,
-  Skeleton
+  Skeleton,
+  Fab,
+  Tooltip
 } from "@mui/material";
 import { Edit, Delete, Add } from "@mui/icons-material";
 import axios from "axios";
@@ -37,7 +39,13 @@ function UserInfo() {
     try {
       setLoading(true);
       const response = await axios.get(`${apiUrl}/cv-details/${username}`);
-      setUsers(response.data.fetchedCv.cvInfo || []);
+      const cvInfo = response.data.fetchedCv.cvInfo || [];
+      // for sorting latest first``
+      const sorted = cvInfo.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      )
+      setUsers(sorted);
+      // setUsers(response.data.fetchedCv.cvInfo || []);
       setUserId(response.data.fetchedCv.userId);
       setDefaultUser(response.data.fetchedCv.templateInfo || {});
     } catch (error) {
@@ -94,11 +102,43 @@ function UserInfo() {
   };
 
   return (
-    <Box sx={{ py: 3, pr: { xs: 1, sm: 2, md: 3, lg: 4 }, pl: { xs: 1, sm: 2, md: 3, lg: 4 }, }}>
+    <Box sx={{
+      py: 3, pr: { xs: 1, sm: 2, md: 3, lg: 4 }, pl: { xs: 1, sm: 2, md: 3, lg: 4 },
+    }}>
       {/* <UserBreadcrumb current={groupId ? 'Edit' : 'Add'} /> */}
+      <Box
+        sx={{
+          position: "relative",
+        }}
+      >
+        {/* Floating Add Button */}
+        <Tooltip title="Add New">
+          <Fab
+            color="primary"
+            aria-label="add"
+            onClick={handleAddNew}
+            sx={{
+              position: "fixed",
+              bottom: { xs: 16, sm: 24 },
+              right: { xs: 16, sm: 24 },
+              zIndex: 1200,
+              boxShadow: 4,
+              transition: "transform 0.2s ease",
+              "&:hover": {
+                transform: "scale(1.1)",
+              },
+            }}
+          >
+            <Add />
+          </Fab>
+        </Tooltip>
+
+      </Box>
+
       <Grid sx={{
         flexDirection: { xs: "column", sm: "column", md: "row", lg: "row" },
-        justifyContent: { md: "center", },
+        gap: 4,
+        justifyContent: { md: "flex-start", },
         // flexWrap: "wrap", // ✅ allow wrapping
 
       }} container spacing={2}>
@@ -131,6 +171,31 @@ function UserInfo() {
           ))
         ) : (
           <>
+            {/* Add New card */}
+            <Grid item xs={12} sm={6} md={6}>
+              <Card
+                sx={{
+                  p: 2,
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  border: "2px dashed #aaa",
+                  // width: { xs: "88%", s  m: 400, md: 600 },
+                  width: { xs: "88%", sm: 400, md: 250, lg: 290, xl: 300 },
+                  mx: { xs: "auto", sm: "0" },
+                }}
+                onClick={handleAddNew}
+              >
+                <CardContent sx={{ textAlign: "center" }}>
+                  <Add sx={{ fontSize: 40, color: "primary.main" }} />
+                  <Typography variant="body1" color="primary">
+                    Add Group / Add Info
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
             {users.map((user) => {
               const key = user.cvInfoId ?? userid;
               const isDefault = defaultUser?.cvInfoId === user.cvInfoId;
@@ -224,31 +289,7 @@ function UserInfo() {
               );
             })}
 
-            {/* Add New card */}
-            <Grid item xs={12} sm={6} md={6}>
-              <Card
-                sx={{
-                  p: 2,
-                  height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  border: "2px dashed #aaa",
-                  // width: { xs: "88%", s  m: 400, md: 600 },
-                  width: { xs: "88%", sm: 400, md: 250, lg: 290, xl: 300 },
-                  mx: { xs: "auto", sm: "0" },
-                }}
-                onClick={handleAddNew}
-              >
-                <CardContent sx={{ textAlign: "center" }}>
-                  <Add sx={{ fontSize: 40, color: "primary.main" }} />
-                  <Typography variant="body1" color="primary">
-                    Add Group / Add Info
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+
           </>
         )}
       </Grid>
