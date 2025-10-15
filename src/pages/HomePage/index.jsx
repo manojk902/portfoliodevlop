@@ -33,7 +33,7 @@ const HomePage = ({ mode }) => {
   const [loading, setLoading] = useState(true);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   // console.log(users,"ppp");
-  
+
   const theme = useTheme();
 
   // 🔹 Debounce search input
@@ -54,7 +54,7 @@ const HomePage = ({ mode }) => {
         } else {
           response = await axios.get(`${apiUrl}/search-user?q=${debouncedSearch}`);
           // console.log(response,"pppppp;p;");
-          
+
         }
         setUsers(response?.data?.data || response?.data || []);
       } catch (error) {
@@ -68,15 +68,9 @@ const HomePage = ({ mode }) => {
   }, [debouncedSearch]);
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 } }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 }, height: "calc(100vh - 80px)" }}>
       <Box sx={{ textAlign: 'center', mb: 6 }}>
-        <Typography
-          variant="h3"
-          component="h1"
-          sx={{ fontWeight: 'bold', color: 'primary.main', mb: 2, fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' } }}
-        >
-          User Directory
-        </Typography>
+        {/*   */}
 
         {/* 🔍 Search Section */}
         <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 2 }}>

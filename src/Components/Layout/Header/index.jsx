@@ -138,8 +138,8 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
     // You would typically save this to localStorage
   };
   return (
-    <Grid>
-      <AppBar position="relative" sx={{ bgcolor: theme.palette.background.backgroundColor,zIndex:1, boxShadow: 1, py: { xs: 0.5, sm: 1 } }}>
+    <Grid sx={{height:"10vh"}}>
+      <AppBar position="relative" sx={{height:"10vh",bgcolor: theme.palette.background.backgroundColor,zIndex:1, boxShadow: 1, py: { xs: 0.5, sm: 1 } ,}}>
         <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3, md: 4 } }}>
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '90%' }}>
