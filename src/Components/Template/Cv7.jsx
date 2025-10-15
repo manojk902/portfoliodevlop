@@ -28,7 +28,7 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
 
   // --- 2. State Management ---
   const [cvData, setCvData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
 
   // SIMPLE PRINT FUNCTION - NO RELOAD
   const handlePrint = () => {
@@ -41,7 +41,7 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
 
   useEffect(() => {
     const fetchCvData = async () => {
-      setLoading(true);
+      // setLoading(true);
       let usernameToFetch = null;
       let isDifferentUser =
         username && userNameRedux && username !== userNameRedux;
@@ -66,7 +66,7 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
       } else {
         setCvData(null);
       }
-      setLoading(false);
+      // setLoading(false);
     };
 
     fetchCvData();
