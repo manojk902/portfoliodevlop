@@ -23,7 +23,7 @@ const Sidebar = ({ variant = "permanent", onClose }) => {
         // bgcolor: theme.palette.background.backgroundColor,
         boxShadow: theme.palette.borderColor ? `2px 0 5px -2px ${theme.palette.borderColor}` : 'none',
         color: theme.palette.textColor,
-        bgcolor:theme.palette.background.backgroundColor,
+        bgcolor: theme.palette.background.backgroundColor,
         height: "100%",
         p: 1,
       }}
@@ -38,7 +38,7 @@ const Sidebar = ({ variant = "permanent", onClose }) => {
               py: 0.5,
               bgcolor: location.pathname.startsWith("/edit") ? theme.palette.background.light : "transparent",
               color: location.pathname.startsWith("/edit") ? theme.palette.primary.main : theme.palette.textColor,
-              "&:hover": { bgcolor: theme.palette.background.hover },
+              "&:hover": { bgcolor: theme.palette.background.backgroundColor },
             }}
           >
             <ListItemText primary="CV" primaryTypographyProps={{ fontSize: "1rem", fontWeight: 500 }} />
@@ -55,7 +55,7 @@ const Sidebar = ({ variant = "permanent", onClose }) => {
                   bgcolor: location.pathname === item.path ? "#1976d2" : "transparent",
                   color: location.pathname === item.path ? theme.palette.textColor : theme.palette.textColor,
                   "&:hover": {
-                    bgcolor: location.pathname === item.path ? "#1565c0" : "#444",
+                    bgcolor: location.pathname === item.path ? "#1565c0" : "#d9caca8f",
                   },
                 }}
               >

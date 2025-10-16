@@ -166,8 +166,9 @@ function UserForm() {
   return (
     <Box sx={{
       bgcolor: theme.palette.background.backgroundColor,
-      minHeight: '100vh',
+      // minHeight: '100vh',
       display: 'flex',
+
       justifyContent: 'center',
       p: { xs: 2, sm: 4 }
     }}>

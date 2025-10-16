@@ -13,7 +13,8 @@ import {
   Avatar,
   Button,
   Skeleton,
-  MenuItem
+  MenuItem,
+  Tooltip
 } from '@mui/material';
 import {
   Phone,
@@ -199,15 +200,21 @@ const HomePage = ({ mode }) => {
 
                     <Box sx={{ mt: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <Phone sx={{ fontSize: '1rem', mr: 1, color: 'text.primary' }} />
+                        <Tooltip title="Phone">
+                          <Phone sx={{ fontSize: '1rem', mr: 1, color: 'text.primary' }} />
+                        </Tooltip>
                         <Typography variant="body2" color="text.primary" noWrap>{user.phoneNo}</Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <Email sx={{ fontSize: '1rem', mr: 1, color: 'text.primary' }} />
+                        <Tooltip title="Email">
+                          <Email sx={{ fontSize: '1rem', mr: 1, color: 'text.primary' }} />
+                        </Tooltip>
                         <Typography variant="body2" color="text.primary" noWrap>{user.email}</Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <LocationOnIcon sx={{ fontSize: '1rem', mr: 1, color: 'text.primary' }} />
+                        <Tooltip title="Location">
+                          <LocationOnIcon sx={{ fontSize: '1rem', mr: 1, color: 'text.primary' }} />
+                        </Tooltip>
                         <Typography variant="body2" color="text.primary" noWrap>
                           {user.city}, {user.state}, {user.country}
                         </Typography>

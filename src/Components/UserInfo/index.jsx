@@ -112,7 +112,7 @@ function UserInfo() {
         }}
       >
         {/* Floating Add Button */}
-        <Tooltip title="Add New">
+        <Tooltip title=" Add New Info">
           <Fab
             color="primary"
             aria-label="add"
@@ -191,7 +191,7 @@ function UserInfo() {
                 <CardContent sx={{ textAlign: "center" }}>
                   <Add sx={{ fontSize: 40, color: "primary.main" }} />
                   <Typography variant="body1" color="primary">
-                    Add Group / Add Info
+                    Add New Info
                   </Typography>
                 </CardContent>
               </Card>
@@ -247,13 +247,16 @@ function UserInfo() {
                           justifyContent: "space-between",
                         }}
                       >
-                        <IconButton
-                          color="primary"
-                          size="small"
-                          onClick={() => handleEdit(user.cvInfoId)}
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
+                        <Tooltip title="Edit">
+                          <IconButton
+                            color="primary"
+                            size="small"
+                            onClick={() => handleEdit(user.cvInfoId)}
+                          >
+                            <Edit fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+
                         <Box>
                           <Button
                             variant={isDefault ? "contained" : "outlined"}
@@ -270,14 +273,17 @@ function UserInfo() {
                           </Button>
 
                           {users.length > 1 && !isDefault && (
-                            <IconButton
-                              color="error"
-                              size="small"
-                              onClick={() => handleDelete(userid, user.cvInfoId)}
-                              disabled={deletingCvId === user.cvInfoId}
-                            >
-                              <Delete fontSize="small" />
-                            </IconButton>
+
+                            <Tooltip title="Delete">
+                              <IconButton
+                                color="error"
+                                size="small"
+                                onClick={() => handleDelete(userid, user.cvInfoId)}
+                                disabled={deletingCvId === user.cvInfoId}
+                              >
+                                <Delete fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
                           )}
                         </Box>
 

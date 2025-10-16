@@ -3,18 +3,19 @@ import {
   Box,
   Typography,
   Avatar,
-  IconButton,
+  // IconButton,
   Grid,
   Button,
   Stack,
   Skeleton,
   useTheme,
+  Tooltip,
 } from '@mui/material';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+// import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
-import ShareIcon from '@mui/icons-material/Share';
+// import UploadFileIcon from '@mui/icons-material/UploadFile';
+// import ShareIcon from '@mui/icons-material/Share';
 import CakeIcon from '@mui/icons-material/Cake';
 import PersonIcon from '@mui/icons-material/Person';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -218,27 +219,6 @@ function ProfilePage() {
                 alt="Cover photo"
               />
               <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <IconButton
-                  // onClick={toggleTheme}
-                  sx={{
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(4px)',
-                    color: 'white',
-                    '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.3)' },
-                  }}
-                >
-                  {/* {isDarkMode ? <WbSunnyIcon /> : <NightlightIcon />} */}
-                </IconButton>
-                <IconButton
-                  sx={{
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(4px)',
-                    color: 'white',
-                    '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.3)' },
-                  }}
-                >
-                  <MoreHorizIcon />
-                </IconButton>
               </Box>
             </Box>
 
@@ -261,7 +241,11 @@ function ProfilePage() {
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', pt: 1 }}>
                 <Stack direction="row" spacing={1}>
                   <Button
-                    startIcon={<EditIcon sx={{ fontSize: '1rem' }} />}
+                    startIcon={
+                      <Tooltip title="Edit Profile">
+                        <EditIcon sx={{ fontSize: '1rem' }} />
+                      </Tooltip>
+                    }
                     onClick={editProfile}
                     sx={{
                       bgcolor: `${theme.palette.primary.main}1A`,
@@ -278,7 +262,11 @@ function ProfilePage() {
                     Edit Profile
                   </Button>
                   <Button
-                    startIcon={<AddIcon sx={{ fontSize: '1rem' }} />}
+                    startIcon={
+                      <Tooltip title="Create Cv">
+                        <AddIcon sx={{ fontSize: '1rem' }} />
+                      </Tooltip>
+                    }
                     onClick={handleCVAction}
                     sx={{
                       bgcolor: theme.palette.primary.main,
@@ -373,7 +361,7 @@ function ProfilePage() {
               {/* Bottom Buttons */}
               <Box sx={{ mt: 4, pt: 3, borderTop: `1px solid ${theme.palette.borderColor}` }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <Button
+                  {/* <Button
                     startIcon={<UploadFileIcon />}
                     sx={{
                       bgcolor: `${theme.palette.primary.main}1A`,
@@ -388,8 +376,8 @@ function ProfilePage() {
                     }}
                   >
                     Update CV
-                  </Button>
-                  <Button
+                  </Button> */}
+                  {/* <Button
                     startIcon={<ShareIcon />}
                     sx={{
                       bgcolor: `${theme.palette.primary.main}1A`,
@@ -404,7 +392,7 @@ function ProfilePage() {
                     }}
                   >
                     Share Profile
-                  </Button>
+                  </Button> */}
                 </Stack>
               </Box>
             </Box>

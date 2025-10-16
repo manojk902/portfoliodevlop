@@ -3,7 +3,7 @@
 // src/components/Layout/Header/index.jsx
 // This component renders the top application bar with navigation and sidebar toggle.
 import { useEffect, useState } from 'react';
-import { AppBar, Toolbar, Snackbar, Alert, Button, IconButton, Box, Skeleton, useMediaQuery, useTheme, Grid, DialogContent, Dialog, DialogTitle, DialogContentText, DialogActions } from '@mui/material';
+import { AppBar, Toolbar, Snackbar, Alert, Button, IconButton, Box, Skeleton, useMediaQuery, useTheme, Grid, DialogContent, Dialog, DialogTitle, DialogContentText, DialogActions, Tooltip } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu'; // Hamburger icon for sidebar toggle
 import DescriptionIcon from '@mui/icons-material/Description'; // Icon for "Resume Now." logo
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'; // Import useNavigate hook
@@ -138,8 +138,8 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
     // You would typically save this to localStorage
   };
   return (
-    <Grid sx={{height:"10vh"}}>
-      <AppBar position="relative" sx={{height:"10vh",bgcolor: theme.palette.background.backgroundColor,zIndex:1, boxShadow: 1, py: { xs: 0.5, sm: 1 } ,}}>
+    <Grid sx={{ height: "10vh" }}>
+      <AppBar position="relative" sx={{ height: "10vh", bgcolor: theme.palette.background.backgroundColor, zIndex: 1, boxShadow: 1, py: { xs: 0.5, sm: 1 }, }}>
         <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3, md: 4 } }}>
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '90%' }}>
@@ -195,9 +195,11 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
               {/* Right side: navigation buttons and user actions */}
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1, alignItems: 'center' }}>
-                  <IconButton onClick={toggleTheme} sx={{ color: theme.palette.text.primary }}>
-                    {mode === 'light' ? <NightlightIcon /> : <WbSunnyIcon />}
-                  </IconButton>
+                  <Tooltip title={mode === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"} arrow>
+                    <IconButton onClick={toggleTheme} sx={{ color: theme.palette.text.primary }}>
+                      {mode === "light" ? <NightlightIcon /> : <WbSunnyIcon />}
+                    </IconButton>
+                  </Tooltip>
                   <Button
                     onClick={() => handleNavigationClick('/')}
                     variant="text"
