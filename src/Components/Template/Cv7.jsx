@@ -119,50 +119,50 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
             {letters.map((letter, index) => (
               <Typography
                 key={index}
-                variant="h2"
-                component="span"
+                variant="p"
+                // component="span"
                 sx={{
-                  fontSize: { xs: "0.9rem", sm: "2.5rem" },
+                  fontSize: { xs: "0.1rem", sm: "2.5rem" },
                   fontWeight: 400,
                   display: "inline-block",
                   animation: `fadeInOut 2s ease-in-out infinite`,
                   animationDelay: `${index * 0.12}s`,
                   color:
                     index === 0
-                      ? "#4285F4" // P - blue
+                      ? " #1a237e" // P - blue
                       : index === 1
-                      ? "#EA4335" // o - red
+                      ? " #1a237e" // o - red
                       : index === 2
-                      ? "#FBBC05" // r - yellow
+                      ? "#1a237e" // r - yellow
                       : index === 3
-                      ? "#4285F4" // t - blue
+                      ? "#1a237e" // t - blue
                       : index === 4
-                      ? "#34A853" // f - green
+                      ? "#1a237e" // f - green
                       : index === 5
-                      ? "#EA4335" // o - red
+                      ? "#1a237e" // o - red
                       : index === 6
-                      ? "#FBBC05" // l - yellow
+                      ? "#1a237e" // l - yellow
                       : index === 7
-                      ? "#4285F4" // i - blue
+                      ? "#1a237e" // i - blue
                       : index === 8
-                      ? "#34A853" // o - green
+                      ? "#1a237e" // o - green
                       : index === 9
-                      ? "#5f6368" // . - gray
+                      ? "#1a237e" // . - gray
                       : index === 10
-                      ? "#4285F4" // D - blue
+                      ? "#1a237e" // D - blue
                       : index === 11
-                      ? "#EA4335" // r - red
+                      ? "#1a237e" // r - red
                       : index === 12
-                      ? "#FBBC05" // i - yellow
+                      ? "#1a237e" // i - yellow
                       : index === 13
-                      ? "#34A853" // v - green
+                      ? "#1a237e" // v - green
                       : index === 14
-                      ? "#EA4335" // e - red
+                      ? "#1a237e" // e - red
                       : index === 15
-                      ? "#4285F4" // O - blue
+                      ? "#1a237e" // O - blue
                       : index === 16
-                      ? "#FBBC05" // S - yellow
-                      : "#34A853", // x - green
+                      ? "#1a237e" // S - yellow
+                      : "#1a237e", // x - green
                 }}
               >
                 {letter}
@@ -454,45 +454,15 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
     );
   };
 
-  // CV Content - Single source for both screen and print
+  // CV Content - Smart page distribution
   const CVContent = () => {
-    // Check if sections have data
-    const hasProfessionalSummary = cvData.sections?.find(
-      (s) => s.name === "Summary"
-    )?.data;
-    const hasExperience =
-      cvData.sections?.find((s) => s.name === "Experience")?.data?.length > 0;
-    const hasAchievements =
-      cvData.sections?.find((s) => s.name === "Achievement")?.data?.length > 0;
-    const hasInterests =
-      cvData.sections?.find((s) => s.name === "Interest")?.data?.length > 0;
-
-    const hasEducation =
-      cvData.sections?.find((s) => s.name === "Education")?.data?.length > 0;
-    const hasProjects =
-      cvData.sections?.find((s) => s.name === "Project")?.data?.length > 0;
-    const hasCertifications =
-      cvData.sections?.find((s) => s.name === "Certification")?.data?.length >
-      0;
-
-    const hasSkills =
-      cvData.sections?.find((s) => s.name === "Skill")?.data?.length > 0;
-    const hasLanguages =
-      cvData.sections?.find((s) => s.name === "Language")?.data?.length > 0;
-    const hasAwards =
-      cvData.sections?.find((s) => s.name === "Award")?.data?.length > 0;
-
-    // Check which pages should be displayed
-    const shouldShowPage2 = hasEducation || hasProjects || hasCertifications;
-    const shouldShowPage3 = hasSkills || hasLanguages || hasAwards;
-
     return (
       <div className="cv-container" ref={componentRef}>
-        {/* Page 1 - Always show (basic info is always there) */}
+        {/* Page 1 - Fixed structure */}
         <div className="cv-page page-1">
           <div className="page-label no-print">Page 1</div>
 
-          {/* Personal Info Header */}
+          {/* Personal Info Header - Always on Page 1 */}
           <div className="personal-info">
             <h1 className="name">
               {cvData.firstName} {cvData.lastName}
@@ -516,38 +486,30 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
             )}
           </div>
 
-          {/* Conditional sections for Page 1 */}
-          {hasProfessionalSummary && <ProfessionalSummary />}
-          {hasExperience && <ExperienceSection />}
-          {hasAchievements && <AchievementSection />}
-          {hasInterests && <InterestSection />}
-          {hasLanguages && <LanguageSection />}
+          {/* Professional Summary - Always on Page 1 */}
+          <ProfessionalSummary />
+
+          {/* Experience Section - Starts on Page 1, continues if needed */}
+          <ExperienceSection />
         </div>
 
-        {/* Page 2 - Only show if has data */}
-        {shouldShowPage2 && (
-          <div className="cv-page page-2">
-            <div className="page-label no-print">Page 2</div>
-            {hasEducation && <EducationSection />}
-            {hasProjects && <ProjectsSection />}
-            {hasCertifications && <CertificationsSection />}
-          </div>
-        )}
+        {/* Page 2 - Education, Projects, Certifications */}
+        <div className="cv-page page-2">
+          <div className="page-label no-print">Page 2</div>
+          <EducationSection />
+          <ProjectsSection />
+          <CertificationsSection />
+        </div>
 
-        {/* Page 3 - Only show if has data */}
-        {shouldShowPage3 && (
-          <div className="cv-page page-3">
-            <div className="page-label no-print">Page 3</div>
-            <div className="page-content">
-              <div className="left-column">
-                {hasSkills && <SkillsSection />}
-              </div>
-              <div className="right-column">
-                {hasAwards && <AwardSection />}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Page 3 - Single Column Layout like Page 1 and Page 2 */}
+        <div className="cv-page page-3">
+          <div className="page-label no-print">Page 3</div>
+          <SkillsSection />
+          <LanguageSection />
+          <AwardSection />
+          <AchievementSection />
+          <InterestSection />
+        </div>
       </div>
     );
   };
@@ -578,6 +540,7 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
         .cv-container {
           width: 100%;
           max-width: 210mm;
+          padding: 0 auto;
           margin: 0 auto;
           background: white;
           position: relative;
@@ -597,6 +560,7 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
           margin-bottom: 20px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
           display: block;
+          overflow: hidden;
         }
 
         .cv-container {
@@ -661,21 +625,9 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
           word-break: break-all;
         }
 
-        /* Page 3 Layout */
+        /* Single Column Layout for all pages */
         .page-content {
-          display: flex;
-          gap: 20px;
-          margin-top: 10px;
-        }
-
-        .left-column {
-          flex: 1;
-          max-width: 48%;
-        }
-
-        .right-column {
-          flex: 1;
-          max-width: 48%;
+          display: block;
         }
 
         .section-title {
@@ -929,6 +881,7 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
             page-break-inside: avoid !important;
             position: relative !important;
             display: block !important;
+            overflow: hidden !important;
           }
 
           /* Last page should not have page break after */
@@ -946,16 +899,21 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
             break-inside: avoid !important;
           }
 
-          /* Page 3 Layout for Print */
-          .page-content {
-            display: flex !important;
-            gap: 20px !important;
+          /* Smart content distribution */
+          .section {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
           }
 
-          .left-column,
-          .right-column {
-            flex: 1 !important;
-            max-width: 48% !important;
+          /* If content overflows, it will automatically move to next page */
+          .cv-page {
+            break-after: always !important;
+          }
+
+          /* Single column layout for print */
+          .page-content {
+            display: block !important;
+            break-inside: avoid !important;
           }
 
           /* --- Page Setup --- */
@@ -970,19 +928,6 @@ const Cv7 = ({ UserDataFromDesignPage }) => {
 
           @page :last {
             margin-bottom: 0;
-          }
-        }
-
-        /* === RESPONSIVE STYLES === */
-        @media (max-width: 210mm) {
-          .page-content {
-            flex-direction: column;
-          }
-
-          .left-column,
-          .right-column {
-            max-width: 100% !important;
-            width: 100% !important;
           }
         }
 

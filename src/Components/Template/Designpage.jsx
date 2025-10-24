@@ -11,13 +11,9 @@ import {
   Tab,
   useTheme,
   useMediaQuery,
-
-  // IconButton,
-  Chip,
   Alert,
   Snackbar,
 } from "@mui/material";
-// import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +36,7 @@ function DesignPage() {
   const [defaultTemplate, setDefaultTemplate] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [cvInfoId, setCvInfoId] = useState();
-  // const [res, setRes] = useState();
+
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
   const userId = userProfile?.fetchedUsed?.userId;
@@ -49,14 +45,11 @@ function DesignPage() {
     const fetchDefaultCv = async () => {
       try {
         const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
-        // setRes(res);    
         const templateName = res.data?.fetchedCvInfo?.templateName;
         setCvInfoId(res.data?.fetchedCvInfo?.cvInfoId);
-        // setCvTemp(res.data?.fetchedCvInfo?.cvInfoId);
-        // console.log("📌 Fetched Default CV Template:", templateName);
+
         if (templateName) {
           setDefaultTemplate(templateName);
-          // localStorage.setItem("defaultCvTemplate", templateName);
         }
       } catch (error) {
         console.error("❌ Failed to fetch default CV:", error);
@@ -87,7 +80,6 @@ function DesignPage() {
   };
 
   const handlePreviewOpen = (id) => {
-    // Navigate to full-page preview
     navigate(`/Designpreview/cv/${id}`);
   };
 
@@ -103,199 +95,76 @@ function DesignPage() {
   ];
 
   return (
-    <Box sx={{ bgcolor: theme.palette.background.backgroundColor }}>
-      <Grid maxWidth="xl" sx={{
-        px: isMobile ? 1 : 3,
-        bgcolor: theme.palette.background.backgroundColor
-      }}>
-        {/* Heading */}
-        <Box textAlign="center" mb={1}>
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 800,
-              color: theme.palette.textColor.main,
-              letterSpacing: "-0.5px",
-              mb: 1,
-              pt: 6,
-              fontSize: isMobile ? "2rem" : "3rem",
-            }}
-          >
-            Professional Templates
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            sx={{
-              color: theme.palette.subtextColor,
-              fontSize: isMobile ? "0.9rem" : "1.1rem",
-              maxWidth: "100%",
-              mb: 4,
-              mx: "auto",
-            }}
-          >
-            Select a professionally designed template to showcase your skills and experience
-          </Typography>
-        </Box>
-
-        {/* Tabs */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            mb: 5,
-            borderBottom: theme.palette.borderColor,
-            mx: isMobile ? 0 : 4,
-          }}
-        >
-          <Tabs
-            value={selectedCategory}
-            onChange={handleCategoryChange}
-            variant={isMobile ? "fullWidth" : "standard"}
-            textColor="primary"
-            indicatorColor="primary"
-            sx={{
-              "& .MuiTabs-indicator": {
-                height: 4,
-                borderRadius: "4px 4px 0 0",
-              },
-            }}
-          >
-            <Tab
-              label="CV Templates"
-              value="cv"
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: isMobile ? "0.9rem" : "1rem",
-                py: 2,
-                px: isMobile ? 1 : 3,
-                minHeight: "auto",
-              }}
-            />
-          </Tabs>
-        </Box>
-
+    <Box
+      sx={{
+        bgcolor: theme.palette.background.backgroundColor,
+        minHeight: "100vh",
+        pt: 8,
+        pb: 4,
+      }}
+    >
+      <Container maxWidth="xl" sx={{ px: isMobile ? 1 : 3 }}>
         {/* CV Gallery */}
         <Grid container spacing={3} justifyContent="center">
           {cvDesigns.map(({ id, name, Component }, index) => {
             const isDefault = defaultTemplate === name;
             return (
-              <Grid item key={id} xs={12} sm={6} md={4} lg={0}>
+              <Grid item key={id} xs={12} sm={6} md={4} lg={3}>
                 <Card
                   sx={{
-                    width: { xs: "100%", lg: "400px" },
+                    width: { xs: "280px" },
                     position: "relative",
-                    height: "560px",
+                    height: "500px",
                     zIndex: 0,
                     display: "flex",
                     flexDirection: "column",
-                    borderRadius: 2,
+                    borderRadius: 3,
                     overflow: "hidden",
-                    // background: theme.palette.background,
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+                    background: theme.palette.grey[100],
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
                     transition: "all 0.3s ease",
                     "&:hover": {
-                      transform: "translateY(-6px)",
-                      boxShadow: "0 10px 28px rgba(0,0,0,0.12)",
+                      transform: "translateY(-8px)",
+                      boxShadow: "0 15px 35px rgba(0,0,0,0.15)",
+                      background: theme.palette.grey[200],
                     },
                   }}
                 >
-
-                  {/* Default Label */}
-                  {isDefault && (
-                    <CheckCircleIcon
-                      sx={{
-                        position: "absolute",
-                        top: 10,
-                        right: 10,
-                        width: 28,
-                        height: 28,
-                        borderRadius: 10,
-                        background: theme.palette.borderColor,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: theme.palette.textColor,
-                        fontSize: "0.8rem",
-                        fontWeight: 600,
-                      }}
-                    >
-                    </CheckCircleIcon>
-                  )}
-
-                  {/* Index Badge */}
+                  {/* Buttons Section - Moved to top */}
                   <Box
                     sx={{
-                      position: "absolute",
-                      top: 10,
-                      left: 10,
-                      width: 28,
-                      height: 28,
-                      borderRadius: 10,
-                      background: theme.palette.borderColor,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: theme.palette.textColor,
-                      fontSize: "0.8rem",
-                      fontWeight: 600,
+                      p: 2,
+                      // backgroundColor: "#1a237e",
+                      borderBottom: `1px solid ${theme.palette.grey[300]}`,
                     }}
-                  >
-                    {index + 1}
-                  </Box>
-
-                  {/* Thumbnail */}
-                  <Box
-                    sx={{
-                      // background: "#f8fafc",
-                      minHeight: 350,
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "flex-start",
-                      overflow: "hidden",
-                      cursor: "pointer",
-                      p: 1,
-                    }}
-                    onClick={() => handlePreviewOpen(id)}
                   >
                     <Box
                       sx={{
-                        transform: "scale(0.3)",
-                        transformOrigin: "top center",
-                        pointerEvents: "none",
-                        width: "900px",
+                        display: "flex",
+                        gap: 1,
                       }}
                     >
-                      <Component />
-                    </Box>
-                  </Box>
-
-                  {/* Actions */}
-                  <Box sx={{ p: 2 }}>
-                    <Typography
-                      variant="h6"
-                      sx={{ textAlign: "center", mb: 2, fontWeight: 600 }}
-                    >
-                      {name}
-                    </Typography>
-                    <Box sx={
-                      {
-                        gap: 1,
-                        display: "flex",
-                        // justifyContent:"space-between"
-                      }
-                    }>
-                      <Box width={"50%"}>
+                      {/* Preview Button */}
+                      <Box width={"33.33%"}>
                         <Button
                           fullWidth
                           variant="outlined"
-                          color={theme.palette.warning.main}
-                          disableElevation
+                          size="small"
                           sx={{
                             borderRadius: 2,
-                            fontWeight: 700,
-                            color: theme.palette.success.main,
-                            mb: 1,
+                            fontWeight: 600,
+                            color: "white",
+                            borderColor: "rgba(255,255,255,0.3)",
+                            backgroundColor: "#1a237e",
+                            fontSize: "0.75rem",
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                              backgroundColor: "#283593",
+                              borderColor: "rgba(255,255,255,0.8)",
+                              transform: "translateY(-2px)",
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                              color: "#ffffff",
+                            },
                           }}
                           onClick={() => handlePreviewOpen(id)}
                         >
@@ -303,20 +172,57 @@ function DesignPage() {
                         </Button>
                       </Box>
 
-                      <Box width={"50%"}>
+                      {/* Demo Button */}
+                      <Box width={"33.33%"}>
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          size="small"
+                          sx={{
+                            borderRadius: 2,
+                            fontWeight: 600,
+                            color: "white",
+                            borderColor: "rgba(255,255,255,0.3)",
+                            backgroundColor: "#1a237e",
+                            fontSize: "0.75rem",
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                              backgroundColor: "#283593",
+                              borderColor: "rgba(255,255,255,0.8)",
+                              transform: "translateY(-2px)",
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                              color: "#ffffff",
+                            },
+                          }}
+                          onClick={() => handlePreviewOpen(id)}
+                        >
+                          Demo
+                        </Button>
+                      </Box>
+
+                      {/* Publish/Selected Button */}
+                      <Box width={"33.33%"}>
                         {isDefault ? (
                           <Button
                             fullWidth
-                            variant="contained"
-                            sx={
-                              {
-                                borderRadius: 2,
-                                boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-                                background: theme.palette.success.main,
-                                color: "white"
-                              }
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                              borderRadius: 2,
+                              fontWeight: 600,
+                              backgroundColor: "#34A853",
+                              color: "white",
+                              fontSize: "0.75rem",
+                              transition: "all 0.3s ease",
+                              "&:hover": {
+                                backgroundColor: "#2E8B47",
+                                transform: "translateY(-2px)",
+                                boxShadow: "0 4px 12px rgba(52, 168, 83, 0.4)",
+                              },
+                            }}
+                            startIcon={
+                              <CheckCircleIcon sx={{ fontSize: "1rem" }} />
                             }
-                            startIcon={<CheckCircleIcon />}
                           >
                             Selected
                           </Button>
@@ -324,33 +230,64 @@ function DesignPage() {
                           <Button
                             fullWidth
                             variant="contained"
-                            sx={
-                              {
-                                borderRadius: 2,
-                                boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-                                background: theme.palette.success.main,
-                                color: "white"
-
-                              }
-                            }
+                            size="small"
+                            sx={{
+                              borderRadius: 2,
+                              fontWeight: 600,
+                              backgroundColor: "#4285F4",
+                              color: "white",
+                              fontSize: "0.75rem",
+                              transition: "all 0.3s ease",
+                              "&:hover": {
+                                backgroundColor: "#3367D6",
+                                transform: "translateY(-2px)",
+                                boxShadow: "0 4px 12px rgba(66, 133, 244, 0.4)",
+                              },
+                            }}
                             onClick={() => handleSetDefault(name)}
                           >
                             Publish
                           </Button>
                         )}
                       </Box>
-
                     </Box>
+                  </Box>
 
-
-
+                  {/* CV Preview Section - Moved to bottom */}
+                  <Box
+                    sx={{
+                      flex: 1,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "flex-start",
+                      overflow: "hidden",
+                      cursor: "pointer",
+                      backgroundColor: "white",
+                      p: 2,
+                      margin: 1,
+                      borderRadius: 2,
+                      mt: 1,
+                    }}
+                    onClick={() => handlePreviewOpen(id)}
+                  >
+                    <Box
+                      sx={{
+                        transform: "scale(0.35)",
+                        transformOrigin: "top center",
+                        pointerEvents: "none",
+                        width: "800px",
+                        height: "1130px",
+                      }}
+                    >
+                      <Component />
+                    </Box>
                   </Box>
                 </Card>
               </Grid>
             );
           })}
         </Grid>
-      </Grid>
+      </Container>
 
       {/* Snackbar */}
       <Snackbar
@@ -370,4 +307,5 @@ function DesignPage() {
     </Box>
   );
 }
+
 export default DesignPage;
