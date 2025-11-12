@@ -1,21 +1,21 @@
 // src/routes/AppRoutes.jsx
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import HomePage from '../../pages/HomePage';
-import ProtectedRoute from '../../Components/Layout/ProtectedRoute';
-import ProfilePage from '../../pages/ProfilePage';
-import CreatePortfolioPage from '../../pages/CreatePortfolioPage';
-import UserForm from '../../pages/UserForm';
-import CreateCvPage from '../../pages/CreateCvPage';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import HomePage from "../../pages/HomePage";
+import ProtectedRoute from "../../Components/Layout/ProtectedRoute";
+import ProfilePage from "../../pages/ProfilePage";
+import CreatePortfolioPage from "../../pages/CreatePortfolioPage";
+import UserForm from "../../pages/UserForm";
+import CreateCvPage from "../../pages/CreateCvPage";
 // import Cv1 from '../../Components/Template/Cv1'; // <-- yahan se import kar (kyunki tu bol raha tha Cv1 HomePage ke folder me hai)
-import BuilderPage from '../../pages/BuilderPage';
-import UserInfo from '../../Components/UserInfo';
-import Template from '../../Components/Template';
+import BuilderPage from "../../pages/BuilderPage";
+import UserInfo from "../../Components/UserInfo";
+import Template from "../../Components/Template";
 // import Cv3 from '../../Components/Template/Cv3';
-import GroupForm from '../../Components/UserInfo/GroupForm';
-import Designpreview from '../../Components/Template/Designpreview';
-import Designpage from '../../Components/Template/Designpage';
-import DefaultCv from '../../Components/DefaultCv';
+import GroupForm from "../../Components/UserInfo/GroupForm";
+import Designpreview from "../../Components/Template/Designpreview";
+import Designpage from "../../Components/Template/Designpage";
+import DefaultCv from "../../Components/DefaultCv";
 // import Cv2 from '../../Components/Template/Cv2';
 // import Learn from '../../Learn'
 

@@ -1,1090 +1,1239 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useRef } from "react";
-import {
-  ThemeProvider,
-  createTheme,
-  CssBaseline,
-  Box,
-  Typography,
-  Grid,
-  List,
-  ListItem,
-  Button,
-  Container,
-  IconButton,
-  CircularProgress,
-  Alert
-} from "@mui/material";
-import { Print, PictureAsPdf, Edit, Delete } from "@mui/icons-material";
-import styled from "@emotion/styled";
-import { useReactToPrint } from "react-to-print";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import React, { useEffect, useState, useRef } from "react";
+import axios from "axios";
 import { apiUrl } from "../../utils/common";
+import { useParams, useSearchParams } from "react-router-dom";
+import MarkdownPreview from "@uiw/react-markdown-preview";
 import { useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
+import { Box, Typography } from "@mui/material";
+import printJS from "print-js";
 
-const themeData = {
-  name: "Professional Light",
-  bg: "#FFFFFF",
-  text: "#2C3E50",
-  accent: "#2980B9",
-  font: "'Roboto Slab', serif",
-  body: "'Roboto', sans-serif",
-};
+const Cv1 = ({ UserDataFromDesignPage }) => {
+  // --- 1. Identify Context (URL & Redux) ---
+  const [searchParams] = useSearchParams({ UserDataFromDesignPage });
+  const { username } = useParams();
+  const cvPublicView = searchParams.get("cv");
+  const [showLoading, setShowLoading] = useState(true);
 
-const CVContainer = styled(Box)`
-  width: 210mm;
-  min-height: 297mm;
-  margin: 0 auto;
-  padding: 15mm;
-  position: relative;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  background-color: ${themeData.bg};
-  box-sizing: border-box;
-  overflow: hidden;
+  // Ref for the CV content
+  const cvContentRef = useRef();
 
-  @media print {
-    box-shadow: none;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 210mm !important;
-    min-height: 297mm !important;
-    overflow: visible !important;
-  }
-`;
-
-const Initial = styled(Typography)`
-  font-size: 12rem;
-  font-weight: bold;
-  opacity: 0.05;
-  position: absolute;
-  top: -30px;
-  right: 0;
-  z-index: 0;
-  line-height: 1;
-  pointer-events: none;
-
-  @media print {
-    opacity: 0.07;
-    font-size: 10rem;
-    top: -20px;
-  }
-`;
-
-const Section = styled(Box)`
-  margin-bottom: 1.5rem;
-  position: relative;
-  z-index: 1;
-
-  @media print {
-    margin-bottom: 1rem;
-    page-break-inside: avoid;
-  }
-`;
-
-const SectionTitle = styled(Typography)`
-  font-weight: 700 !important;
-  letter-spacing: 1px;
-  margin-bottom: 0.75rem !important;
-  position: relative;
-  display: inline-block;
-  padding-bottom: 4px;
-  text-transform: uppercase;
-  font-size: 1.1rem !important;
-
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 50px;
-    height: 2px;
-    background: ${themeData.accent};
-  }
-`;
-
-const PrintHide = styled(Box)`
-  @media print {
-    display: none !important;
-  }
-`;
-
-const EditableWrapper = styled(Box)`
-  position: relative;
-  &:hover .edit-controls {
-    opacity: 1;
-  }
-`;
-
-const EditControls = styled(Box)`
-  position: absolute;
-  top: -12px;
-  right: -12px;
-  background: ${themeData.bg};
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 10;
-  display: flex;
-  
-  @media print {
-    display: none !important;
-  }
-`;
-
-const EditableText = styled(Box)`
-  position: relative;
-  &:hover .edit-controls {
-    opacity: 1;
-  }
-`;
-
-const EditableImage = styled(Box)`
-  position: relative;
-  display: inline-block;
-  margin-bottom: 8px;
-  &:hover .edit-controls {
-    opacity: 1;
-  }
-`;
-
-export default function Cv1(UserData) {
-  const cvRef = useRef();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const userProfile = useSelector(state => state.userProfile?.data?.fetchedUsed);
-  const userNameRedux = userProfile?.userName;
-  const [searchParams] = useSearchParams();
-  const cv = searchParams.get("cv"); // "true" milega
-  console.log(cv, "cv in cv1");
-
-  const [cvData, setCvData] = useState();
-
-  // Fetch data from API
   useEffect(() => {
-    const fetchCVData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${apiUrl}/defaultCv/${userNameRedux}`);
+    const timer = setTimeout(() => {
+      setShowLoading(false);
+    }, 3000);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        // Log the API response to console
-        console.log("API Response:", data);
-
-        // Check if the API response has the expected structure
-        if (data.status === 'success' && data.fetchedCvInfo) {
-          // Transform API data to match our component structure
-          const transformedData = transformAPIData(data.fetchedCvInfo);
-          setCvData(transformedData);
-        } else {
-          throw new Error("Invalid API response structure");
-        }
-
-        setLoading(false);
-      } catch (err) {
-        // console.error("Error fetching CV data:", err);
-        setError(err.message);
-        setLoading(false);
-      }
-    };
-
-    fetchCVData();
+    return () => clearTimeout(timer);
   }, []);
 
-  // Function to transform API data to our component structure
-  const transformAPIData = (apiData) => {
-    // Create initials from first and last name
-    const firstName = apiData.firstName || '';
-    const lastName = apiData.lastName || '';
-    const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`;
+  const userProfile = useSelector(
+    (state) => state.userProfile?.data?.fetchedUsed
+  );
+  const userNameRedux = userProfile?.userName;
 
-    // Create address string
-    const address = apiData.defaultCvInfo?.address
-      ? `${apiData.defaultCvInfo.address.city || ''}, ${apiData.defaultCvInfo.address.state || ''}, ${apiData.defaultCvInfo.address.country || ''}`
-      : '';
+  // --- 2. State Management ---
+  const [cvData, setCvData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    // Format date of birth
-    const dob = apiData.dob ? new Date(apiData.dob).toLocaleDateString() : '';
+  useEffect(() => {
+    const fetchCvData = async () => {
+      setLoading(true);
+      let usernameToFetch = null;
+      let isDifferentUser =
+        username && userNameRedux && username !== userNameRedux;
 
-    // Create contact items
-    const contactItems = [
-      { id: 1, content: apiData.phoneNo || '' },
-      { id: 2, content: apiData.email || '' },
-      { id: 3, content: address },
-      { id: 4, content: `DOB: ${dob}` },
-      { id: 5, content: `Gender: ${apiData.gender || ''}` },
-      ...(apiData.socialLinks?.map((link, index) => ({ id: 6 + index, content: link })) || [])
-    ].filter(item => item.content && item.content !== 'DOB: ' && item.content !== 'Gender: '); // Remove empty items
+      if (
+        username &&
+        (isDifferentUser || cvPublicView === "true" || !userNameRedux)
+      ) {
+        usernameToFetch = username;
+        console.log(
+          `✅ Public View (URL based) Activated. Fetching: ${username}`
+        );
+      } else if (userNameRedux) {
+        usernameToFetch = userNameRedux;
+        console.log(
+          `👤 Private View (Redux based) Activated. Fetching: ${userNameRedux}`
+        );
+      }
 
-    // Extract sections from API data
-    const sections = {};
-    if (apiData.sections && Array.isArray(apiData.sections)) {
-      apiData.sections.forEach(section => {
-        sections[section.name] = section.data;
-      });
-    }
+      if (usernameToFetch) {
+        try {
+          const res = await axios.get(`${apiUrl}/defaultCv/${usernameToFetch}`);
+          setCvData(res?.data?.fetchedCvInfo?.defaultCvInfo);
+          console.log(`⭐ Data Fetched for: ${usernameToFetch}.`);
+        } catch (err) {
+          console.error(`❌ Error fetching CV for ${usernameToFetch}:`, err);
+          setCvData(null);
+        }
+      } else {
+        setCvData(null);
+      }
 
-    return {
-      personal: {
-        name: `${firstName} ${lastName}`.trim(),
-        title: apiData.designation || '',
-        initial: initials
-      },
-      contact: {
-        items: contactItems
-      },
-      skills: {
-        items: (sections.Skill || []).map((skill, index) => ({
-          id: index + 1,
-          content: `${skill.skill}${skill.rating ? ` (${skill.rating}/10)` : ''}`
-        }))
-      },
-      languages: {
-        items: (sections.Language || []).map((lang, index) => ({
-          id: index + 1,
-          content: `${lang.language} (${lang.proficiency})`
-        }))
-      },
-      awards: {
-        items: (sections.Award || []).map((award, index) => ({
-          id: index + 1,
-          title: award.title || '',
-          subtitle: `${award.issuer || ''}${award.date ? `, ${new Date(award.date).getFullYear()}` : ''}`
-        }))
-      },
-      achievements: {
-        items: (sections.Achievement || []).map((achievement, index) => ({
-          id: index + 1,
-          content: achievement
-        }))
-      },
-      interests: {
-        items: (sections.Interest || []).map((interest, index) => ({
-          id: index + 1,
-          content: interest
-        }))
-      },
-      profile: {
-        content: sections.Summary || ''
-      },
-      experience: (sections.Experience || []).map((exp, index) => ({
-        id: index + 1,
-        title: exp.jobTitle || '',
-        company: `${exp.company || ''}${exp.location ? `, ${exp.location}` : ''} | ${formatDateRange(exp.startDate, exp.endDate)}`,
-        description: exp.description || ''
-      })),
-      education: (sections.Education || []).map((edu, index) => ({
-        id: index + 1,
-        degree: `${edu.course || ''}${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''}`,
-        institution: `${edu.college || ''}${edu.location ? `, ${edu.location}` : ''} | ${formatDateRange(edu.startDate, edu.endDate)}${edu.grade ? `, Grade: ${edu.grade}` : ''}`
-      })),
-      certifications: {
-        items: (sections.Certification || []).map((cert, index) => ({
-          id: index + 1,
-          content: `${cert.name || ''}${cert.institute ? `, ${cert.institute}` : ''}${cert.issueDate ? `, ${new Date(cert.issueDate).getFullYear()}` : ''}`
-        }))
-      },
-      projects: (sections.Project || []).map((proj, index) => ({
-        id: index + 1,
-        title: proj.name || '',
-        description: proj.description || ''
-      })),
-      profileImage: apiData.profilePhoto || null
-    };
-  };
-
-  // Helper function to format date range
-  const formatDateRange = (startDate, endDate) => {
-    const formatDate = (dateString) => {
-      if (!dateString) return '';
-      const date = new Date(dateString);
-      return date.getFullYear();
+      setLoading(false);
     };
 
-    const start = formatDate(startDate);
-    const end = endDate ? formatDate(endDate) : 'Present';
+    fetchCvData();
+  }, [cvPublicView, username, userNameRedux]);
 
-    return start && end ? `${start}-${end}` : start || end;
-  };
-
-  const theme = createTheme({
-    palette: {
-      mode: "light",
-      background: { default: themeData.bg, paper: themeData.bg },
-      text: { primary: themeData.text },
-      primary: { main: themeData.accent },
-    },
-    typography: {
-      fontFamily: themeData.body,
-      h4: {
-        fontFamily: themeData.font,
-        fontWeight: 700,
-        letterSpacing: 1.5,
-        marginBottom: '0.5rem'
-      },
-      h5: {
-        fontFamily: themeData.font,
-        fontWeight: 600,
-        letterSpacing: 1
-      },
-      h6: {
-        fontFamily: themeData.font,
-        letterSpacing: 1.2,
-        fontWeight: 500
-      },
-      body1: {
-        lineHeight: 1.6,
-        fontSize: '0.95rem'
-      },
-      body2: {
-        lineHeight: 1.5,
-        fontSize: '0.9rem'
-      }
-    },
-    components: {
-      MuiDivider: {
-        styleOverrides: {
-          root: {
-            borderColor: themeData.accent + "40"
-          }
-        }
-      }
+  // Print-js print function
+  const handlePrint = () => {
+    if (!cvContentRef.current) {
+      console.error("CV content not found");
+      return;
     }
-  });
 
-  // Handle text editing
-  const handleTextChange = (path, id, value) => {
-    setCvData(prev => {
-      const newData = { ...prev };
-      let target = newData;
+    // Get the HTML content
+    const printContent = cvContentRef.current.innerHTML;
 
-      path.split('.').forEach(segment => {
-        target = target[segment];
-      });
-
-      if (Array.isArray(target)) {
-        const index = target.findIndex(item => item.id === id);
-        if (index !== -1) {
-          target[index] = { ...target[index], content: value };
+    // Use print-js with raw HTML
+    printJS({
+      printable: printContent,
+      type: "raw-html",
+      documentTitle: `${cvData?.firstName || "CV"} ${
+        cvData?.lastName || ""
+      } - Resume`,
+      style: `
+        @page {
+          size: A4;
+          margin: 15mm;
         }
-      } else if (typeof target === 'object' && target !== null) {
-        target.content = value;
-      }
-
-      return newData;
-    });
-  };
-
-  // Handle complex object editing
-  const handleObjectFieldChange = (path, id, field, value) => {
-    setCvData(prev => {
-      const newData = { ...prev };
-      const targetArray = newData[path];
-      const index = targetArray.findIndex(item => item.id === id);
-
-      if (index !== -1) {
-        targetArray[index] = { ...targetArray[index], [field]: value };
-      }
-
-      return newData;
-    });
-  };
-
-  // Handle item deletion
-  const handleDeleteItem = (path, id) => {
-    setCvData(prev => {
-      const newData = { ...prev };
-      let target = newData;
-      const segments = path.split('.');
-
-      segments.slice(0, -1).forEach(segment => {
-        target = target[segment];
-      });
-
-      const lastSegment = segments[segments.length - 1];
-      if (Array.isArray(target[lastSegment])) {
-        target[lastSegment] = target[lastSegment].filter(item => item.id !== id);
-      }
-
-      return newData;
-    });
-  };
-
-  // Handle image upload
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCvData(prev => ({
-          ...prev,
-          profileImage: reader.result
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Handle image deletion
-  const handleImageDelete = () => {
-    setCvData(prev => ({
-      ...prev,
-      profileImage: null
-    }));
-  };
-
-  // Print functionality
-  const handlePrint = useReactToPrint({
-    content: () => cvRef.current,
-    documentTitle: "Professional_CV",
-    pageStyle: `
-      @page {
-        size: A4;
-        margin: 0;
-      }
-      @media print {
-        body, html {
-          width: 210mm;
-          height: 297mm;
-        }
-        body { 
+        body {
+          margin: 0 !important;
+          padding: 0 !important;
+          background: white !important;
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
-          background: ${themeData.bg} !important;
+          font-family: "Arial", "Helvetica", sans-serif;
+          line-height: 1.3;
+          width: 210mm;
+        }
+        .cv1-container {
+          max-width: 210mm;
+          margin: 0 auto;
+          color: #000000;
+          background: white;
+        }
+        .cv1-content {
+          width: 210mm;
+          background: white;
+          margin: 0 auto;
+          padding: 25mm;
+        }
+        .cv1-header {
+          margin-bottom: 20px;
+          padding-bottom: 15px;
+          border-bottom: 2px solid #000000;
+          text-align: left;
+        }
+        .cv1-name {
+          font-size: 26px;
+          font-weight: bold;
+          line-height: 1.1;
+          margin-bottom: 4px;
+          color: #000000;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .cv1-designation {
+          font-size: 16px;
+          color: #000000;
+          margin-bottom: 15px;
+          font-weight: normal;
+        }
+        .cv1-contact-info {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .cv1-contact-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          font-size: 10px;
+          line-height: 1.3;
+        }
+        .cv1-contact-label {
+          font-weight: bold;
+          min-width: 55px;
+          color: #000000;
+        }
+        .cv1-contact-text {
+          font-weight: normal;
+          color: #000000;
+          word-break: break-word;
+        }
+        .cv1-section {
+          margin-bottom: 20px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid #cccccc;
+        }
+        .cv1-section:last-child {
+          border-bottom: none;
+          margin-bottom: 0;
+        }
+        .cv1-section-title {
+          font-size: 13px;
+          font-weight: bold;
+          color: #000000;
+          margin-bottom: 8px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          padding-bottom: 4px;
+          border-bottom: 1px solid #000000;
+          display: inline-block;
+        }
+        .cv1-summary-text {
+          line-height: 1.3;
+          font-size: 10px;
+          text-align: justify;
+          color: #000000;
           margin: 0;
+          hyphens: auto;
+          word-break: break-word;
+        }
+        .cv1-skills-list {
+          list-style-type: none;
           padding: 0;
+          margin: 0;
         }
-        ${CVContainer} {
-          box-shadow: none;
-          padding: 0 !important;
-          margin: 0 !important;
-          width: 210mm !important;
-          min-height: 297mm !important;
+        .cv1-skill-item {
+          font-size: 10px;
+          margin-bottom: 4px;
+          color: #000000;
+          line-height: 1.3;
         }
-      }
-    `,
-    onAfterPrint: () => console.log("Printed successfully!")
-  });
-
-  // PDF Download functionality
-  const handleDownloadPDF = async () => {
-    const input = cvRef.current;
-    const canvas = await html2canvas(input, {
-      scale: 2,
-      logging: false,
-      useCORS: true,
-      scrollX: 0,
-      scrollY: 0,
-      windowWidth: input.scrollWidth,
-      windowHeight: input.scrollHeight
+        .cv1-education-item {
+          margin-bottom: 12px;
+        }
+        .cv1-education-course {
+          font-size: 11px;
+          font-weight: bold;
+          margin-bottom: 2px;
+          color: #000000;
+          line-height: 1.3;
+        }
+        .cv1-education-college {
+          font-size: 10px;
+          color: #000000;
+          margin-bottom: 2px;
+          line-height: 1.3;
+        }
+        .cv1-education-dates {
+          font-size: 10px;
+          color: #666666;
+          font-style: italic;
+          margin: 0;
+          line-height: 1.3;
+        }
+        .cv1-experience-item {
+          margin-bottom: 16px;
+        }
+        .cv1-experience-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 4px;
+        }
+        .cv1-experience-title {
+          font-size: 11px;
+          font-weight: bold;
+          color: #000000;
+          margin: 0;
+          line-height: 1.3;
+        }
+        .cv1-experience-dates {
+          font-size: 10px;
+          color: #666666;
+          font-style: italic;
+          margin: 0;
+          line-height: 1.3;
+        }
+        .cv1-experience-company {
+          font-size: 10px;
+          color: #000000;
+          margin-bottom: 6px;
+          font-weight: bold;
+          line-height: 1.3;
+        }
+        .cv1-experience-description {
+          line-height: 1.3;
+          font-size: 10px;
+          color: #000000;
+          margin: 0;
+          hyphens: auto;
+          word-break: break-word;
+        }
+        .cv1-project-item {
+          margin-bottom: 16px;
+        }
+        .cv1-project-name {
+          font-size: 11px;
+          font-weight: bold;
+          margin-bottom: 4px;
+          color: #000000;
+          line-height: 1.3;
+        }
+        .cv1-project-description {
+          line-height: 1.3;
+          font-size: 10px;
+          margin-bottom: 6px;
+          color: #000000;
+          hyphens: auto;
+          word-break: break-word;
+        }
+        .cv1-technologies-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
+          margin-bottom: 0;
+        }
+        .cv1-tech-label {
+          font-size: 10px;
+          font-weight: bold;
+          color: #000000;
+          margin-right: 4px;
+          line-height: 1.3;
+        }
+        .cv1-technology-tag {
+          border: 1px solid #cccccc;
+          border-radius: 3px;
+          padding: 2px 6px;
+          font-size: 9px;
+          background: #f9f9f9;
+          color: #000000;
+          font-weight: normal;
+          line-height: 1.3;
+        }
+        .cv1-divider {
+          border: none;
+          border-top: 1px solid #cccccc;
+          margin: 12px 0;
+        }
+        .cv1-print-button-container {
+          display: none !important;
+        }
+        .cv1-language-item {
+          font-size: 10px;
+          margin-bottom: 4px;
+          color: #000000;
+          line-height: 1.3;
+        }
+        .cv1-language-level {
+          font-weight: normal;
+          color: #666666;
+        }
+      `,
+      onPrintDialogClose: () => {
+        console.log("Print dialog closed");
+      },
+      onError: (error) => {
+        console.error("Print error:", error);
+        // Fallback to browser print
+        window.print();
+      },
     });
-
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-
-    // Calculate the scale to fit the content
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
-    const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight) * 0.95;
-    const imgX = (pdfWidth - imgWidth * ratio) / 2;
-    const imgY = 5;
-
-    pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-    pdf.save('Professional_CV.pdf');
   };
 
-  if (loading) {
+  // ============ SECTION COMPONENTS ============
+
+  // Header Section Component
+  const HeaderSection = () => (
+    <div className="cv1-header">
+      <div className="cv1-header-content">
+        <h1 className="cv1-name">
+          {cvData.firstName} {cvData.lastName}
+        </h1>
+        <h2 className="cv1-designation">{cvData.designation}</h2>
+
+        <div className="cv1-contact-info">
+          {/* Email */}
+          <div className="cv1-contact-item">
+            <span className="cv1-contact-label">Email:</span>
+            <span className="cv1-contact-text">{cvData.email}</span>
+          </div>
+
+          {/* Phone */}
+          <div className="cv1-contact-item">
+            <span className="cv1-contact-label">Phone:</span>
+            <span className="cv1-contact-text">{cvData.phoneNo}</span>
+          </div>
+
+          {/* Address */}
+          <div className="cv1-contact-item">
+            <span className="cv1-contact-label">Address:</span>
+            <span className="cv1-contact-text">
+              {cvData.address?.city}, {cvData.address?.state}
+            </span>
+          </div>
+
+          {/* Social Links */}
+          {cvData.socialLinks.map((link, i) => (
+            <div key={i} className="cv1-contact-item">
+              <span className="cv1-contact-label">Link:</span>
+              <a
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cv1-link-url"
+              >
+                {link}
+              </a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Summary Section Component
+  const SummarySection = () => {
+    const summarySection = cvData.sections?.find((s) => s.name === "Summary");
+    if (!summarySection?.data) return null;
+
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <CircularProgress />
+      <div className="cv1-section">
+        <h3 className="cv1-section-title">Professional Summary</h3>
+        <p className="cv1-summary-text">{summarySection.data}</p>
+      </div>
+    );
+  };
+
+  // Skills Section Component
+  const SkillsSection = () => {
+    const skillsSection = cvData.sections?.find((s) => s.name === "Skill");
+    if (!skillsSection?.data?.length) return null;
+
+    return (
+      <div className="cv1-section">
+        <h3 className="cv1-section-title">Skills</h3>
+        <ul className="cv1-skills-list">
+          {skillsSection.data.map((skill, i) => (
+            <li key={i} className="cv1-skill-item">
+              {skill.skill}{" "}
+              <span className="cv1-skill-rating">({skill.rating}/5)</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  // Education Section Component
+  const EducationSection = () => {
+    const educationSection = cvData.sections?.find(
+      (s) => s.name === "Education"
+    );
+    if (!educationSection?.data?.length) return null;
+
+    return (
+      <div className="cv1-section">
+        <h3 className="cv1-section-title">Education</h3>
+        {educationSection.data.map((edu, i) => (
+          <div key={i} className="cv1-education-item">
+            <h4 className="cv1-education-course">{edu.course}</h4>
+            <p className="cv1-education-college">{edu.college}</p>
+            <p className="cv1-education-dates">
+              {edu.startDate} – {edu.endDate} | Grade: {edu.grade}
+            </p>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Experience Section Component
+  const ExperienceSection = () => {
+    const experienceSection = cvData.sections?.find(
+      (s) => s.name === "Experience"
+    );
+    if (!experienceSection?.data?.length) return null;
+
+    return (
+      <div className="cv1-section">
+        <h3 className="cv1-section-title">Professional Experience</h3>
+        {experienceSection.data.map((exp, i) => (
+          <div key={i} className="cv1-experience-item">
+            <div className="cv1-experience-header">
+              <h4 className="cv1-experience-title">{exp.jobTitle}</h4>
+              <span className="cv1-experience-dates">
+                {exp.startDate} – {exp.endDate}
+              </span>
+            </div>
+            <p className="cv1-experience-company">
+              {exp.company}, {exp.location}
+            </p>
+            <div className="cv1-experience-description">
+              <MarkdownPreview
+                style={{
+                  backgroundColor: "transparent",
+                  color: "inherit",
+                  padding: 0,
+                  fontSize: "10px",
+                  lineHeight: 1.3,
+                  fontFamily: "'Arial', 'Helvetica', sans-serif",
+                }}
+                source={exp.description || ""}
+              />
+            </div>
+            {i < experienceSection.data.length - 1 && (
+              <hr className="cv1-divider" />
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Projects Section Component
+  const ProjectsSection = () => {
+    const projectsSection = cvData.sections?.find((s) => s.name === "Project");
+    if (!projectsSection?.data?.length) return null;
+
+    return (
+      <div className="cv1-section">
+        <h3 className="cv1-section-title">Projects</h3>
+        {projectsSection.data.map((proj, i) => (
+          <div key={i} className="cv1-project-item">
+            <h4 className="cv1-project-name">{proj.name}</h4>
+            <div className="cv1-project-description">
+              <MarkdownPreview
+                style={{
+                  backgroundColor: "transparent",
+                  color: "inherit",
+                  padding: 0,
+                  fontSize: "10px",
+                  lineHeight: 1.3,
+                  fontFamily: "'Arial', 'Helvetica', sans-serif",
+                }}
+                source={proj.description || ""}
+              />
+            </div>
+            {proj.technologies && (
+              <div className="cv1-technologies-container">
+                <span className="cv1-tech-label">Technologies:</span>
+                {proj.technologies.map((tech, idx) => (
+                  <span key={idx} className="cv1-technology-tag">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            )}
+            {i < projectsSection.data.length - 1 && (
+              <hr className="cv1-divider" />
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Certifications Section Component
+  const CertificationsSection = () => {
+    const certificationsSection = cvData.sections?.find(
+      (s) => s.name === "Certification"
+    );
+    if (!certificationsSection?.data?.length) return null;
+
+    return (
+      <div className="cv1-section">
+        <h3 className="cv1-section-title">Certifications</h3>
+        {certificationsSection.data.map((cert, i) => (
+          <div key={i} className="cv1-certification-item">
+            <h4 className="cv1-certification-name">{cert.name}</h4>
+            <p className="cv1-certification-institute">{cert.institute}</p>
+            <p className="cv1-certification-date">{cert.issueDate}</p>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Award Section Component
+  const AwardSection = () => {
+    const awardSection = cvData.sections?.find((s) => s.name === "Award");
+    if (!awardSection?.data?.length) return null;
+
+    return (
+      <div className="cv1-section">
+        <h3 className="cv1-section-title">Awards</h3>
+        {awardSection.data.map((award, i) => (
+          <div key={i} className="cv1-award-item">
+            <h4 className="cv1-award-title">{award.title}</h4>
+            <p className="cv1-award-issuer">{award.issuer}</p>
+            <p className="cv1-award-date">{award.date}</p>
+            {award.description && (
+              <p className="cv1-award-description">{award.description}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Interest Section Component
+  const InterestSection = () => {
+    const interestSection = cvData.sections?.find((s) => s.name === "Interest");
+    if (!interestSection?.data?.length) return null;
+
+    return (
+      <div className="cv1-section">
+        <h3 className="cv1-section-title">Interests</h3>
+        <ul className="cv1-interests-list">
+          {interestSection.data.map((interest, i) => (
+            <li key={i} className="cv1-interest-item">
+              {interest}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  // Achievement Section Component
+  const AchievementSection = () => {
+    const achievementSection = cvData.sections?.find(
+      (s) => s.name === "Achievement"
+    );
+    if (!achievementSection?.data?.length) return null;
+
+    return (
+      <div className="cv1-section">
+        <h3 className="cv1-section-title">Achievements</h3>
+        <ul className="cv1-achievements-list">
+          {achievementSection.data.map((achievement, i) => (
+            <li key={i} className="cv1-achievement-item">
+              {achievement}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  // Language Section Component
+  const LanguageSection = () => {
+    const languageSection = cvData.sections?.find((s) => s.name === "Language");
+    if (!languageSection?.data?.length) return null;
+
+    return (
+      <div className="cv1-section">
+        <h3 className="cv1-section-title">Languages</h3>
+        <ul className="cv1-languages-list">
+          {languageSection.data.map((language, i) => (
+            <li key={i} className="cv1-language-item">
+              {language.language}{" "}
+              {language.proficiency && (
+                <span className="cv1-language-level">
+                  ({language.proficiency})
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  const PrintButton = () => (
+    <div className="cv1-print-button-container">
+      <button className="cv1-print-button" onClick={handlePrint}>
+        Print CV
+      </button>
+    </div>
+  );
+
+  if (showLoading || !cvData) {
+    const letters = [
+      "P",
+      "o",
+      "r",
+      "t",
+      "f",
+      "o",
+      "l",
+      "i",
+      "o",
+      ".",
+      "D",
+      "r",
+      "i",
+      "v",
+      "e",
+      "O",
+      "S",
+      "x",
+    ];
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          backgroundColor: "#f8f9fa",
+          p: 2,
+        }}
+      >
+        {/* Animated Portfolio.DriveOSx Logo */}
+        <Box sx={{ mb: 4, textAlign: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              mb: 1,
+              flexWrap: "wrap",
+            }}
+          >
+            {letters.map((letter, index) => (
+              <Typography
+                key={index}
+                variant="h2"
+                component="span"
+                sx={{
+                  fontSize: { xs: "0.9rem", sm: "2.5rem" },
+                  fontWeight: 400,
+                  display: "inline-block",
+                  animation: `fadeInOut 2s ease-in-out infinite`,
+                  animationDelay: `${index * 0.12}s`,
+                  color:
+                    index === 0
+                      ? "#4285F4" // P - blue
+                      : index === 1
+                      ? "#EA4335" // o - red
+                      : index === 2
+                      ? "#FBBC05" // r - yellow
+                      : index === 3
+                      ? "#4285F4" // t - blue
+                      : index === 4
+                      ? "#34A853" // f - green
+                      : index === 5
+                      ? "#EA4335" // o - red
+                      : index === 6
+                      ? "#FBBC05" // l - yellow
+                      : index === 7
+                      ? "#4285F4" // i - blue
+                      : index === 8
+                      ? "#34A853" // o - green
+                      : index === 9
+                      ? "#5f6368" // . - gray
+                      : index === 10
+                      ? "#4285F4" // D - blue
+                      : index === 11
+                      ? "#EA4335" // r - red
+                      : index === 12
+                      ? "#FBBC05" // i - yellow
+                      : index === 13
+                      ? "#34A853" // v - green
+                      : index === 14
+                      ? "#EA4335" // e - red
+                      : index === 15
+                      ? "#4285F4" // O - blue
+                      : index === 16
+                      ? "#FBBC05" // S - yellow
+                      : "#34A853", // x - green
+                }}
+              >
+                {letter}
+              </Typography>
+            ))}
+          </Box>
+        </Box>
+        {/* 🔁 CSS animations */}
+        <style>
+          {`
+            @keyframes fadeInOut {
+              0% { opacity: 0; transform: translateY(10px); }
+              20% { opacity: 1; transform: translateY(0); }
+              80% { opacity: 1; transform: translateY(0); }
+              100% { opacity: 0; transform: translateY(-10px); }
+            }
+          `}
+        </style>
       </Box>
     );
   }
 
-  if (error) {
+  if (!cvData) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert severity="error">
-          Error loading CV data: {error}
-        </Alert>
-      </Container>
+      <div className="cv1-error-container">
+        <p className="cv1-error-text">No CV data available for this user.</p>
+      </div>
     );
   }
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Container
-        maxWidth={false}
-        sx={{
-          padding: '20px 0',
-          '@media print': {
-            padding: 0,
-            margin: 0,
-            width: '100%',
-            height: '100%'
-          },
-        }}
-      >
-        <PrintHide
-          display="flex"
-          justifyContent="center"
-          mb={3}
-          flexWrap="wrap"
-          gap={2}
-          sx={{
-            position: 'relative',
-            zIndex: 10,
-          }}
-        >
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Print />}
-            onClick={handlePrint}
-            sx={{ minWidth: '180px' }}
-          >
-            Print CV
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<PictureAsPdf />}
-            onClick={handleDownloadPDF}
-            sx={{ minWidth: '180px' }}
-          >
-            Download PDF
-          </Button>
-        </PrintHide>
+    <>
+      <PrintButton />
+      <div className="cv1-container" ref={cvContentRef}>
+        {/* ============ SINGLE CONTINUOUS LAYOUT ============ */}
+        <div className="cv1-content">
+          <HeaderSection />
+          <SummarySection />
+          <ExperienceSection />
+          <EducationSection />
+          <SkillsSection />
+          <ProjectsSection />
+          <LanguageSection />
+          <AwardSection />
+          <AchievementSection />
+          <CertificationsSection />
+          <InterestSection />
+        </div>
 
-        <Box display="flex" justifyContent="center" sx={{ '@media print': { margin: 0 } }}>
-          <CVContainer ref={cvRef}>
-            <Initial>{cvData.personal.initial}</Initial>
+        <style jsx>{`
+          /* Global Styles */
+          * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+          }
 
-            <Box mb={4} position="relative" zIndex={1}>
-              <EditableWrapper>
-                <Typography variant="h4" color="primary">
-                  {cvData.personal.name}
-                </Typography>
-                <EditControls className="edit-controls">
-                  <IconButton size="small" onClick={() => {
-                    const newName = prompt("Edit name", cvData.personal.name);
-                    if (newName) {
-                      setCvData(prev => ({
-                        ...prev,
-                        personal: {
-                          ...prev.personal,
-                          name: newName
-                        }
-                      }));
-                    }
-                  }}>
-                    <Edit fontSize="small" />
-                  </IconButton>
-                </EditControls>
-              </EditableWrapper>
+          html,
+          body {
+            font-family: "Arial", "Helvetica", sans-serif;
+            line-height: 1.3;
+            background: #ffffff;
+          }
 
-              <EditableWrapper>
-                <Typography variant="h6" sx={{ letterSpacing: 1.5 }}>
-                  {cvData.personal.title}
-                </Typography>
-                <EditControls className="edit-controls">
-                  <IconButton size="small" onClick={() => {
-                    const newTitle = prompt("Edit title", cvData.personal.title);
-                    if (newTitle) {
-                      setCvData(prev => ({
-                        ...prev,
-                        personal: {
-                          ...prev.personal,
-                          title: newTitle
-                        }
-                      }));
-                    }
-                  }}>
-                    <Edit fontSize="small" />
-                  </IconButton>
-                </EditControls>
-              </EditableWrapper>
-            </Box>
+          .cv1-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            color: #000000;
+            background: white;
+          }
 
-            <Grid container spacing={4}>
-              <Grid item xs={12} md={4}>
-                <Section>
-                  <SectionTitle variant="h5" color="primary">
-                    Contact
-                  </SectionTitle>
-                  <Box>
-                    {cvData.profileImage && (
-                      <EditableImage>
-                        <img
-                          src={cvData.profileImage}
-                          alt="Profile"
-                          style={{
-                            width: 80,
-                            height: 80,
-                            borderRadius: '50%',
-                            objectFit: 'cover',
-                            marginBottom: 8
-                          }}
-                        />
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => document.getElementById('image-upload').click()}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                          <IconButton size="small" onClick={handleImageDelete}>
-                            <Delete fontSize="small" />
-                          </IconButton>
-                        </EditControls>
-                        <input
-                          id="image-upload"
-                          type="file"
-                          accept="image/*"
-                          style={{ display: 'none' }}
-                          onChange={handleImageUpload}
-                        />
-                      </EditableImage>
-                    )}
-                    {cvData.contact.items.map((item) => (
-                      <EditableText key={item.id} sx={{ position: 'relative' }}>
-                        <Typography>{item.content}</Typography>
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit contact", item.content);
-                            if (newValue !== null) {
-                              handleTextChange('contact.items', item.id, newValue);
-                            }
-                          }}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                          <IconButton size="small" onClick={() => handleDeleteItem('contact.items', item.id)}>
-                            <Delete fontSize="small" />
-                          </IconButton>
-                        </EditControls>
-                      </EditableText>
-                    ))}
-                  </Box>
-                </Section>
+          /* Single continuous layout - NO FIXED PAGES */
+          .cv1-content {
+            width: 210mm;
+            background: white;
+            margin: 0 auto;
+            padding: 25mm;
+            position: relative;
+          }
 
-                {cvData.skills.items.length > 0 && (
-                  <Section>
-                    <SectionTitle variant="h5" color="primary">
-                      Skills
-                    </SectionTitle>
-                    <List dense sx={{ py: 0 }}>
-                      {cvData.skills.items.map((skill) => (
-                        <ListItem key={skill.id} sx={{ py: 0.25, px: 0, position: 'relative' }}>
-                          <EditableText>
-                            • {skill.content}
-                            <EditControls className="edit-controls">
-                              <IconButton size="small" onClick={() => {
-                                const newValue = prompt("Edit skill", skill.content);
-                                if (newValue !== null) {
-                                  handleTextChange('skills.items', skill.id, newValue);
-                                }
-                              }}>
-                                <Edit fontSize="small" />
-                              </IconButton>
-                              <IconButton size="small" onClick={() => handleDeleteItem('skills.items', skill.id)}>
-                                <Delete fontSize="small" />
-                              </IconButton>
-                            </EditControls>
-                          </EditableText>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Section>
-                )}
+          /* Print Button */
+          .cv1-print-button-container {
+            text-align: center;
+            margin-bottom: 16px;
+          }
 
-                {cvData.languages.items.length > 0 && (
-                  <Section>
-                    <SectionTitle variant="h5" color="primary">
-                      Languages
-                    </SectionTitle>
-                    {cvData.languages.items.map((lang) => (
-                      <EditableText key={lang.id} sx={{ position: 'relative' }}>
-                        <Typography>{lang.content}</Typography>
-                        <EditControls className="edit-controls">
-                          <IconButton size="small" onClick={() => {
-                            const newValue = prompt("Edit language", lang.content);
-                            if (newValue !== null) {
-                              handleTextChange('languages.items', lang.id, newValue);
-                            }
-                          }}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                          <IconButton size="small" onClick={() => handleDeleteItem('languages.items', lang.id)}>
-                            <Delete fontSize="small" />
-                          </IconButton>
-                        </EditControls>
-                      </EditableText>
-                    ))}
-                  </Section>
-                )}
+          .cv1-print-button {
+            background-color: #2e538aff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: "Arial", sans-serif;
+            transition: background-color 0.3s ease;
+          }
 
-                {cvData.awards.items.length > 0 && (
-                  <Section>
-                    <SectionTitle variant="h5" color="primary">
-                      Awards
-                    </SectionTitle>
-                    <Box>
-                      {cvData.awards.items.map((award) => (
-                        <Box key={award.id} sx={{ position: 'relative', mb: 1 }}>
-                          <EditableText>
-                            <Typography fontWeight={500}>{award.title}</Typography>
-                            <EditControls className="edit-controls">
-                              <IconButton size="small" onClick={() => {
-                                const newValue = prompt("Edit award title", award.title);
-                                if (newValue !== null) {
-                                  setCvData(prev => {
-                                    const newItems = prev.awards.items.map(item =>
-                                      item.id === award.id ? { ...item, title: newValue } : item
-                                    );
-                                    return {
-                                      ...prev,
-                                      awards: { ...prev.awards, items: newItems }
-                                    };
-                                  });
-                                }
-                              }}>
-                                <Edit fontSize="small" />
-                              </IconButton>
-                              <IconButton size="small" onClick={() => {
-                                setCvData(prev => ({
-                                  ...prev,
-                                  awards: {
-                                    ...prev.awards,
-                                    items: prev.awards.items.filter(item => item.id !== award.id)
-                                  }
-                                }));
-                              }}>
-                                <Delete fontSize="small" />
-                              </IconButton>
-                            </EditControls>
-                          </EditableText>
-                          <EditableText>
-                            <Typography variant="body2">{award.subtitle}</Typography>
-                            <EditControls className="edit-controls">
-                              <IconButton size="small" onClick={() => {
-                                const newValue = prompt("Edit award subtitle", award.subtitle);
-                                if (newValue !== null) {
-                                  setCvData(prev => {
-                                    const newItems = prev.awards.items.map(item =>
-                                      item.id === award.id ? { ...item, subtitle: newValue } : item
-                                    );
-                                    return {
-                                      ...prev,
-                                      awards: { ...prev.awards, items: newItems }
-                                    };
-                                  });
-                                }
-                              }}>
-                                <Edit fontSize="small" />
-                              </IconButton>
-                            </EditControls>
-                          </EditableText>
-                        </Box>
-                      ))}
-                    </Box>
-                  </Section>
-                )}
+          .cv1-print-button:hover {
+            background-color: #1b3fc1ff;
+          }
 
-                {cvData.achievements.items.length > 0 && (
-                  <Section>
-                    <SectionTitle variant="h5" color="primary">
-                      Achievements
-                    </SectionTitle>
-                    <List dense sx={{ py: 0 }}>
-                      {cvData.achievements.items.map((achievement) => (
-                        <ListItem key={achievement.id} sx={{ py: 0.25, px: 0, position: 'relative' }}>
-                          <EditableText>
-                            • {achievement.content}
-                            <EditControls className="edit-controls">
-                              <IconButton size="small" onClick={() => {
-                                const newValue = prompt("Edit achievement", achievement.content);
-                                if (newValue !== null) {
-                                  handleTextChange('achievements.items', achievement.id, newValue);
-                                }
-                              }}>
-                                <Edit fontSize="small" />
-                              </IconButton>
-                              <IconButton size="small" onClick={() => handleDeleteItem('achievements.items', achievement.id)}>
-                                <Delete fontSize="small" />
-                              </IconButton>
-                            </EditControls>
-                          </EditableText>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Section>
-                )}
+          /* Header Section */
+          .cv1-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #000000;
+            text-align: left;
+          }
 
-                {cvData.interests.items.length > 0 && (
-                  <Section>
-                    <SectionTitle variant="h5" color="primary">
-                      Interests
-                    </SectionTitle>
-                    <List dense sx={{ py: 0 }}>
-                      {cvData.interests.items.map((interest) => (
-                        <ListItem key={interest.id} sx={{ py: 0.25, px: 0, position: 'relative' }}>
-                          <EditableText>
-                            • {interest.content}
-                            <EditControls className="edit-controls">
-                              <IconButton size="small" onClick={() => {
-                                const newValue = prompt("Edit interest", interest.content);
-                                if (newValue !== null) {
-                                  handleTextChange('interests.items', interest.id, newValue);
-                                }
-                              }}>
-                                <Edit fontSize="small" />
-                              </IconButton>
-                              <IconButton size="small" onClick={() => handleDeleteItem('interests.items', interest.id)}>
-                                <Delete fontSize="small" />
-                              </IconButton>
-                            </EditControls>
-                          </EditableText>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Section>
-                )}
-              </Grid>
+          .cv1-header-content {
+            width: 100%;
+          }
 
-              <Grid item xs={12} md={8}>
-                {cvData.profile.content && (
-                  <Section>
-                    <SectionTitle variant="h5" color="primary">
-                      Profile
-                    </SectionTitle>
-                    <EditableText sx={{ position: 'relative' }}>
-                      <Typography>{cvData.profile.content}</Typography>
-                      <EditControls className="edit-controls">
-                        <IconButton size="small" onClick={() => {
-                          const newValue = prompt("Edit profile", cvData.profile.content);
-                          if (newValue !== null) {
-                            setCvData(prev => ({
-                              ...prev,
-                              profile: { content: newValue }
-                            }));
-                          }
-                        }}>
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" onClick={() => {
-                          setCvData(prev => ({
-                            ...prev,
-                            profile: { content: "" }
-                          }));
-                        }}>
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </EditControls>
-                    </EditableText>
-                  </Section>
-                )}
+          .cv1-name {
+            font-size: 26px;
+            font-weight: bold;
+            line-height: 1.1;
+            margin-bottom: 4px;
+            color: #000000;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
 
-                {cvData.experience.length > 0 && (
-                  <Section>
-                    <SectionTitle variant="h5" color="primary">
-                      Experience
-                    </SectionTitle>
-                    {cvData.experience.map((exp) => (
-                      <Box key={exp.id} mb={3} sx={{ position: 'relative' }}>
-                        <EditControls className="edit-controls" sx={{ top: -8, right: -8 }}>
-                          <IconButton size="small" onClick={() => {
-                            const newTitle = prompt("Edit position", exp.title);
-                            if (newTitle !== null) {
-                              handleObjectFieldChange('experience', exp.id, 'title', newTitle);
-                            }
-                          }}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                          <IconButton size="small" onClick={() => handleDeleteItem('experience', exp.id)}>
-                            <Delete fontSize="small" />
-                          </IconButton>
-                        </EditControls>
+          .cv1-designation {
+            font-size: 16px;
+            color: #000000;
+            margin-bottom: 15px;
+            font-weight: normal;
+          }
 
-                        <EditableText>
-                          <Typography fontWeight={600}>{exp.title}</Typography>
-                        </EditableText>
+          .cv1-contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+          }
 
-                        <EditableText>
-                          <Typography color="primary" fontStyle="italic">{exp.company}</Typography>
-                          <EditControls className="edit-controls">
-                            <IconButton size="small" onClick={() => {
-                              const newValue = prompt("Edit company", exp.company);
-                              if (newValue !== null) {
-                                handleObjectFieldChange('experience', exp.id, 'company', newValue);
-                              }
-                            }}>
-                              <Edit fontSize="small" />
-                            </IconButton>
-                          </EditControls>
-                        </EditableText>
+          .cv1-contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 10px;
+            line-height: 1.3;
+          }
 
-                        <EditableText sx={{ mt: 1 }}>
-                          <Typography variant="body2" whiteSpace="pre-line">
-                            {exp.description}
-                          </Typography>
-                          <EditControls className="edit-controls">
-                            <IconButton size="small" onClick={() => {
-                              const newValue = prompt("Edit description", exp.description);
-                              if (newValue !== null) {
-                                handleObjectFieldChange('experience', exp.id, 'description', newValue);
-                              }
-                            }}>
-                              <Edit fontSize="small" />
-                            </IconButton>
-                          </EditControls>
-                        </EditableText>
-                      </Box>
-                    ))}
-                  </Section>
-                )}
+          .cv1-contact-label {
+            font-weight: bold;
+            min-width: 55px;
+            color: #000000;
+          }
 
-                <Grid container spacing={2}>
-                  {cvData.education.length > 0 && (
-                    <Grid item xs={12} sm={6}>
-                      <Section>
-                        <SectionTitle variant="h5" color="primary">
-                          Education
-                        </SectionTitle>
-                        <Box>
-                          {cvData.education.map((edu) => (
-                            <Box key={edu.id} sx={{ position: 'relative', mb: 1.5 }}>
-                              <EditControls className="edit-controls" sx={{ top: -8, right: -8 }}>
-                                <IconButton size="small" onClick={() => handleDeleteItem('education', edu.id)}>
-                                  <Delete fontSize="small" />
-                                </IconButton>
-                              </EditControls>
+          .cv1-contact-text {
+            font-weight: normal;
+            color: #000000;
+            word-break: break-word;
+          }
 
-                              <EditableText>
-                                <Typography fontWeight={600}>{edu.degree}</Typography>
-                                <EditControls className="edit-controls">
-                                  <IconButton size="small" onClick={() => {
-                                    const newValue = prompt("Edit degree", edu.degree);
-                                    if (newValue !== null) {
-                                      handleObjectFieldChange('education', edu.id, 'degree', newValue);
-                                    }
-                                  }}>
-                                    <Edit fontSize="small" />
-                                  </IconButton>
-                                </EditControls>
-                              </EditableText>
+          /* CV Content Layout */
+          .cv1-section {
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #cccccc;
+          }
 
-                              <EditableText>
-                                <Typography variant="body2">{edu.institution}</Typography>
-                                <EditControls className="edit-controls">
-                                  <IconButton size="small" onClick={() => {
-                                    const newValue = prompt("Edit institution", edu.institution);
-                                    if (newValue !== null) {
-                                      handleObjectFieldChange('education', edu.id, 'institution', newValue);
-                                    }
-                                  }}>
-                                    <Edit fontSize="small" />
-                                  </IconButton>
-                                </EditControls>
-                              </EditableText>
-                            </Box>
-                          ))}
-                        </Box>
-                      </Section>
-                    </Grid>
-                  )}
+          .cv1-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+          }
 
-                  {cvData.certifications.items.length > 0 && (
-                    <Grid item xs={12} sm={6}>
-                      <Section>
-                        <SectionTitle variant="h5" color="primary">
-                          Certifications
-                        </SectionTitle>
-                        <Box>
-                          {cvData.certifications.items.map((cert) => (
-                            <EditableText key={cert.id} sx={{ position: 'relative' }}>
-                              <Typography variant="body2">{cert.content}</Typography>
-                              <EditControls className="edit-controls">
-                                <IconButton size="small" onClick={() => {
-                                  const newValue = prompt("Edit certification", cert.content);
-                                  if (newValue !== null) {
-                                    handleTextChange('certifications.items', cert.id, newValue);
-                                  }
-                                }}>
-                                  <Edit fontSize="small" />
-                                </IconButton>
-                                <IconButton size="small" onClick={() => handleDeleteItem('certifications.items', cert.id)}>
-                                  <Delete fontSize="small" />
-                                </IconButton>
-                              </EditControls>
-                            </EditableText>
-                          ))}
-                        </Box>
-                      </Section>
-                    </Grid>
-                  )}
-                </Grid>
+          .cv1-section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #000000;
+            display: inline-block;
+          }
 
-                {cvData.projects.length > 0 && (
-                  <Section>
-                    <SectionTitle variant="h5" color="primary">
-                      Projects
-                    </SectionTitle>
-                    {cvData.projects.map((project) => (
-                      <Box key={project.id} mb={2} sx={{ position: 'relative' }}>
-                        <EditControls className="edit-controls" sx={{ top: -8, right: -8 }}>
-                          <IconButton size="small" onClick={() => handleDeleteItem('projects', project.id)}>
-                            <Delete fontSize="small" />
-                          </IconButton>
-                        </EditControls>
+          /* Summary */
+          .cv1-summary-text {
+            line-height: 1.3;
+            font-size: 10px;
+            text-align: justify;
+            color: #000000;
+            margin: 0;
+            hyphens: auto;
+            word-break: break-word;
+          }
 
-                        <EditableText>
-                          <Typography fontWeight={600}>{project.title}</Typography>
-                          <EditControls className="edit-controls">
-                            <IconButton size="small" onClick={() => {
-                              const newValue = prompt("Edit project title", project.title);
-                              if (newValue !== null) {
-                                handleObjectFieldChange('projects', project.id, 'title', newValue);
-                              }
-                            }}>
-                              <Edit fontSize="small" />
-                            </IconButton>
-                          </EditControls>
-                        </EditableText>
+          /* Skills */
+          .cv1-skills-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+          }
 
-                        <EditableText>
-                          <Typography variant="body2">{project.description}</Typography>
-                          <EditControls className="edit-controls">
-                            <IconButton size="small" onClick={() => {
-                              const newValue = prompt("Edit project description", project.description);
-                              if (newValue !== null) {
-                                handleObjectFieldChange('projects', project.id, 'description', newValue);
-                              }
-                            }}>
-                              <Edit fontSize="small" />
-                            </IconButton>
-                          </EditControls>
-                        </EditableText>
-                      </Box>
-                    ))}
-                  </Section>
-                )}
-              </Grid>
-            </Grid>
-          </CVContainer>
-        </Box>
-      </Container>
-    </ThemeProvider>
+          .cv1-skill-item {
+            font-size: 10px;
+            margin-bottom: 4px;
+            color: #000000;
+            line-height: 1.3;
+          }
+
+          .cv1-skill-rating {
+            font-weight: normal;
+            color: #666666;
+          }
+
+          /* Education */
+          .cv1-education-item {
+            margin-bottom: 12px;
+          }
+
+          .cv1-education-course {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            color: #000000;
+            line-height: 1.3;
+          }
+
+          .cv1-education-college {
+            font-size: 10px;
+            color: #000000;
+            margin-bottom: 2px;
+            line-height: 1.3;
+          }
+
+          .cv1-education-dates {
+            font-size: 10px;
+            color: #666666;
+            font-style: italic;
+            margin: 0;
+            line-height: 1.3;
+          }
+
+          /* Awards */
+          .cv1-award-item {
+            margin-bottom: 12px;
+          }
+
+          .cv1-award-title {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            color: #000000;
+            line-height: 1.3;
+          }
+
+          .cv1-award-issuer,
+          .cv1-award-date {
+            font-size: 10px;
+            color: #666666;
+            margin-bottom: 2px;
+            line-height: 1.3;
+          }
+
+          .cv1-award-description {
+            font-size: 10px;
+            color: #000000;
+            margin: 0;
+            line-height: 1.3;
+          }
+
+          /* Interests */
+          .cv1-interests-list {
+            list-style-type: disc;
+            padding-left: 18px;
+            margin: 0;
+          }
+
+          .cv1-interest-item {
+            font-size: 10px;
+            color: #000000;
+            margin-bottom: 2px;
+            line-height: 1.3;
+          }
+
+          /* Achievements */
+          .cv1-achievements-list {
+            list-style-type: disc;
+            padding-left: 18px;
+            margin: 0;
+          }
+
+          .cv1-achievement-item {
+            font-size: 10px;
+            color: #000000;
+            margin-bottom: 2px;
+            line-height: 1.3;
+          }
+
+          /* Certifications */
+          .cv1-certification-item {
+            margin-bottom: 12px;
+          }
+
+          .cv1-certification-name {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            color: #000000;
+            line-height: 1.3;
+          }
+
+          .cv1-certification-institute {
+            font-size: 10px;
+            color: #666666;
+            margin-bottom: 2px;
+            line-height: 1.3;
+          }
+
+          .cv1-certification-date {
+            font-size: 10px;
+            color: #666666;
+            margin: 0;
+            font-weight: normal;
+            line-height: 1.3;
+          }
+
+          /* Languages */
+          .cv1-languages-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+          }
+
+          .cv1-language-item {
+            font-size: 10px;
+            margin-bottom: 4px;
+            color: #000000;
+            line-height: 1.3;
+          }
+
+          .cv1-language-level {
+            font-weight: normal;
+            color: #666666;
+          }
+
+          /* Links */
+          .cv1-link-url {
+            font-size: 10px;
+            color: #000000;
+            text-decoration: underline;
+            line-height: 1.3;
+          }
+
+          .cv1-link-url:hover {
+            color: #000000;
+          }
+
+          /* Experience */
+          .cv1-experience-item {
+            margin-bottom: 16px;
+          }
+
+          .cv1-experience-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
+          }
+
+          .cv1-experience-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #000000;
+            margin: 0;
+            line-height: 1.3;
+          }
+
+          .cv1-experience-dates {
+            font-size: 10px;
+            color: #666666;
+            font-style: italic;
+            margin: 0;
+            line-height: 1.3;
+          }
+
+          .cv1-experience-company {
+            font-size: 10px;
+            color: #000000;
+            margin-bottom: 6px;
+            font-weight: bold;
+            line-height: 1.3;
+          }
+
+          .cv1-experience-description {
+            line-height: 1.3;
+            font-size: 10px;
+            color: #000000;
+            margin: 0;
+            hyphens: auto;
+            word-break: break-word;
+          }
+
+          /* Projects */
+          .cv1-project-item {
+            margin-bottom: 16px;
+          }
+
+          .cv1-project-name {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #000000;
+            line-height: 1.3;
+          }
+
+          .cv1-project-description {
+            line-height: 1.3;
+            font-size: 10px;
+            margin-bottom: 6px;
+            color: #000000;
+            hyphens: auto;
+            word-break: break-word;
+          }
+
+          .cv1-technologies-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 0;
+          }
+
+          .cv1-tech-label {
+            font-size: 10px;
+            font-weight: bold;
+            color: #000000;
+            margin-right: 4px;
+            line-height: 1.3;
+          }
+
+          .cv1-technology-tag {
+            border: 1px solid #cccccc;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 9px;
+            background: #f9f9f9;
+            color: #000000;
+            font-weight: normal;
+            line-height: 1.3;
+          }
+
+          /* Divider */
+          .cv1-divider {
+            border: none;
+            border-top: 1px solid #cccccc;
+            margin: 12px 0;
+          }
+
+          /* Responsive Design for Screen */
+          @media (max-width: 768px) {
+            .cv1-container {
+              padding: 8px;
+              width: 100%;
+            }
+
+            .cv1-content {
+              width: 100%;
+              min-height: auto;
+              padding: 15mm;
+            }
+
+            .cv1-contact-info {
+              flex-direction: column;
+            }
+
+            .cv1-contact-item {
+              justify-content: flex-start;
+            }
+
+            .cv1-name {
+              font-size: 22px;
+            }
+
+            .cv1-designation {
+              font-size: 14px;
+            }
+
+            .cv1-experience-header {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 2px;
+            }
+          }
+
+          @media (min-width: 1200px) {
+            .cv1-container {
+              padding: 16px;
+            }
+          }
+        `}</style>
+      </div>
+    </>
   );
-}
+};
+
+export default Cv1;

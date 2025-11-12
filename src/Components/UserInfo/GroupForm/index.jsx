@@ -1,59 +1,467 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
-  Box, Button, TextField, Typography, Grid, Card, CardContent, Dialog, DialogTitle, DialogContent, DialogActions, Collapse, IconButton,
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Collapse,
+  IconButton,
   FormControl,
   Select,
   MenuItem,
   InputLabel,
   useTheme,
-  useThemeProps,
-} from '@mui/material';
-import MDEditor from "@uiw/react-md-editor";
-import "@uiw/react-md-editor/markdown-editor.css";
-import "@uiw/react-markdown-preview/markdown.css";
-// import { Formik, Form, Field, ErrorMessage } from "formik";
-// import * as Yup from "yup";
-import { ExpandMore, ExpandLess, DragIndicator } from '@mui/icons-material';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import axios from 'axios';
-import { apiUrl } from '../../../utils/common';
-import { useSelector } from 'react-redux';
-import { format, parseISO } from 'date-fns';
+  Tooltip,
+  Chip,
+  Avatar,
+  Divider,
+  Paper,
+  Container,
+  Stack,
+  Checkbox,
+  FormControlLabel,
+  Alert,
+  Snackbar,
+} from "@mui/material";
+import InfoIcon from "@mui/icons-material/Info";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorIcon from "@mui/icons-material/Error";
+import {
+  ExpandMore,
+  ExpandLess,
+  DragIndicator,
+  Edit,
+  Add,
+  Delete,
+} from "@mui/icons-material";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import axios from "axios";
+import { apiUrl } from "../../../utils/common";
+import { useSelector } from "react-redux";
+import { format, parseISO } from "date-fns";
 
 // Define section types with fields, required fields, and whether they allow multiple entries
 const sectionTypes = {
-  Education: { title: 'Education', fields: ['college', 'course', 'fieldOfStudy', 'startDate', 'endDate', 'grade', 'location'], required: ['college'], single: false },
-  Experience: { title: 'Experience', fields: ['jobTitle', 'company', 'location', 'startDate', 'endDate', 'description'], required: ['jobTitle', 'company'], single: false },
-  Skill: { title: 'Skill', fields: ['skill', 'rating'], required: ['skill', 'rating'], single: false },
-  Certification: { title: 'Certification', fields: ['name', 'institute', 'issueDate'], required: ['name'], single: false },
-  // Language: { title: 'Language', fields: ['language', 'proficiency'], required: ['language'], single: false },
-  Language: {
-    title: 'Language',
-    fields: ['language', 'proficiency'],
-    required: ['language', 'proficiency'],
-    single: false
+  Education: {
+    title: "Education",
+    fields: [
+      "college",
+      "course",
+      "fieldOfStudy",
+      "startDate",
+      "endDate",
+      "currentlyStudying",
+      "grade",
+      "location",
+    ],
+    required: ["college"],
+    single: false,
+    icon: "🎓",
   },
-  Project: { title: 'Project', fields: ['name', 'description', 'url', 'technologies', 'projectImages'], required: ['name'], single: false },
-  Summary: { title: 'Summary', fields: ['summary'], required: ['summary'], single: true },
-  Achievement: { title: 'Achievement', fields: ['title'], required: ['title'], single: false },
-  Interest: { title: 'Interest', fields: ['interest'], required: ['interest'], single: false },
-  Award: { title: 'Award', fields: ['title', 'issuer', 'date', 'description'], required: ['title'], single: false },
+  Experience: {
+    title: "Experience",
+    fields: [
+      "jobTitle",
+      "company",
+      "location",
+      "startDate",
+      "endDate",
+      "currentlyWorking",
+      "description",
+    ],
+    required: ["jobTitle", "company"],
+    single: false,
+    icon: "💼",
+  },
+  Skill: {
+    title: "Skills",
+    fields: ["skill", "rating"],
+    required: ["skill", "rating"],
+    single: false,
+    icon: "⚡",
+  },
+  Certification: {
+    title: "Certifications",
+    fields: ["name", "institute", "issueDate"],
+    required: ["name"],
+    single: false,
+    icon: "📜",
+  },
+  Language: {
+    title: "Languages",
+    fields: ["language", "proficiency"],
+    required: ["language", "proficiency"],
+    single: false,
+    icon: "🌐",
+  },
+  Project: {
+    title: "Projects",
+    fields: ["name", "description", "url", "technologies", "projectImages"],
+    required: ["name"],
+    single: false,
+    icon: "🚀",
+  },
+  Summary: {
+    title: "Summary",
+    fields: ["summary"],
+    required: ["summary"],
+    single: true,
+    icon: "📝",
+  },
+  Achievement: {
+    title: "Achievements",
+    fields: ["title"],
+    required: ["title"],
+    single: false,
+    icon: "🏆",
+  },
+  Interest: {
+    title: "Interests",
+    fields: ["interest"],
+    required: ["interest"],
+    single: false,
+    icon: "❤️",
+  },
+  Award: {
+    title: "Awards",
+    fields: ["title", "issuer", "date", "description"],
+    required: ["title"],
+    single: false,
+    icon: "⭐",
+  },
 };
 
-const ItemType = 'SECTION';
+const ItemType = "SECTION";
 
-// Component for a draggable section (e.g., Education, Project)
-const DraggableSection = ({ section, index, moveSection, toggleSection, expandedSections, handleSectionChange, removeSection, removeEntry, addSectionEntry }) => {
+// Format date for display
+const formatDisplayDate = (dateString) => {
+  if (!dateString) return "";
+  try {
+    return format(parseISO(dateString), "MMM yyyy");
+  } catch {
+    return dateString;
+  }
+};
+
+// Calculate duration between two dates
+const calculateDuration = (startDate, endDate, currentlyActive = false) => {
+  if (!startDate) return "";
+
+  const start = parseISO(startDate);
+  const end = endDate && !currentlyActive ? parseISO(endDate) : new Date();
+
+  const months =
+    (end.getFullYear() - start.getFullYear()) * 12 +
+    (end.getMonth() - start.getMonth());
+
+  if (months < 12) {
+    return `${months} mos`;
+  } else {
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
+    return remainingMonths > 0
+      ? `${years} yrs ${remainingMonths} mos`
+      : `${years} yrs`;
+  }
+};
+
+// Preview component for collapsed section - LinkedIn Style
+const SectionPreview = ({ section, onEdit }) => {
+  const getPreviewContent = () => {
+    if (
+      !section.data ||
+      (Array.isArray(section.data) && section.data.length === 0)
+    ) {
+      return (
+        <Typography
+          color="text.secondary"
+          variant="body2"
+          sx={{ fontSize: "0.8rem" }}
+        >
+          No information added
+        </Typography>
+      );
+    }
+
+    if (section.name === "Summary") {
+      return (
+        <Typography
+          variant="body2"
+          sx={{ lineHeight: 1.4, color: "text.primary", fontSize: "0.85rem" }}
+        >
+          {section.data}
+        </Typography>
+      );
+    }
+
+    if (Array.isArray(section.data)) {
+      return (
+        <Stack spacing={1.5}>
+          {section.data.map((item, index) => (
+            <Box key={index}>
+              {/* Experience Section */}
+              {section.name === "Experience" && (
+                <Box>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight={600}
+                    gutterBottom
+                    color="text.primary"
+                    sx={{ fontSize: "0.9rem", mb: 0.25 }}
+                  >
+                    {item.jobTitle}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.primary"
+                    gutterBottom
+                    sx={{ fontSize: "0.8rem" }}
+                  >
+                    {item.company} · Full-time
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                    sx={{ fontSize: "0.75rem" }}
+                  >
+                    {formatDisplayDate(item.startDate)} -{" "}
+                    {item.currentlyWorking
+                      ? "Present"
+                      : formatDisplayDate(item.endDate)}{" "}
+                    ·{" "}
+                    {calculateDuration(
+                      item.startDate,
+                      item.endDate,
+                      item.currentlyWorking
+                    )}
+                  </Typography>
+                  {item.location && (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                      sx={{ fontSize: "0.75rem" }}
+                    >
+                      {item.location} · On-site
+                    </Typography>
+                  )}
+                  {item.description && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        mt: 0.5,
+                        lineHeight: 1.4,
+                        color: "text.primary",
+                        fontSize: "0.8rem",
+                      }}
+                    >
+                      {item.description.length > 100
+                        ? `${item.description.substring(0, 100)}...`
+                        : item.description}
+                    </Typography>
+                  )}
+                </Box>
+              )}
+
+              {/* Education Section */}
+              {section.name === "Education" && (
+                <Box>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight={600}
+                    gutterBottom
+                    color="text.primary"
+                    sx={{ fontSize: "0.9rem", mb: 0.25 }}
+                  >
+                    {item.college}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.primary"
+                    gutterBottom
+                    sx={{ fontSize: "0.8rem" }}
+                  >
+                    {item.course}
+                    {item.fieldOfStudy ? `, ${item.fieldOfStudy}` : ""}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontSize: "0.75rem" }}
+                  >
+                    {formatDisplayDate(item.startDate)} -{" "}
+                    {item.currentlyStudying
+                      ? "Present"
+                      : formatDisplayDate(item.endDate)}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Skills Section - Show all skills in one line */}
+              {section.name === "Skill" && index === 0 && (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.2 }}>
+                  {section.data.map((skillItem, skillIndex) => (
+                    <Chip
+                      key={skillIndex}
+                      label={skillItem.skill}
+                      variant="outlined"
+                      sx={{
+                        borderRadius: 0.8,
+                        m: 0.1,
+                        fontSize: "0.7rem",
+                        height: 22,
+                      }}
+                      size="small"
+                    />
+                  ))}
+                </Box>
+              )}
+
+              {/* Languages Section - Show all languages in one line */}
+              {section.name === "Language" && index === 0 && (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.2 }}>
+                  {section.data.map((languageItem, languageIndex) => (
+                    <Chip
+                      key={languageIndex}
+                      label={`${languageItem.language} - ${languageItem.proficiency}`}
+                      variant="outlined"
+                      sx={{
+                        borderRadius: 0.8,
+                        m: 0.1,
+                        fontSize: "0.7rem",
+                        height: 22,
+                      }}
+                      size="small"
+                    />
+                  ))}
+                </Box>
+              )}
+
+              {/* Projects Section */}
+              {section.name === "Project" && (
+                <Box>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight={600}
+                    gutterBottom
+                    color="text.primary"
+                    sx={{ fontSize: "0.9rem", mb: 0.25 }}
+                  >
+                    {item.name}
+                  </Typography>
+                  {item.description && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        lineHeight: 1.4,
+                        color: "text.primary",
+                        fontSize: "0.8rem",
+                      }}
+                    >
+                      {item.description.length > 100
+                        ? `${item.description.substring(0, 100)}...`
+                        : item.description}
+                    </Typography>
+                  )}
+                </Box>
+              )}
+
+              {/* Other Sections */}
+              {![
+                "Experience",
+                "Education",
+                "Skill",
+                "Language",
+                "Project",
+              ].includes(section.name) && (
+                <Typography
+                  variant="body2"
+                  color="text.primary"
+                  sx={{ fontSize: "0.85rem" }}
+                >
+                  {item[sectionTypes[section.name].fields[0]] ||
+                    `Entry #${index + 1}`}
+                </Typography>
+              )}
+
+              {/* Divider between entries except for the last one */}
+              {index < section.data.length - 1 &&
+                !["Skill", "Language"].includes(section.name) && (
+                  <Divider sx={{ my: 1 }} />
+                )}
+            </Box>
+          ))}
+        </Stack>
+      );
+    }
+
+    return null;
+  };
+
+  return <Box sx={{ width: "100%" }}>{getPreviewContent()}</Box>;
+};
+
+// Confirmation Dialog Component
+const ConfirmationDialog = ({ open, onClose, onConfirm, title, message }) => {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+      <DialogTitle sx={{ pb: 1, fontSize: "1rem" }}>{title}</DialogTitle>
+      <DialogContent sx={{ pb: 1 }}>
+        <Typography variant="body2">{message}</Typography>
+      </DialogContent>
+      <DialogActions sx={{ p: 2, pt: 0 }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          size="small"
+          sx={{ textTransform: "none" }}
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={onConfirm}
+          color="error"
+          variant="contained"
+          size="small"
+          sx={{ textTransform: "none" }}
+        >
+          Remove
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// Component for a draggable section
+const DraggableSection = ({
+  section,
+  index,
+  moveSection,
+  toggleSection,
+  expandedSections,
+  handleSectionChange,
+  removeSection,
+  removeEntry,
+  addSectionEntry,
+  errors,
+}) => {
   const [{ isDragging }, drag] = useDrag({
     type: ItemType,
     item: { index },
-    collect: monitor => ({ isDragging: monitor.isDragging() }),
+    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
   });
-  const theme = useTheme();
 
   const [, drop] = useDrop({
     accept: ItemType,
@@ -65,160 +473,995 @@ const DraggableSection = ({ section, index, moveSection, toggleSection, expanded
     },
   });
 
+  const isExpanded = expandedSections[section.name];
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    type: null, // 'section' or 'entry'
+    entryIndex: null,
+  });
+
+  const handleRemoveClick = (type, entryIndex = null) => {
+    setDeleteDialog({
+      open: true,
+      type,
+      entryIndex,
+    });
+  };
+
+  const handleConfirmRemove = () => {
+    if (deleteDialog.type === "section") {
+      removeSection(section.name);
+    } else if (deleteDialog.type === "entry") {
+      removeEntry(section.name, deleteDialog.entryIndex);
+    }
+    setDeleteDialog({ open: false, type: null, entryIndex: null });
+  };
+
+  const getDeleteMessage = () => {
+    if (deleteDialog.type === "section") {
+      return `Are you sure you want to remove the ${
+        sectionTypes[section.name].title
+      } section? This action cannot be undone.`;
+    } else if (deleteDialog.type === "entry") {
+      const entry = section.data[deleteDialog.entryIndex];
+      let entryName = `Entry #${deleteDialog.entryIndex + 1}`;
+
+      if (section.name === "Experience" && entry.jobTitle) {
+        entryName = `${entry.jobTitle} at ${
+          entry.company || "Unknown Company"
+        }`;
+      } else if (section.name === "Education" && entry.college) {
+        entryName = entry.college;
+      } else if (section.name === "Project" && entry.name) {
+        entryName = entry.name;
+      } else if (entry[sectionTypes[section.name].fields[0]]) {
+        entryName = entry[sectionTypes[section.name].fields[0]];
+      }
+
+      return `Are you sure you want to remove "${entryName}" from ${
+        sectionTypes[section.name].title
+      }?`;
+    }
+    return "";
+  };
+
   return (
-    <Card ref={node => drag(drop(node))} sx={{ mb: 1, borderRadius: 4, opacity: isDragging ? 0.5 : 1 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DragIndicator sx={{ color: '#666', fontSize: 20 }} />
-          <Typography sx={{ fontSize: '1rem', fontWeight: 500, }}>{sectionTypes[section.name].title}</Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button sx={{ color: '#d32f2f', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => removeSection(section.name)}>
-            Remove
-          </Button>
-          <IconButton onClick={() => toggleSection(section.name)}>
-            {expandedSections[section.name] ? <ExpandLess sx={{ color: '#666', fontSize: 20 }} /> : <ExpandMore sx={{ color: '#666', fontSize: 20 }} />}
-          </IconButton>
-        </Box>
-      </Box>
-
-      <Collapse in={expandedSections[section.name]}>
-        <CardContent sx={{ p: 2 }}>
-          {sectionTypes[section.name].single ? (
-            // Single-section UI (Summary as a string)
-            <Box sx={{ mb: 1 }}>
-              <TextField
-                fullWidth
-                label={sectionTypes[section.name].fields[0].charAt(0).toUpperCase() + sectionTypes[section.name].fields[0].slice(1)}
-                multiline
-                rows={4}
-                value={section.data ?? ''}
-                onChange={e => handleSectionChange(section.name, index, 0, sectionTypes[section.name].fields[0], e.target.value)}
-                variant="outlined"
-                error={sectionTypes[section.name].required.includes(sectionTypes[section.name].fields[0]) && !section.data}
-                helperText={
-                  sectionTypes[section.name].required.includes(sectionTypes[section.name].fields[0]) && !section.data
-                    ? `${sectionTypes[section.name].fields[0].charAt(0).toUpperCase() + sectionTypes[section.name].fields[0].slice(1)} is required`
-                    : ''
-                }
-              />
-            </Box>
-          ) : (
-            // Existing multi-entry UI (unchanged)
-            (section.data || []).map((entry, entryIndex) => (
-              <Box key={entryIndex} sx={{ border: '1px solid #e0e0e0', borderRadius: 4, p: 2, mb: 1 }}>
-                {sectionTypes[section.name].fields.map(field => (
-                  <Box key={field} sx={{ mb: 1 }}>
-                    {field === 'description' ? (
-                      <>
-                        <Typography variant="body2" sx={{ mb: 1 }}>Description</Typography>
-                        <MDEditor
-                          value={entry[field] || ""}
-                          onChange={(val) =>
-                            handleSectionChange(section.name, index, entryIndex, field, val || "")
-                          }
-                          preview="edit"
-                          height={200}
-                        />
-                      </>
-                    ) :
-                      field === 'proficiency' && section.name === 'Language' ? (
-                        <FormControl fullWidth margin="normal">
-                          {/* <TextField> */}
-                          <InputLabel>Proficiency</InputLabel>
-                          {/* </TextField> */}
-
-                          <Select
-                            label="Proficiency"
-                            value={entry[field] || ""}
-                            onChange={(e) =>
-                              handleSectionChange(section.name, index, entryIndex, field, e.target.value)
-                            }
-                          >
-                            <MenuItem value="normal">normal</MenuItem>
-                            <MenuItem value="good">good</MenuItem>
-                            <MenuItem value="very-good">very-good</MenuItem>
-                            <MenuItem value="excellent">excellent</MenuItem>
-                          </Select>
-                          {sectionTypes[section.name].required.includes(field) && !entry[field] && (
-                            <Typography color="error" variant="caption">{`${field.charAt(0).toUpperCase() + field.slice(1)} is required`}</Typography>
-                          )}
-                        </FormControl>
-                      ) : (
-                        <TextField
-                          fullWidth
-                          label={field.charAt(0).toUpperCase() + field.slice(1)}
-                          type={/date$/i.test(field) ? 'date' : field === 'rating' ? 'number' : 'text'}
-                          multiline={field === 'summary'}
-                          rows={field === 'summary' ? 4 : 1}
-                          value={
-                            field === 'technologies' || field === 'projectImages'
-                              ? Array.isArray(entry[field]) ? entry[field].join(',') : entry[field] || ''
-                              : /date$/i.test(field) && entry[field] // only try formatting if it ends with "Date" and has a value
-                                ? (() => {
-                                  try {
-                                    const parsed = parseISO(entry[field]);
-                                    return isNaN(parsed) ? '' : format(parsed, 'yyyy-MM-dd');
-                                  } catch {
-                                    return '';
-                                  }
-                                })()
-                                : entry[field] || ''
-                          }
-                          onChange={e => {
-                            const value =
-                              field === 'technologies' || field === 'projectImages'
-                                ? e.target.value.split(',').map(item => item.trim()).filter(item => item)
-                                : e.target.value;
-                            handleSectionChange(section.name, index, entryIndex, field, value);
-                          }}
-                          variant="outlined"
-                          InputLabelProps={/date$/i.test(field) ? { shrink: true } : undefined}
-                          error={sectionTypes[section.name].required.includes(field) && !entry[field]}
-                          helperText={
-                            sectionTypes[section.name].required.includes(field) && !entry[field]
-                              ? `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
-                              : (field === 'technologies' || field === 'projectImages') && entry[field] && !Array.isArray(entry[field])
-                                ? 'Enter a comma-separated list'
-                                : ''
-                          }
-                          inputProps={field === 'rating' ? { min: 1, max: 5 } : undefined}
-                        />
-
-                      )}
-                  </Box>
-                ))}
-
-                {!sectionTypes[section.name].single && (
-                  <Button sx={{ color: '#d32f2f', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => removeEntry(section.name, entryIndex)}>
-                    Remove Entry
-                  </Button>
+    <>
+      <Paper
+        ref={(node) => drag(drop(node))}
+        sx={{
+          mb: 1.5,
+          borderRadius: 1,
+          opacity: isDragging ? 0.5 : 1,
+          border: "1px solid",
+          borderColor: "divider",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+          transition: "all 0.2s ease-in-out",
+          "&:hover": {
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          },
+          overflow: "hidden",
+          backgroundColor: "transparent",
+          backgroundImage: "none",
+        }}
+      >
+        <Box
+          sx={{
+            p: 1.5,
+            borderBottom: isExpanded ? "1px solid" : "none",
+            borderColor: "divider",
+            backgroundColor: "transparent",
+          }}
+        >
+          {/* Section Header */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              mb: isExpanded ? 0 : 1,
+            }}
+          >
+            <Box
+              sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                <DragIndicator sx={{ color: "text.secondary", fontSize: 16 }} />
+                <Avatar
+                  sx={{
+                    bgcolor: "primary.main",
+                    width: 32,
+                    height: 32,
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {sectionTypes[section.name].icon}
+                </Avatar>
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={600}
+                  color="text.primary"
+                  sx={{ fontSize: "1rem", mb: 0.25 }}
+                >
+                  {sectionTypes[section.name].title}
+                </Typography>
+                {!isExpanded && (
+                  <SectionPreview
+                    section={section}
+                    onEdit={() => toggleSection(section.name)}
+                  />
                 )}
               </Box>
-            ))
+            </Box>
 
-          )}
+            <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
+              <Button
+                variant={isExpanded ? "outlined" : "contained"}
+                size="small"
+                startIcon={isExpanded ? <CheckCircleIcon /> : <Edit />}
+                sx={{
+                  textTransform: "none",
+                  fontSize: "0.75rem",
+                  borderRadius: 1,
+                  minWidth: 60,
+                  px: 1,
+                  py: 0.5,
+                }}
+                onClick={() => toggleSection(section.name)}
+              >
+                {isExpanded ? "Done" : "Edit"}
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                startIcon={<Delete />}
+                sx={{
+                  textTransform: "none",
+                  fontSize: "0.75rem",
+                  borderRadius: 1,
+                  minWidth: "auto",
+                  px: 0.75,
+                  py: 0.5,
+                }}
+                onClick={() => handleRemoveClick("section")}
+              >
+                Remove
+              </Button>
+            </Box>
+          </Box>
 
-          {!sectionTypes[section.name].single && (
-            <Button sx={{ bgcolor: '#388e3c', color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => addSectionEntry(section.name)}>
-              Add Entry
-            </Button>
-          )}
-        </CardContent>
-      </Collapse>
-    </Card>
+          {/* Section Content - Show form when expanded */}
+          <Collapse in={isExpanded}>
+            <Box sx={{ mt: 1.5 }}>
+              {sectionTypes[section.name].single ? (
+                <Box sx={{ mb: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Summary"
+                    multiline
+                    rows={4}
+                    value={section.data ?? ""}
+                    onChange={(e) =>
+                      handleSectionChange(
+                        section.name,
+                        index,
+                        0,
+                        "summary",
+                        e.target.value
+                      )
+                    }
+                    variant="outlined"
+                    error={!!errors[`${section.name}_0_summary`]}
+                    helperText={errors[`${section.name}_0_summary`]}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 1,
+                        backgroundColor: "white",
+                        fontSize: "0.85rem",
+                      },
+                    }}
+                  />
+                </Box>
+              ) : (
+                <Stack spacing={1.5}>
+                  {(section.data || []).map((entry, entryIndex) => (
+                    <Paper
+                      key={entryIndex}
+                      sx={{
+                        border: "1px solid",
+                        borderColor: "divider",
+                        borderRadius: 1,
+                        p: 1.5,
+                        backgroundColor: "white",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          mb: 1.5,
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight={600}
+                          color="text.primary"
+                          sx={{ fontSize: "0.9rem" }}
+                        >
+                          {section.name === "Experience"
+                            ? `${entry.jobTitle || "Untitled"} at ${
+                                entry.company || "Unknown Company"
+                              }`
+                            : section.name === "Education"
+                            ? entry.college || "Untitled Education"
+                            : section.name === "Project"
+                            ? entry.name || "Untitled Project"
+                            : `Entry #${entryIndex + 1}`}
+                        </Typography>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          startIcon={<Delete />}
+                          sx={{
+                            textTransform: "none",
+                            fontSize: "0.65rem",
+                            borderRadius: 1,
+                            px: 1,
+                            py: 0.25,
+                          }}
+                          onClick={() => handleRemoveClick("entry", entryIndex)}
+                        >
+                          Remove
+                        </Button>
+                      </Box>
+
+                      <Grid container spacing={1.5}>
+                        {sectionTypes[section.name].fields.map((field) => {
+                          const fieldError =
+                            errors[`${section.name}_${entryIndex}_${field}`];
+                          return (
+                            <Grid
+                              item
+                              xs={12}
+                              md={field === "description" ? 12 : 6}
+                              key={field}
+                            >
+                              <Box sx={{ mb: 1 }}>
+                                {field === "description" ? (
+                                  <TextField
+                                    fullWidth
+                                    size="small"
+                                    label="Description"
+                                    multiline
+                                    rows={4}
+                                    value={entry[field] || ""}
+                                    onChange={(e) =>
+                                      handleSectionChange(
+                                        section.name,
+                                        index,
+                                        entryIndex,
+                                        field,
+                                        e.target.value
+                                      )
+                                    }
+                                    variant="outlined"
+                                    error={!!fieldError}
+                                    helperText={fieldError}
+                                    sx={{
+                                      "& .MuiOutlinedInput-root": {
+                                        borderRadius: 1,
+                                        backgroundColor: "white",
+                                        fontSize: "0.85rem",
+                                      },
+                                    }}
+                                  />
+                                ) : field === "currentlyWorking" &&
+                                  section.name === "Experience" ? (
+                                  <FormControlLabel
+                                    control={
+                                      <Checkbox
+                                        checked={entry[field] || false}
+                                        onChange={(e) =>
+                                          handleSectionChange(
+                                            section.name,
+                                            index,
+                                            entryIndex,
+                                            field,
+                                            e.target.checked
+                                          )
+                                        }
+                                        color="primary"
+                                        size="small"
+                                      />
+                                    }
+                                    label="I am currently working in this role"
+                                    sx={{ fontSize: "0.8rem" }}
+                                  />
+                                ) : field === "currentlyStudying" &&
+                                  section.name === "Education" ? (
+                                  <FormControlLabel
+                                    control={
+                                      <Checkbox
+                                        checked={entry[field] || false}
+                                        onChange={(e) =>
+                                          handleSectionChange(
+                                            section.name,
+                                            index,
+                                            entryIndex,
+                                            field,
+                                            e.target.checked
+                                          )
+                                        }
+                                        color="primary"
+                                        size="small"
+                                      />
+                                    }
+                                    label="I am currently studying here"
+                                    sx={{ fontSize: "0.8rem" }}
+                                  />
+                                ) : field === "proficiency" &&
+                                  section.name === "Language" ? (
+                                  <FormControl fullWidth size="small">
+                                    <InputLabel sx={{ fontSize: "0.85rem" }}>
+                                      Proficiency
+                                    </InputLabel>
+                                    <Select
+                                      label="Proficiency"
+                                      value={entry[field] || ""}
+                                      onChange={(e) =>
+                                        handleSectionChange(
+                                          section.name,
+                                          index,
+                                          entryIndex,
+                                          field,
+                                          e.target.value
+                                        )
+                                      }
+                                      sx={{
+                                        borderRadius: 1,
+                                        fontSize: "0.85rem",
+                                      }}
+                                      error={!!fieldError}
+                                    >
+                                      <MenuItem
+                                        value="normal"
+                                        sx={{ fontSize: "0.85rem" }}
+                                      >
+                                        Normal
+                                      </MenuItem>
+                                      <MenuItem
+                                        value="good"
+                                        sx={{ fontSize: "0.85rem" }}
+                                      >
+                                        Good
+                                      </MenuItem>
+                                      <MenuItem
+                                        value="very-good"
+                                        sx={{ fontSize: "0.85rem" }}
+                                      >
+                                        Very Good
+                                      </MenuItem>
+                                      <MenuItem
+                                        value="excellent"
+                                        sx={{ fontSize: "0.85rem" }}
+                                      >
+                                        Excellent
+                                      </MenuItem>
+                                    </Select>
+                                    {fieldError && (
+                                      <Typography
+                                        color="error"
+                                        variant="caption"
+                                        sx={{
+                                          fontSize: "0.7rem",
+                                          mt: 0.5,
+                                          display: "block",
+                                        }}
+                                      >
+                                        {fieldError}
+                                      </Typography>
+                                    )}
+                                  </FormControl>
+                                ) : (
+                                  <TextField
+                                    fullWidth
+                                    size="small"
+                                    label={
+                                      field.charAt(0).toUpperCase() +
+                                      field.slice(1)
+                                    }
+                                    type={
+                                      /date$/i.test(field)
+                                        ? "date"
+                                        : field === "rating"
+                                        ? "number"
+                                        : "text"
+                                    }
+                                    multiline={field === "summary"}
+                                    rows={field === "summary" ? 4 : 1}
+                                    value={
+                                      field === "technologies" ||
+                                      field === "projectImages"
+                                        ? Array.isArray(entry[field])
+                                          ? entry[field].join(", ")
+                                          : entry[field] || ""
+                                        : /date$/i.test(field) && entry[field]
+                                        ? (() => {
+                                            try {
+                                              const parsed = parseISO(
+                                                entry[field]
+                                              );
+                                              return isNaN(parsed)
+                                                ? ""
+                                                : format(parsed, "yyyy-MM-dd");
+                                            } catch {
+                                              return "";
+                                            }
+                                          })()
+                                        : entry[field] || ""
+                                    }
+                                    onChange={(e) => {
+                                      const value =
+                                        field === "technologies" ||
+                                        field === "projectImages"
+                                          ? e.target.value
+                                              .split(",")
+                                              .map((item) => item.trim())
+                                              .filter((item) => item)
+                                          : e.target.value;
+                                      handleSectionChange(
+                                        section.name,
+                                        index,
+                                        entryIndex,
+                                        field,
+                                        value
+                                      );
+                                    }}
+                                    variant="outlined"
+                                    InputLabelProps={
+                                      /date$/i.test(field)
+                                        ? { shrink: true }
+                                        : undefined
+                                    }
+                                    inputProps={
+                                      field === "rating"
+                                        ? { min: 1, max: 5 }
+                                        : undefined
+                                    }
+                                    disabled={
+                                      (field === "endDate" &&
+                                        entry.currentlyWorking) ||
+                                      (field === "endDate" &&
+                                        entry.currentlyStudying)
+                                    }
+                                    error={!!fieldError}
+                                    helperText={fieldError}
+                                    sx={{
+                                      "& .MuiOutlinedInput-root": {
+                                        borderRadius: 1,
+                                        backgroundColor: "white",
+                                        fontSize: "0.85rem",
+                                      },
+                                      "& .MuiInputLabel-root": {
+                                        fontSize: "0.85rem",
+                                      },
+                                      "& .MuiFormHelperText-root": {
+                                        fontSize: "0.7rem",
+                                      },
+                                    }}
+                                  />
+                                )}
+                              </Box>
+                            </Grid>
+                          );
+                        })}
+                      </Grid>
+                    </Paper>
+                  ))}
+                </Stack>
+              )}
+
+              {!sectionTypes[section.name].single && (
+                <Button
+                  variant="outlined"
+                  startIcon={<Add />}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "0.75rem",
+                    borderRadius: 1,
+                    px: 1.5,
+                    mt: 1,
+                    borderColor: "primary.main",
+                    color: "primary.main",
+                    backgroundColor: "white",
+                    "&:hover": {
+                      borderColor: "primary.dark",
+                      backgroundColor: "primary.light",
+                    },
+                  }}
+                  onClick={() => addSectionEntry(section.name)}
+                >
+                  Add {sectionTypes[section.name].title.slice(0, -1)}
+                </Button>
+              )}
+            </Box>
+          </Collapse>
+        </Box>
+      </Paper>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteDialog.open}
+        onClose={() =>
+          setDeleteDialog({ open: false, type: null, entryIndex: null })
+        }
+        onConfirm={handleConfirmRemove}
+        title="Confirm Removal"
+        message={getDeleteMessage()}
+      />
+    </>
   );
 };
 
+// Personal Information Component
+const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <Paper
+      sx={{
+        mb: 2,
+        borderRadius: 1,
+        border: "1px solid",
+        borderColor: "divider",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+        overflow: "hidden",
+        backgroundColor: "transparent",
+      }}
+    >
+      <Box
+        sx={{
+          p: 1.5,
+          borderBottom: expanded ? "1px solid" : "none",
+          borderColor: "divider",
+          backgroundColor: "transparent",
+        }}
+      >
+        {/* Personal Info Header */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            mb: expanded ? 0 : 1,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <Avatar
+                sx={{
+                  bgcolor: "primary.main",
+                  width: 32,
+                  height: 32,
+                  fontSize: "0.8rem",
+                }}
+              >
+                👤
+              </Avatar>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography
+                variant="subtitle1"
+                fontWeight={600}
+                color="text.primary"
+                sx={{ fontSize: "1rem", mb: 0.25 }}
+              >
+                Personal Information
+              </Typography>
+              {!expanded && (
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.primary"
+                    sx={{ fontSize: "0.8rem" }}
+                  >
+                    {group.firstName} {group.lastName}
+                    {group.designation && ` • ${group.designation}`}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontSize: "0.75rem" }}
+                  >
+                    {group.email} {group.phoneNo && ` • ${group.phoneNo}`}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontSize: "0.75rem" }}
+                  >
+                    {group.city && `${group.city}`}
+                    {group.state && `, ${group.state}`}
+                    {group.country && `, ${group.country}`}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+
+          <Button
+            variant={expanded ? "outlined" : "contained"}
+            size="small"
+            startIcon={expanded ? <CheckCircleIcon /> : <Edit />}
+            sx={{
+              textTransform: "none",
+              fontSize: "0.75rem",
+              borderRadius: 1,
+              minWidth: 60,
+              px: 1,
+              py: 0.5,
+            }}
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? "Done" : "Edit"}
+          </Button>
+        </Box>
+
+        {/* Personal Info Form */}
+        <Collapse in={expanded}>
+          <Box sx={{ mt: 1.5 }}>
+            <Typography
+              variant="subtitle2"
+              fontWeight={600}
+              sx={{ mb: 1.5, fontSize: "0.9rem" }}
+              color="text.primary"
+            >
+              Basic Information
+            </Typography>
+            <Grid container spacing={1.5}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="First Name *"
+                  value={group.firstName || ""}
+                  onChange={(e) =>
+                    handleInputChange("firstName", e.target.value)
+                  }
+                  error={!!errors.firstName}
+                  helperText={errors.firstName}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Last Name *"
+                  value={group.lastName || ""}
+                  onChange={(e) =>
+                    handleInputChange("lastName", e.target.value)
+                  }
+                  error={!!errors.lastName}
+                  helperText={errors.lastName}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Designation *"
+                  value={group.designation || ""}
+                  onChange={(e) =>
+                    handleInputChange("designation", e.target.value)
+                  }
+                  error={!!errors.designation}
+                  helperText={errors.designation}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Email *"
+                  type="email"
+                  value={group.email || ""}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  error={!!errors.email}
+                  helperText={errors.email}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Phone Number *"
+                  value={group.phoneNo || ""}
+                  onChange={(e) => handleInputChange("phoneNo", e.target.value)}
+                  error={!!errors.phoneNo}
+                  helperText={errors.phoneNo}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Date of Birth"
+                  type="date"
+                  value={group.dob || ""}
+                  onChange={(e) => handleInputChange("dob", e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                  error={!!errors.dob}
+                  helperText={errors.dob}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel sx={{ fontSize: "0.85rem" }}>Gender</InputLabel>
+                  <Select
+                    label="Gender"
+                    value={group.gender || ""}
+                    onChange={(e) =>
+                      handleInputChange("gender", e.target.value)
+                    }
+                    sx={{
+                      borderRadius: 1,
+                      fontSize: "0.85rem",
+                      backgroundColor: "white",
+                    }}
+                  >
+                    <MenuItem value="Male" sx={{ fontSize: "0.85rem" }}>
+                      Male
+                    </MenuItem>
+                    <MenuItem value="Female" sx={{ fontSize: "0.85rem" }}>
+                      Female
+                    </MenuItem>
+                    <MenuItem value="Other" sx={{ fontSize: "0.85rem" }}>
+                      Other
+                    </MenuItem>
+                    <MenuItem
+                      value="Prefer not to say"
+                      sx={{ fontSize: "0.85rem" }}
+                    >
+                      Prefer not to say
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+
+            <Typography
+              variant="subtitle2"
+              fontWeight={600}
+              sx={{ mt: 2, mb: 1.5, fontSize: "0.9rem" }}
+              color="text.primary"
+            >
+              Address Information
+            </Typography>
+            <Grid container spacing={1.5}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Street Address"
+                  value={group.street || ""}
+                  onChange={(e) => handleInputChange("street", e.target.value)}
+                  error={!!errors.street}
+                  helperText={errors.street}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="City *"
+                  value={group.city || ""}
+                  onChange={(e) => handleInputChange("city", e.target.value)}
+                  error={!!errors.city}
+                  helperText={errors.city}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="State *"
+                  value={group.state || ""}
+                  onChange={(e) => handleInputChange("state", e.target.value)}
+                  error={!!errors.state}
+                  helperText={errors.state}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="ZIP / Postal Code *"
+                  value={group.zip || ""}
+                  onChange={(e) => handleInputChange("zip", e.target.value)}
+                  error={!!errors.zip}
+                  helperText={errors.zip}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Country *"
+                  value={group.country || ""}
+                  onChange={(e) => handleInputChange("country", e.target.value)}
+                  error={!!errors.country}
+                  helperText={errors.country}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+            </Grid>
+
+            <Typography
+              variant="subtitle2"
+              fontWeight={600}
+              sx={{ mt: 2, mb: 1.5, fontSize: "0.9rem" }}
+              color="text.primary"
+            >
+              Social Links
+            </Typography>
+            <Grid container spacing={1.5}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="LinkedIn Profile URL"
+                  value={group.socialLinks?.[0] || ""}
+                  onChange={(e) => {
+                    const newLinks = [...(group.socialLinks || [])];
+                    newLinks[0] = e.target.value;
+                    handleInputChange("socialLinks", newLinks);
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="GitHub Profile URL"
+                  value={group.socialLinks?.[1] || ""}
+                  onChange={(e) => {
+                    const newLinks = [...(group.socialLinks || [])];
+                    newLinks[1] = e.target.value;
+                    handleInputChange("socialLinks", newLinks);
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Portfolio Website"
+                  value={group.socialLinks?.[2] || ""}
+                  onChange={(e) => {
+                    const newLinks = [...(group.socialLinks || [])];
+                    newLinks[2] = e.target.value;
+                    handleInputChange("socialLinks", newLinks);
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                      backgroundColor: "white",
+                      fontSize: "0.85rem",
+                    },
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </Collapse>
+      </Box>
+    </Paper>
+  );
+};
 
 // Main form component
 const GroupForm = () => {
-  const userProfile = useSelector(state => state.userProfile.data);
-  const theme = useTheme()
-  const username = userProfile?.fetchedUsed?.userName
-  const userId = userProfile?.fetchedUsed?.userId
+  const userProfile = useSelector((state) => state.userProfile.data);
+  const theme = useTheme();
+  const username = userProfile?.fetchedUsed?.userName;
+  const userId = userProfile?.fetchedUsed?.userId;
   const [searchParams] = useSearchParams();
-  const groupId = searchParams.get("groupId",);
+  const groupId = searchParams.get("groupId");
   const isEdit = searchParams.get("edit") === "true";
   const navigate = useNavigate();
   const [group, setGroup] = useState({
@@ -229,41 +1472,68 @@ const GroupForm = () => {
     dob: "",
     gender: "",
     designation: "",
-    socialLinks: [
-
-    ],
+    socialLinks: [],
     street: "",
     city: "",
     state: "",
     pinCode: "",
     country: "",
-    sections: []
+    sections: [],
   });
   const [showModal, setShowModal] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load existing group data if editing
   useEffect(() => {
     const fetchGroup = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/getSingleCv/${username}/${groupId}`);
+        const response = await axios.get(
+          `${apiUrl}/getSingleCv/${username}/${groupId}`
+        );
         const cvData = response.data.singleCv;
-        // console.log();
-        // console.log('CV Data:', cvData);
 
         if (cvData) {
-          const updatedSections = cvData.sections.map(section => {
-            if (section.name.toLowerCase() === 'summary') {
-              // return { name: 'Summary', data: '' };
-              const data = Array.isArray(section.data) ? (section.data[0] || '') : (section.data || '');
-              return { name: 'Summary', data };
+          const updatedSections = cvData.sections.map((section) => {
+            if (section.name.toLowerCase() === "summary") {
+              const data = Array.isArray(section.data)
+                ? section.data[0] || ""
+                : section.data || "";
+              return { name: "Summary", data };
             }
-            if (section.name.toLowerCase() === 'achievement') {
-              return { name: 'Achievement', data: section.data.map(entry => ({ title: entry })) };
+            if (section.name.toLowerCase() === "achievement") {
+              return {
+                name: "Achievement",
+                data: section.data.map((entry) => ({ title: entry })),
+              };
             }
-            if (section.name.toLowerCase() === 'interest') {
-              return { name: 'Interest', data: section.data.map(entry => ({ interest: entry })) };
+            if (section.name.toLowerCase() === "interest") {
+              return {
+                name: "Interest",
+                data: section.data.map((entry) => ({ interest: entry })),
+              };
+            }
+            // Add currentlyWorking field to experience entries
+            if (section.name.toLowerCase() === "experience") {
+              return {
+                ...section,
+                data: section.data.map((entry) => ({
+                  ...entry,
+                  currentlyWorking: entry.currentlyWorking || false,
+                })),
+              };
+            }
+            // Add currentlyStudying field to education entries
+            if (section.name.toLowerCase() === "education") {
+              return {
+                ...section,
+                data: section.data.map((entry) => ({
+                  ...entry,
+                  currentlyStudying: entry.currentlyStudying || false,
+                })),
+              };
             }
             return section;
           });
@@ -278,7 +1548,10 @@ const GroupForm = () => {
             dob: cvData?.dob || "",
             gender: cvData?.gender || "",
             designation: cvData?.designation || "",
-            socialLinks: cvData?.socialLinks && Array.isArray(cvData.socialLinks) ? cvData.socialLinks : [],
+            socialLinks:
+              cvData?.socialLinks && Array.isArray(cvData.socialLinks)
+                ? cvData.socialLinks
+                : [],
             street: cvData?.address?.street || "",
             city: cvData?.address?.city || "",
             state: cvData?.address?.state || "",
@@ -287,93 +1560,114 @@ const GroupForm = () => {
             sections: updatedSections,
           });
 
+          // Initially collapse all sections
           setExpandedSections(
-            updatedSections.reduce((acc, section) => ({ ...acc, [section.name]: false }), {})
+            updatedSections.reduce(
+              (acc, section) => ({ ...acc, [section.name]: false }),
+              {}
+            )
           );
         }
       } catch (err) {
-        // console.error('Error fetching group:', err);
+        console.error("Error fetching group:", err);
       }
     };
-    fetchGroup();
-  }
-    , []);
-
+    if (isEdit && groupId) {
+      fetchGroup();
+    }
+  }, [isEdit, groupId, username, userId]);
 
   // Update personal info fields
   const handleInputChange = (field, value) => {
-    setGroup(prev => ({ ...prev, [field]: value }));
-
-    setErrors(prev => ({ ...prev, [field]: '' }));
+    setGroup((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
   // Update section fields
-  const handleSectionChange = (sectionName, sectionIndex, entryIndex, field, value) => {
-    setGroup(prev => {
+  const handleSectionChange = (
+    sectionName,
+    sectionIndex,
+    entryIndex,
+    field,
+    value
+  ) => {
+    setGroup((prev) => {
       const updatedSections = [...prev.sections];
       const targetSection = updatedSections[sectionIndex];
       if (!targetSection) return prev;
 
       if (sectionTypes[sectionName].single) {
-        // store a string directly for single sections (e.g., Summary)
         updatedSections[sectionIndex] = { ...targetSection, data: value };
       } else {
         const updatedData = targetSection.data.map((item, i) =>
-          i === entryIndex ? { ...item, [field]: field === 'rating' ? Number(value) : value } : item
+          i === entryIndex
+            ? { ...item, [field]: field === "rating" ? Number(value) : value }
+            : item
         );
         updatedSections[sectionIndex] = { ...targetSection, data: updatedData };
       }
       return { ...prev, sections: updatedSections };
     });
 
-    // keep same error key pattern (use entryIndex 0 for single sections)
-    setErrors(prev => ({ ...prev, [`${sectionName}_${entryIndex}_${field}`]: '' }));
+    setErrors((prev) => ({
+      ...prev,
+      [`${sectionName}_${entryIndex}_${field}`]: "",
+    }));
   };
-
 
   // Add a new section or entry
   const addSectionEntry = (sectionName) => {
     const fields = sectionTypes[sectionName].fields.reduce(
       (acc, field) => ({
         ...acc,
-        [field]: field === 'rating' ? 1 : field === 'technologies' || field === 'projectImages' ? [] : '',
+        [field]:
+          field === "rating"
+            ? 1
+            : field === "technologies" || field === "projectImages"
+            ? []
+            : field === "currentlyWorking" || field === "currentlyStudying"
+            ? false
+            : "",
       }),
       {}
     );
-    setGroup(prev => {
-      const existingSection = prev.sections.find(s => s.name === sectionName);
+    setGroup((prev) => {
+      const existingSection = prev.sections.find((s) => s.name === sectionName);
       if (sectionTypes[sectionName].single) {
         return {
           ...prev,
           sections: [
-            ...prev.sections.filter(s => s.name !== sectionName),
-            { name: sectionName, data: "" }],
+            ...prev.sections.filter((s) => s.name !== sectionName),
+            { name: sectionName, data: "" },
+          ],
         };
       }
       return {
         ...prev,
         sections: existingSection
-          ? prev.sections.map(s => (s.name === sectionName ? { ...s, data: [...s.data, fields] } : s))
+          ? prev.sections.map((s) =>
+              s.name === sectionName ? { ...s, data: [...s.data, fields] } : s
+            )
           : [...prev.sections, { name: sectionName, data: [fields] }],
       };
     });
-    setExpandedSections(prev => ({ ...prev, [sectionName]: true }));
+    setExpandedSections((prev) => ({ ...prev, [sectionName]: true }));
   };
 
   // Remove a section
   const removeSection = (sectionName) => {
-    setGroup(prev => ({
+    setGroup((prev) => ({
       ...prev,
-      sections: prev.sections.filter(s => s.name !== sectionName),
+      sections: prev.sections.filter((s) => s.name !== sectionName),
     }));
-    setExpandedSections(prev => {
+    setExpandedSections((prev) => {
       const newExpanded = { ...prev };
       delete newExpanded[sectionName];
       return newExpanded;
     });
-    setErrors(prev => {
+    setErrors((prev) => {
       const newErrors = { ...prev };
-      Object.keys(prev).forEach(key => {
+      Object.keys(prev).forEach((key) => {
         if (key.startsWith(sectionName)) delete newErrors[key];
       });
       return newErrors;
@@ -382,17 +1676,21 @@ const GroupForm = () => {
 
   // Remove an entry
   const removeEntry = (sectionName, entryIndex) => {
-    setGroup(prev => {
+    setGroup((prev) => {
       const updatedSections = [...prev.sections];
-      const sectionIndex = updatedSections.findIndex(s => s.name === sectionName);
+      const sectionIndex = updatedSections.findIndex(
+        (s) => s.name === sectionName
+      );
       if (sectionIndex !== -1 && !sectionTypes[sectionName].single) {
         updatedSections[sectionIndex] = {
           ...updatedSections[sectionIndex],
-          data: updatedSections[sectionIndex].data.filter((_, i) => i !== entryIndex),
+          data: updatedSections[sectionIndex].data.filter(
+            (_, i) => i !== entryIndex
+          ),
         };
         if (updatedSections[sectionIndex].data.length === 0) {
           updatedSections.splice(sectionIndex, 1);
-          setExpandedSections(prev => {
+          setExpandedSections((prev) => {
             const newExpanded = { ...prev };
             delete newExpanded[sectionName];
             return newExpanded;
@@ -401,10 +1699,11 @@ const GroupForm = () => {
       }
       return { ...prev, sections: updatedSections };
     });
-    setErrors(prev => {
+    setErrors((prev) => {
       const newErrors = { ...prev };
-      Object.keys(prev).forEach(key => {
-        if (key.startsWith(`${sectionName}_${entryIndex}`)) delete newErrors[key];
+      Object.keys(prev).forEach((key) => {
+        if (key.startsWith(`${sectionName}_${entryIndex}`))
+          delete newErrors[key];
       });
       return newErrors;
     });
@@ -412,7 +1711,7 @@ const GroupForm = () => {
 
   // Toggle section collapse
   const toggleSection = (sectionName) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
       [sectionName]: !prev[sectionName],
     }));
@@ -420,7 +1719,7 @@ const GroupForm = () => {
 
   // Move section for drag-and-drop
   const moveSection = (fromIndex, toIndex) => {
-    setGroup(prev => {
+    setGroup((prev) => {
       const reorderedSections = [...prev.sections];
       const [moved] = reorderedSections.splice(fromIndex, 1);
       reorderedSections.splice(toIndex, 0, moved);
@@ -429,44 +1728,97 @@ const GroupForm = () => {
   };
 
   // Validate form
+  // Validate form
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
+
+    // Validate personal information
+    if (!group.firstName?.trim()) {
+      newErrors.firstName = "First name is required";
+      isValid = false;
+    }
+    if (!group.lastName?.trim()) {
+      newErrors.lastName = "Last name is required";
+      isValid = false;
+    }
+    if (!group.designation?.trim()) {
+      newErrors.designation = "Designation is required";
+      isValid = false;
+    }
+    if (!group.email?.trim()) {
+      newErrors.email = "Email is required";
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(group.email)) {
+      newErrors.email = "Email is invalid";
+      isValid = false;
+    }
+    if (!group.phoneNo?.toString()?.trim()) {
+      newErrors.phoneNo = "Phone number is required";
+      isValid = false;
+    }
+    if (!group.city?.trim()) {
+      newErrors.city = "City is required";
+      isValid = false;
+    }
+    if (!group.state?.trim()) {
+      newErrors.state = "State is required";
+      isValid = false;
+    }
+    if (!group.zip?.toString()?.trim()) {
+      newErrors.zip = "ZIP code is required";
+      isValid = false;
+    }
+    if (!group.country?.trim()) {
+      newErrors.country = "Country is required";
+      isValid = false;
+    }
+
+    // Check if there are any sections
+    if (group.sections.length === 0) {
+      setSubmitError(
+        "Please add at least one section to your CV before saving."
+      );
+      isValid = false;
+    }
 
     group.sections.forEach((section, sectionIndex) => {
       const sectionConfig = sectionTypes[section.name];
 
       if (sectionConfig.single) {
-        // section.data is a string for single sections (e.g., Summary)
-        sectionConfig.required.forEach(field => {
+        sectionConfig.required.forEach((field) => {
           const value = section.data;
           if (!value || (Array.isArray(value) && value.length === 0)) {
-            newErrors[`${section.name}_0_${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+            newErrors[`${section.name}_0_${field}`] = `${
+              field.charAt(0).toUpperCase() + field.slice(1)
+            } is required`;
             isValid = false;
           }
         });
       } else {
-        // existing multi-entry validation
         const data = section.data || [];
+        if (data.length === 0) {
+          newErrors[
+            section.name
+          ] = `Please add at least one entry to ${sectionConfig.title}`;
+          isValid = false;
+        }
+
         data.forEach((entry, entryIndex) => {
-          sectionConfig.required.forEach(field => {
-            if (!entry[field] || (Array.isArray(entry[field]) && entry[field].length === 0)) {
-              newErrors[`${section.name}_${entryIndex}_${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+          sectionConfig.required.forEach((field) => {
+            const fieldValue = entry[field];
+            if (
+              !fieldValue ||
+              (Array.isArray(fieldValue) && fieldValue.length === 0) ||
+              (typeof fieldValue === "string" && !fieldValue.trim()) ||
+              (typeof fieldValue === "number" && isNaN(fieldValue))
+            ) {
+              newErrors[`${section.name}_${entryIndex}_${field}`] = `${
+                field.charAt(0).toUpperCase() + field.slice(1)
+              } is required`;
               isValid = false;
             }
           });
-          if (section.name.toLowerCase() === 'skill' && entry.rating && (entry.rating < 1 || entry.rating > 5)) {
-            newErrors[`${section.name}_${entryIndex}_rating`] = 'Rating must be between 1 and 5';
-            isValid = false;
-          }
-          if (section.name.toLowerCase() === 'project' && entry.technologies && !Array.isArray(entry.technologies)) {
-            newErrors[`${section.name}_${entryIndex}_technologies`] = 'Technologies must be a comma-separated list';
-            isValid = false;
-          }
-          if (section.name.toLowerCase() === 'project' && entry.projectImages && !Array.isArray(entry.projectImages)) {
-            newErrors[`${section.name}_${entryIndex}_projectImages`] = 'Project images must be a comma-separated list';
-            isValid = false;
-          }
         });
       }
     });
@@ -475,77 +1827,32 @@ const GroupForm = () => {
     return isValid;
   };
 
-
-  // Simple validation for personal info
-  const validatePersonalInfo = () => {
-    const newErrors = {};
-    // const lettersOnly = /^[A-Za-z]+$/;
-    const lettersAndSpaces = /^[A-Za-z ]+$/;
-    const numbersOnly = /^[0-9]+$/;
-
-    if (!group.designation || !lettersAndSpaces.test(group.designation)) {
-      newErrors.designation = "Only letters & spaces allowed";
-    }
-
-    if (!group.firstName || !lettersAndSpaces.test(group.firstName)) {
-      newErrors.firstName = "Letters only";
-    }
-
-    if (!group.lastName || !lettersAndSpaces.test(group.lastName)) {
-      newErrors.lastName = "Letters only";
-    }
-
-    if (!group.city || !lettersAndSpaces.test(group.city)) {
-      newErrors.city = "Letters & spaces only";
-    }
-    if (!group.country || !lettersAndSpaces.test(group.country)) {
-      newErrors.country = "Letters & spaces only";
-    }
-
-    if (!group.state || !lettersAndSpaces.test(group.state)) {
-      newErrors.state = "Letters & spaces only";
-    }
-    if (!group.gender || !lettersAndSpaces.test(group.gender)) {
-      newErrors.gender = "Letters & spaces only Ex:male,female,other";
-    }
-
-    if (!group.phoneNo || !numbersOnly.test(group.phoneNo)) {
-      newErrors.phoneNo = "Numbers only";
-    }
-
-    if (!group.zip || !numbersOnly.test(group.zip)) {
-      newErrors.zip = "Numbers only";
-    }
-
-    setErrors(prev => ({ ...prev, ...newErrors }));
-
-    return Object.keys(newErrors).length === 0;
-  };
-
-
-
-
   // Submit form to API
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validatePersonalInfo()) {
-      alert('Please fill personal info correctly.');
-      return;
-    }
+    setSubmitError("");
+    setIsSubmitting(true);
+
     if (!validateForm()) {
-      alert('Please fill all required fields correctly.');
+      setIsSubmitting(false);
       return;
     }
 
-    const formattedSections = group.sections.map(section => {
-      if (section.name === 'Summary') {
+    const formattedSections = group.sections.map((section) => {
+      if (section.name === "Summary") {
         return { name: section.name, data: section.data };
       }
-      if (section.name === 'Achievement') {
-        return { name: section.name, data: section.data.map(entry => entry.title) };
+      if (section.name === "Achievement") {
+        return {
+          name: section.name,
+          data: section.data.map((entry) => entry.title),
+        };
       }
-      if (section.name === 'Interest') {
-        return { name: section.name, data: section.data.map(entry => entry.interest) };
+      if (section.name === "Interest") {
+        return {
+          name: section.name,
+          data: section.data.map((entry) => entry.interest),
+        };
       }
       return section;
     });
@@ -570,19 +1877,15 @@ const GroupForm = () => {
               city: group.city,
               state: group.state,
               pinCode: Number(group.zip),
-              country: group.country
+              country: group.country,
             },
             sections: formattedSections,
           },
-        }
-        let response;
-        if (groupId) {
-          response = await axios.put(`${apiUrl}/updateCvInfoSet`, payloadCvupdate);
-          navigate('/edit');
-          console.log("update");
-        }
+        };
+
+        await axios.put(`${apiUrl}/updateCvInfoSet`, payloadCvupdate);
+        navigate("/edit");
       } else {
-        // for create 
         const payloadCreateCv = {
           userId: userId,
           userName: username,
@@ -601,174 +1904,319 @@ const GroupForm = () => {
                 city: group.city,
                 pinCode: Number(group.zip),
                 state: group.state,
-                country: group.country
+                country: group.country,
               },
-              sections: formattedSections
-            }
-          ]
-        }
+              sections: formattedSections,
+            },
+          ],
+        };
+
         try {
-          const response = await axios.post(`${apiUrl}/create-cv`, payloadCreateCv);
-          // console.log(response, "this from cv");
-          navigate('/edit');
-        }
-        catch {
-          alert('Failed to save CV. Please try again.');
+          const response = await axios.post(
+            `${apiUrl}/create-cv`,
+            payloadCreateCv
+          );
+          navigate("/edit");
+        } catch (error) {
+          setSubmitError(
+            "Failed to save your CV. Please check all required fields and try again."
+          );
         }
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Failed to save CV. Please try again.');
-      return;
+      console.error("Error submitting form:", error);
+      setSubmitError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Cancel form
   const handleCancel = () => {
-    navigate('/edit');
+    navigate("/edit");
   };
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Box sx={{ fullWidth: true, mx: 'auto', p: 2, borderRadius: 4 }}>
-        <Typography sx={{ fontSize: '1.5rem', fontWeight: 600, mb: 2 }}>
-          {groupId ? `Update Info of ${groupId}` : 'Add New Info'}
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {/* Personal Information */}
-          <Card sx={{ borderRadius: 4 }}>
-            <CardContent>
-              <Typography sx={{ fontSize: '1rem', fontWeight: 500, mb: 1 }}>Personal Information</Typography>
-              <Grid container spacing={2}>
-                {[
-                  { label: 'First Name', field: 'firstName', type: 'text', size: 6 },
-                  { label: 'Last Name', field: 'lastName', type: 'text', size: 6 },
-                  { label: 'Email', field: 'email', type: 'email', size: 6 },
-                  { label: 'Phone', field: 'phoneNo', type: 'tel', size: 6 },
-                  { label: 'designation', field: 'designation', type: 'text', size: 6 },
-                  { label: 'street', field: 'street', type: 'text', size: 9 },
-                  { label: 'City', field: 'city', type: 'text', size: 4 },
-                  { label: 'PinCode', field: 'zip', type: 'number', size: 4 },
-                  { label: 'State', field: 'state', type: 'text', size: 4 },
-                  { label: 'Country', field: 'country', type: 'text', size: 6 },
-                  { label: 'gender', field: 'gender', type: 'text', size: 6 },
-                  { label: 'socialLinks', field: 'socialLinks', type: 'text', size: 6 },
-                  { label: 'dob', field: 'dob', type: 'date', size: 3 }, // Use 'date' type for date picker
-                ]
-                  .map(({ label, field, type, size }) => {
-                    let value = group[field] ?? '';
+      <Container maxWidth="md" sx={{ py: 1.5, backgroundColor: "transparent" }}>
+        {/* Header */}
+        <Box
+          sx={{
+            bgcolor: "primary.main",
+            color: "white",
+            p: 2,
+            borderRadius: 1.5,
+            mb: 2,
+            background: "linear-gradient(135deg, #0a66c2 0%, #004182 100%)",
+          }}
+        >
+          <Typography variant="h6" fontWeight={600} gutterBottom>
+            {isEdit ? "Update Your CV" : "Create Your CV"}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ opacity: 0.9, fontSize: "0.85rem" }}
+          >
+            Build a professional CV that stands out to employers
+          </Typography>
+        </Box>
 
-                    // format dob if it exists
-                    if (field === 'dob' && value) {
-                      try {
-                        value = format(parseISO(value), 'yyyy-MM-dd'); // for input type="date"
-                      } catch (err) {
-                        console.warn('Invalid DOB format:', value);
-                      }
-                    }
+        {/* Error Alert */}
+        {submitError && (
+          <Alert
+            severity="error"
+            sx={{ mb: 2, borderRadius: 1 }}
+            onClose={() => setSubmitError("")}
+          >
+            {submitError}
+          </Alert>
+        )}
 
-                    return (
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ backgroundColor: "transparent" }}
+        >
+          {/* Personal Information Section */}
+          <PersonalInformationSection
+            group={group}
+            handleInputChange={handleInputChange}
+            errors={errors}
+          />
 
-                      <Grid item xs={12} sm={size} md={6} lg={12} xl={10} key={field}>
-                        {field === 'socialLinks' ? (
-                          <TextField
-                            fullWidth
-                            label={label}
-                            type="text"
-                            value={Array.isArray(group.socialLinks) ? group.socialLinks.join(', ') : ''}
-                            onChange={e => {
-                              const linksArray = e.target.value
-                                .split(',')
-                                .map(link => link.trim())
-                                .filter(link => link);
-                              handleInputChange('socialLinks', linksArray);
-                            }}
-                            variant="outlined"
-                            error={!!errors.socialLinks}
-                            helperText={errors.socialLinks || ''}
-                          />
-                        ) :
-                          <TextField
-                            fullWidth
-                            label={label}
-                            type={type}
-                            value={value}
-                            onChange={e => handleInputChange(field, e.target.value)}
-                            variant="outlined"
-                            error={!!errors[field]}
-                            helperText={errors[field] || ''}
-                          />
-                        }
+          {/* CV Sections */}
+          <Box sx={{ mb: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 2,
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                fontWeight={600}
+                color="text.primary"
+                sx={{ fontSize: "1.1rem" }}
+              >
+                Your CV Sections
+              </Typography>
 
-                      </Grid>
-                    );
-                  })}
-              </Grid>
-            </CardContent>
-          </Card>
-          {/* Sections */}
-          {(group.sections || []).map((section, index) => (
-            <DraggableSection
-              key={section.name}
-              section={section}
-              index={index}
-              moveSection={moveSection}
-              toggleSection={toggleSection}
-              expandedSections={expandedSections}
-              handleSectionChange={handleSectionChange}
-              removeSection={removeSection}
-              removeEntry={removeEntry}
-              addSectionEntry={addSectionEntry}
-            />
-          ))}
-          {/* Add Section Button */}
-          <Box>
-            <Button sx={{ bgcolor: theme.palette.primary.main, color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} onClick={() => setShowModal(true)}>
-              Add Section
-            </Button>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                sx={{
+                  textTransform: "none",
+                  fontSize: "0.8rem",
+                  borderRadius: 1,
+                  px: 1.5,
+                  py: 0.5,
+                }}
+                onClick={() => setShowModal(true)}
+              >
+                Add Section
+              </Button>
+            </Box>
+
+            {(group.sections || []).length === 0 ? (
+              <Paper
+                sx={{
+                  p: 3,
+                  textAlign: "center",
+                  border: "2px dashed",
+                  borderColor: "divider",
+                  borderRadius: 1.5,
+                  backgroundColor: "transparent",
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  color="text.secondary"
+                  gutterBottom
+                  sx={{ fontSize: "0.9rem" }}
+                >
+                  No sections added yet
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1.5, fontSize: "0.8rem" }}
+                >
+                  Start by adding your education, experience, skills, or other
+                  sections to build your CV.
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={() => setShowModal(true)}
+                  sx={{
+                    textTransform: "none",
+                    borderRadius: 1,
+                    px: 2,
+                    fontSize: "0.8rem",
+                    py: 0.5,
+                  }}
+                >
+                  Add Your First Section
+                </Button>
+              </Paper>
+            ) : (
+              <Box>
+                {(group.sections || []).map((section, index) => (
+                  <DraggableSection
+                    key={section.name}
+                    section={section}
+                    index={index}
+                    moveSection={moveSection}
+                    toggleSection={toggleSection}
+                    expandedSections={expandedSections}
+                    handleSectionChange={handleSectionChange}
+                    removeSection={removeSection}
+                    removeEntry={removeEntry}
+                    addSectionEntry={addSectionEntry}
+                    errors={errors}
+                  />
+                ))}
+              </Box>
+            )}
           </Box>
 
           {/* Modal for Adding Sections */}
-          <Dialog open={showModal} onClose={() => setShowModal(false)}>
-            <DialogTitle>Add Section</DialogTitle>
-            <DialogContent>
-              {Object.keys(sectionTypes).map(section => (
-                <Button
-                  key={section}
-                  fullWidth
-                  sx={{ textTransform: 'none', mb: 1 }}
-                  onClick={() => {
-                    addSectionEntry(section);
-                    setShowModal(false);
-                  }}
-                  // disabled={group.sections.some(s => (s.name || '').toString().toLowerCase() === section.toLowerCase())}
-                  disabled={group.sections.some(s => {
-                    const sName = s?.name?.toString()?.toLowerCase() || '';
-                    const sectionName = section?.toString()?.toLowerCase() || '';
-                    return sName === sectionName;
-                  })}
-                >
-                  {sectionTypes[section].title}
-                </Button>
-              ))}
+          <Dialog
+            open={showModal}
+            onClose={() => setShowModal(false)}
+            PaperProps={{
+              sx: { borderRadius: 1.5, maxWidth: 400 },
+            }}
+          >
+            <DialogTitle
+              sx={{
+                bgcolor: "primary.main",
+                color: "white",
+                fontWeight: 600,
+                fontSize: "1rem",
+                p: 1.5,
+              }}
+            >
+              Add Section to CV
+            </DialogTitle>
+            <DialogContent sx={{ p: 1.5 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 1.5, fontSize: "0.8rem" }}
+              >
+                Choose a section to add to your CV
+              </Typography>
+              <Grid container spacing={0.75}>
+                {Object.keys(sectionTypes).map((section) => (
+                  <Grid item xs={12} key={section}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      startIcon={
+                        <Avatar
+                          sx={{
+                            bgcolor: "primary.light",
+                            width: 24,
+                            height: 24,
+                            fontSize: "0.7rem",
+                          }}
+                        >
+                          {sectionTypes[section].icon}
+                        </Avatar>
+                      }
+                      sx={{
+                        textTransform: "none",
+                        justifyContent: "flex-start",
+                        p: 1,
+                        borderRadius: 1,
+                        height: "auto",
+                        mb: 0.5,
+                        fontSize: "0.8rem",
+                      }}
+                      onClick={() => {
+                        addSectionEntry(section);
+                        setShowModal(false);
+                      }}
+                      disabled={group.sections.some((s) => {
+                        const sName = s?.name?.toString()?.toLowerCase() || "";
+                        const sectionName =
+                          section?.toString()?.toLowerCase() || "";
+                        return sName === sectionName;
+                      })}
+                    >
+                      <Box sx={{ textAlign: "left" }}>
+                        <Typography variant="body2" fontWeight={600}>
+                          {sectionTypes[section].title}
+                        </Typography>
+                      </Box>
+                    </Button>
+                  </Grid>
+                ))}
+              </Grid>
             </DialogContent>
-            <DialogActions>
-              <Button sx={{ color: '#666', textTransform: 'none' }} onClick={() => setShowModal(false)}>
+            <DialogActions sx={{ p: 1 }}>
+              <Button
+                variant="outlined"
+                sx={{
+                  textTransform: "none",
+                  borderRadius: 1,
+                  fontSize: "0.8rem",
+                  px: 2,
+                  py: 0.5,
+                }}
+                onClick={() => setShowModal(false)}
+              >
                 Cancel
               </Button>
             </DialogActions>
           </Dialog>
+
           {/* Form Buttons */}
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button sx={{ color: '#666', textTransform: 'none', fontSize: '0.875rem' }} onClick={handleCancel}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              justifyContent: "flex-end",
+              pt: 2,
+              borderTop: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Button
+              variant="outlined"
+              sx={{
+                textTransform: "none",
+                fontSize: "0.85rem",
+                borderRadius: 1,
+                px: 2,
+                py: 0.5,
+              }}
+              onClick={handleCancel}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button sx={{ bgcolor: theme.palette.success.main, color: '#fff', textTransform: 'none', fontSize: '0.875rem' }} type="submit">
-              Save
+            <Button
+              variant="contained"
+              type="submit"
+              disabled={isSubmitting}
+              sx={{
+                textTransform: "none",
+                fontSize: "0.85rem",
+                borderRadius: 1,
+                px: 2,
+                py: 0.5,
+                bgcolor: "primary.main",
+              }}
+            >
+              {isSubmitting ? "Saving..." : isEdit ? "Update CV" : "Create CV"}
             </Button>
           </Box>
         </Box>
-      </Box>
+      </Container>
     </DndProvider>
   );
 };

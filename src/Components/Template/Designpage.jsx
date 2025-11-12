@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
-  // Container,
+  Container,
   Grid,
   Card,
   Typography,
@@ -11,13 +11,12 @@ import {
   Tab,
   useTheme,
   useMediaQuery,
-
-  // IconButton,
-  // Chip,
   Alert,
   Snackbar,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
-// import CloseIcon from "@mui/icons-material/Close";
+import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -29,8 +28,9 @@ import Cv2 from "./Cv2";
 import Cv3 from "./Cv3";
 import Cv4 from "./Cv4";
 import Cv6 from "./Cv6";
-import Cv7 from "./Cv7";
-import Cv8 from "./Cv8";
+// import Cv7 from "./Cv7";
+// import Cv8 from "./Cv8";
+import DemoDialog from "./DemoDialog";
 
 function DesignPage() {
   const theme = useTheme();
@@ -40,7 +40,11 @@ function DesignPage() {
   const [defaultTemplate, setDefaultTemplate] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [cvInfoId, setCvInfoId] = useState();
-  // const [res, setRes] = useState();
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [openDemo, setOpenDemo] = useState(false);
+  const [selectedCv, setSelectedCv] = useState(null);
+
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
   const userId = userProfile?.fetchedUsed?.userId;
@@ -49,14 +53,11 @@ function DesignPage() {
     const fetchDefaultCv = async () => {
       try {
         const res = await axios.get(`${apiUrl}/defaultCv/${username}`);
-        // setRes(res);    
         const templateName = res.data?.fetchedCvInfo?.templateName;
         setCvInfoId(res.data?.fetchedCvInfo?.cvInfoId);
-        // setCvTemp(res.data?.fetchedCvInfo?.cvInfoId);
-        // console.log("📌 Fetched Default CV Template:", templateName);
+
         if (templateName) {
           setDefaultTemplate(templateName);
-          // localStorage.setItem("defaultCvTemplate", templateName);
         }
       } catch (error) {
         console.error("❌ Failed to fetch default CV:", error);
@@ -87,270 +88,472 @@ function DesignPage() {
   };
 
   const handlePreviewOpen = (id) => {
-    // Navigate to full-page preview
     navigate(`/Designpreview/cv/${id}`);
   };
 
+  // CV designs with categories, search tags, and proper names
   const cvDesigns = [
-    { id: 1, name: "Cv1", Component: Cv1 },
-    { id: 2, name: "Cv2", Component: Cv2 },
-    { id: 3, name: "Cv3", Component: Cv3 },
-    { id: 4, name: "Cv4", Component: Cv4 },
-    { id: 5, name: "defaultCv", Component: DefaultCvDesign },
-    { id: 6, name: "Cv6", Component: Cv6 },
-    { id: 7, name: "Cv7", Component: Cv7 },
-    { id: 8, name: "Cv8", Component: Cv8 },
+    {
+      id: 1,
+      name: "Cv1",
+      displayName: "Professional Blue",
+      Component: Cv1,
+      category: "Professional",
+      tags: [
+        "developer",
+        "engineer",
+        "professional",
+        "technical",
+        "fresher",
+        "professional blue",
+        "blue",
+      ],
+      heading: "Best for Developers",
+    },
+    {
+      id: 2,
+      name: "Cv2",
+      displayName: "Modern Clean",
+      Component: Cv2,
+      category: "Modern",
+      tags: [
+        "fresher",
+        "student",
+        "modern",
+        "creative",
+        "modern clean",
+        "clean",
+      ],
+      heading: "Best for Freshers",
+    },
+    {
+      id: 3,
+      name: "Cv3",
+      displayName: "Corporate Executive",
+      Component: Cv3,
+      category: "Corporate",
+      tags: [
+        "hr",
+        "manager",
+        "corporate",
+        "executive",
+        "corporate executive",
+        "business",
+      ],
+      heading: "Best for HR",
+    },
+    {
+      id: 4,
+      name: "Cv4",
+      displayName: "Creative Portfolio",
+      Component: Cv4,
+      category: "Creative",
+      tags: [
+        "designer",
+        "creative",
+        "artist",
+        "modern",
+        "creative portfolio",
+        "portfolio",
+      ],
+      heading: "Best for Designers",
+    },
+    {
+      id: 5,
+      name: "defaultCv",
+      displayName: "Classic Professional",
+      Component: DefaultCvDesign,
+      category: "Standard",
+      tags: [
+        "all",
+        "standard",
+        "professional",
+        "fresher",
+        "classic professional",
+        "classic",
+      ],
+      heading: "All Purpose CV",
+    },
+    {
+      id: 6,
+      name: "Cv6",
+      displayName: "Executive Modern",
+      Component: Cv6,
+      category: "Executive",
+      tags: [
+        "executive",
+        "manager",
+        "senior",
+        "lead",
+        "executive modern",
+        "modern",
+      ],
+      heading: "Best for Executives",
+    },
+    // {
+    //   id: 7,
+    //   name: "Cv7",
+    //   displayName: "Minimalist",
+    //   Component: Cv7,
+    //   category: "Minimal",
+    //   tags: ["minimalist", "simple", "clean", "modern"],
+    //   heading: "Best for Minimalists"
+    // },
+    // {
+    //   id: 8,
+    //   name: "Cv8",
+    //   displayName: "Creative Color",
+    //   Component: Cv8,
+    //   category: "Creative",
+    //   tags: ["colorful", "creative", "designer", "artist"],
+    //   heading: "Best for Creatives"
+    // },
   ];
 
-  return (
-    <Box sx={{ bgcolor: theme.palette.background.backgroundColor }}>
-      <Grid maxWidth="xl" sx={{
-        px: isMobile ? 1 : 3,
-        bgcolor: theme.palette.background.backgroundColor
-      }}>
-        {/* Heading */}
-        <Box textAlign="center" mb={1}>
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 800,
-              color: theme.palette.textColor.main,
-              letterSpacing: "-0.5px",
-              mb: 1,
-              pt: 6,
-              fontSize: isMobile ? "2rem" : "3rem",
-            }}
-          >
-            Professional Templates
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            sx={{
-              color: theme.palette.subtextColor,
-              fontSize: isMobile ? "0.9rem" : "1.1rem",
-              maxWidth: "100%",
-              mb: 4,
-              mx: "auto",
-            }}
-          >
-            Select a professionally designed template to showcase your skills and experience
-          </Typography>
-        </Box>
+  // Filter CVs based on search query (by name, tags, category, or heading)
+  const filteredCvDesigns = cvDesigns.filter(
+    (cv) =>
+      cv.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cv.tags.some((tag) =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase())
+      ) ||
+      cv.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cv.heading.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-        {/* Tabs */}
+  return (
+    <Box
+      sx={{
+        bgcolor: theme.palette.background.backgroundColor,
+        minHeight: "100vh",
+        pt: 8,
+        pb: 4,
+      }}
+    >
+      <Container maxWidth="xl" sx={{ px: isMobile ? 1 : 3 }}>
+        {/* Search Bar Section */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "center",
-            mb: 5,
-            borderBottom: theme.palette.borderColor,
-            mx: isMobile ? 0 : 4,
+            mb: 4,
+            mt: 2,
           }}
         >
-          <Tabs
-            value={selectedCategory}
-            onChange={handleCategoryChange}
-            variant={isMobile ? "fullWidth" : "standard"}
-            textColor="primary"
-            indicatorColor="primary"
+          <TextField
+            placeholder="Search by resume name, role, or category (Professional Blue, developer, hr, etc.)"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             sx={{
-              "& .MuiTabs-indicator": {
-                height: 4,
-                borderRadius: "4px 4px 0 0",
+              width: isMobile ? "100%" : "680px",
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 3,
+                backgroundColor: "white",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                "&:hover": {
+                  boxShadow: "0 6px 25px rgba(0,0,0,0.12)",
+                },
+                "&.Mui-focused": {
+                  boxShadow: "0 6px 25px rgba(0,0,0,0.15)",
+                },
               },
             }}
-          >
-            <Tab
-              label="CV Templates"
-              value="cv"
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: isMobile ? "0.9rem" : "1rem",
-                py: 2,
-                px: isMobile ? 1 : 3,
-                minHeight: "auto",
-              }}
-            />
-          </Tabs>
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="primary" />
+                </InputAdornment>
+              ),
+            }}
+          />
         </Box>
-
         {/* CV Gallery */}
         <Grid container spacing={3} justifyContent="center">
-          {cvDesigns.map(({ id, name, Component }, index) => {
-            const isDefault = defaultTemplate === name;
-            return (
-              <Grid item key={id} xs={12} sm={6} md={4} lg={0}>
-                <Card
-                  sx={{
-                    width: { xs: "100%", lg: "400px" },
-                    position: "relative",
-                    height: "560px",
-                    zIndex: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    borderRadius: 2,
-                    overflow: "hidden",
-                    // background: theme.palette.background,
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      transform: "translateY(-6px)",
-                      boxShadow: "0 10px 28px rgba(0,0,0,0.12)",
-                    },
-                  }}
-                >
+          {filteredCvDesigns.map(
+            ({ id, name, Component, heading, displayName }, index) => {
+              const isDefault = defaultTemplate === name;
+              const isHovered = hoveredCard === id;
+              const showButtons = isDefault || isHovered;
 
-                  {/* Default Label */}
-                  {isDefault && (
-                    <CheckCircleIcon
-                      sx={{
-                        position: "absolute",
-                        top: 10,
-                        right: 10,
-                        width: 28,
-                        height: 28,
-                        borderRadius: 10,
-                        background: theme.palette.borderColor,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: theme.palette.textColor,
-                        fontSize: "0.8rem",
-                        fontWeight: 600,
-                      }}
-                    >
-                    </CheckCircleIcon>
-                  )}
-
-                  {/* Index Badge */}
-                  <Box
+              return (
+                <Grid item key={id} xs={12} sm={6} md={4} lg={3}>
+                  {/* Template Heading */}
+                  <Typography
+                    variant="h6"
                     sx={{
-                      position: "absolute",
-                      top: 10,
-                      left: 10,
-                      width: 28,
-                      height: 28,
-                      borderRadius: 10,
-                      background: theme.palette.borderColor,
+                      textAlign: "center",
+                      mb: 1,
+                      fontWeight: 600,
+                      color: theme.palette.primary.main,
+                      fontSize: "1rem",
+                      minHeight: "48px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: theme.palette.textColor,
-                      fontSize: "0.8rem",
-                      fontWeight: 600,
                     }}
                   >
-                    {index + 1}
-                  </Box>
+                    {heading}
+                  </Typography>
 
-                  {/* Thumbnail */}
-                  <Box
+                  <Card
                     sx={{
-                      // background: "#f8fafc",
-                      minHeight: 350,
+                      width: { xs: "280px" },
+                      position: "relative",
+                      height: "400px",
+                      zIndex: 0,
                       display: "flex",
-                      justifyContent: "center",
-                      alignItems: "flex-start",
+                      flexDirection: "column",
+                      borderRadius: 3,
                       overflow: "hidden",
-                      cursor: "pointer",
-                      p: 1,
+                      background: theme.palette.grey[100],
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        transform: "translateY(-8px)",
+                        boxShadow: "0 15px 35px rgba(0,0,0,0.15)",
+                        background: theme.palette.grey[200],
+                      },
+                      border: isDefault ? `3px solid #34A853` : "none",
                     }}
-                    onClick={() => handlePreviewOpen(id)}
+                    onMouseEnter={() => setHoveredCard(id)}
+                    onMouseLeave={() => setHoveredCard(null)}
                   >
+                    {/* CV Preview Section */}
                     <Box
                       sx={{
-                        transform: "scale(0.3)",
-                        transformOrigin: "top center",
-                        pointerEvents: "none",
-                        width: "900px",
+                        flex: 1,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "flex-start",
+                        overflow: "hidden",
+                        cursor: "pointer",
+                        backgroundColor: "white",
+                        p: 2,
+                        margin: 1,
+                        borderRadius: 2,
+                        position: "relative",
+                      }}
+                      onClick={() => handlePreviewOpen(id)}
+                    >
+                      {/* Light Gradient Overlay with Buttons - Show on Hover or if Selected */}
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: showButtons
+                            ? "linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(240, 248, 255, 0.5) 100%)"
+                            : "transparent",
+                          backdropFilter: showButtons ? "blur(2px)" : "none",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          borderRadius: 2,
+                          opacity: showButtons ? 1 : 0,
+                          transition: "all 0.3s ease",
+                          zIndex: 2,
+                          pointerEvents: showButtons ? "auto" : "none",
+                        }}
+                      >
+                        {/* Buttons Container */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                            alignItems: "center",
+                            width: "80%",
+                          }}
+                        >
+                          {/* Preview Button - Blue Color */}
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            size="medium"
+                            sx={{
+                              borderRadius: 2,
+                              fontWeight: 600,
+                              color: "white",
+                              backgroundColor: "#3498db", // Normal blue
+                              "&:hover": {
+                                background: "#2980b9",
+                                transform: "translateY(-3px)",
+                              },
+                              fontSize: "0.85rem",
+                              transition: "all 0.2s ease",
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePreviewOpen(id);
+                            }}
+                          >
+                            Preview
+                          </Button>
+
+                          {/* Demo Button - Purple Color */}
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            size="medium"
+                            sx={{
+                              borderRadius: 2,
+                              fontWeight: 600,
+                              color: "#474a4aff",
+                              fontSize: "0.85rem",
+                              borderColor: "#5fa3f0ff",
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const cvData = cvDesigns.find(
+                                (cv) => cv.id === id
+                              );
+                              setSelectedCv({
+                                ...cvData,
+                                image: `/demo-cv${id}-1.png`,
+                                image2: `/demo-cv${id}-2.png`, // 👈 Har CV ka image name same rakho
+                                desc: cvData.heading,
+                              });
+                              setOpenDemo(true);
+                            }}
+                          >
+                            Demo
+                          </Button>
+
+                          {/* Publish/Selected Button - Green/Orange Color */}
+                          {isDefault ? (
+                            <Button
+                              fullWidth
+                              variant="contained"
+                              size="medium"
+                              sx={{
+                                borderRadius: 2,
+                                fontWeight: 600,
+                                color: "white",
+                                background: "#4cd964",
+                                fontSize: "0.85rem",
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                  background: " #3cd054",
+                                  transform: "translateY(-3px)",
+                                },
+                              }}
+                              startIcon={
+                                <CheckCircleIcon sx={{ fontSize: "1.1rem" }} />
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Selected
+                            </Button>
+                          ) : (
+                            <Button
+                              fullWidth
+                              variant="outlined"
+                              size="medium"
+                              sx={{
+                                borderRadius: 2,
+                                fontWeight: 600,
+                                color: "#474a4aff",
+                                borderColor: "#34A853",
+                                fontSize: "0.85rem",
+                                transition: "all 0.3s ease",
+                                "&:hover": {
+                                  transform: "translateY(-3px)",
+                                },
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSetDefault(name);
+                              }}
+                            >
+                              Publish
+                            </Button>
+                          )}
+                        </Box>
+                      </Box>
+
+                      {/* CV Content */}
+                      <Box
+                        sx={{
+                          position: "relative",
+                          top: "-40px",
+                          transform: "scale(0.38)",
+                          transformOrigin: "top center",
+                          pointerEvents: "none",
+                          width: "800px",
+                          height: "1130px",
+                          filter: showButtons ? "blur(1px)" : "none",
+                          transition: "filter 0.3s ease",
+                        }}
+                      >
+                        <Component />
+                      </Box>
+                    </Box>
+
+                    {/* Resume Name Below CV */}
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        bottom: 8,
+                        left: 0,
+                        right: 0,
+                        textAlign: "center",
+                        zIndex: 1,
                       }}
                     >
-                      <Component />
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          fontWeight: 600,
+                          color: theme.palette.text.primary,
+                          fontSize: "0.9rem",
+                          backgroundColor: "rgba(255, 255, 255, 0.9)",
+                          display: "inline-block",
+                          px: 2,
+                          py: 0.5,
+                          borderRadius: 2,
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        {displayName}
+                      </Typography>
                     </Box>
-                  </Box>
-
-                  {/* Actions */}
-                  <Box sx={{ p: 2 }}>
-                    <Typography
-                      variant="h6"
-                      sx={{ textAlign: "center", mb: 2, fontWeight: 600 }}
-                    >
-                      {name}
-                    </Typography>
-                    <Box sx={
-                      {
-                        gap: 1,
-                        display: "flex",
-                        // justifyContent:"space-between"
-                      }
-                    }>
-                      <Box width={"50%"}>
-                        <Button
-                          fullWidth
-                          variant="outlined"
-                          color={theme.palette.warning.main}
-                          disableElevation
-                          sx={{
-                            borderRadius: 2,
-                            fontWeight: 700,
-                            color: theme.palette.success.main,
-                            mb: 1,
-                          }}
-                          onClick={() => handlePreviewOpen(id)}
-                        >
-                          Preview
-                        </Button>
-                      </Box>
-
-                      <Box width={"50%"}>
-                        {isDefault ? (
-                          <Button
-                            fullWidth
-                            variant="contained"
-                            sx={
-                              {
-                                borderRadius: 2,
-                                boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-                                background: theme.palette.success.main,
-                                color: "white"
-                              }
-                            }
-                            startIcon={<CheckCircleIcon />}
-                          >
-                            Selected
-                          </Button>
-                        ) : (
-                          <Button
-                            fullWidth
-                            variant="contained"
-                            sx={
-                              {
-                                borderRadius: 2,
-                                boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-                                background: theme.palette.success.main,
-                                color: "white"
-
-                              }
-                            }
-                            onClick={() => handleSetDefault(name)}
-                          >
-                            Publish
-                          </Button>
-                        )}
-                      </Box>
-
-                    </Box>
-
-
-
-                  </Box>
-                </Card>
-              </Grid>
-            );
-          })}
+                  </Card>
+                </Grid>
+              );
+            }
+          )}
         </Grid>
-      </Grid>
+
+        {/* No Results Message */}
+        {filteredCvDesigns.length === 0 && searchQuery && (
+          <Box
+            sx={{
+              textAlign: "center",
+              py: 8,
+              color: "text.secondary",
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              No templates found for "{searchQuery}"
+            </Typography>
+            <Typography variant="body1">
+              Try searching by resume name: Professional Blue, Modern Clean,
+              Corporate Executive, etc.
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1, fontStyle: "italic" }}>
+              Or search by role: developer, fresher, hr, designer, executive
+            </Typography>
+          </Box>
+        )}
+      </Container>
+
+      <DemoDialog
+        open={openDemo}
+        onClose={() => setOpenDemo(false)}
+        selectedCv={selectedCv}
+      />
 
       {/* Snackbar */}
       <Snackbar
@@ -358,16 +561,70 @@ function DesignPage() {
         autoHideDuration={3000}
         onClose={() => setShowSnackbar(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        sx={{
+          "& .MuiSnackbar-root": {
+            bottom: "80px",
+          },
+        }}
       >
         <Alert
           onClose={() => setShowSnackbar(false)}
           severity="success"
-          sx={{ width: "100%" }}
+          sx={{
+            width: "100%",
+            maxWidth: "400px",
+            backgroundColor: "#f0f9f0",
+            color: "#1e4620",
+            borderRadius: "12px",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+            border: "1px solid #4caf50",
+            padding: "16px 20px",
+            fontSize: "14px",
+            fontWeight: 500,
+            "& .MuiAlert-icon": {
+              color: "#4caf50",
+              fontSize: "24px",
+              marginRight: "12px",
+            },
+            "& .MuiAlert-message": {
+              padding: "0",
+              display: "flex",
+              alignItems: "center",
+            },
+            "& .MuiAlert-action": {
+              paddingLeft: "16px",
+              marginRight: "0",
+              "& .MuiIconButton-root": {
+                color: "#4caf50",
+                padding: "4px",
+                "&:hover": {
+                  backgroundColor: "rgba(76, 175, 80, 0.1)",
+                },
+              },
+            },
+          }}
+          iconMapping={{
+            success: <CheckCircleIcon fontSize="inherit" />,
+          }}
         >
-          Template set as default successfully!
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box>
+              <Typography
+                sx={{ fontWeight: 600, fontSize: "15px", color: "#1e4620" }}
+              >
+                CV Published Successfully!
+              </Typography>
+              <Typography
+                sx={{ fontSize: "13px", color: "#2e7d32", opacity: 0.9 }}
+              >
+                Your selected CV is now published on your Home page
+              </Typography>
+            </Box>
+          </Box>
         </Alert>
       </Snackbar>
     </Box>
   );
 }
+
 export default DesignPage;

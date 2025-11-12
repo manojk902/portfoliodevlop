@@ -54,13 +54,13 @@ export const getTheme = (mode) => {
       background: {
         default: mode === "light" ? "#F5F7FA" : "#1A1C1F",  // smoother background tone
         paper: mode === "light" ? "#FFFFFF" : "#1F2937",
-        backgroundColor: mode === "light" ? "#F3F4F6" : "#111827",
+        // backgroundColor: mode === "light" ? "#F3F4F6" : "#111827",
       },
       divider: mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
       hoverColor: mode === "light" ? "rgba(25,118,210,0.08)" : "rgba(100,181,246,0.15)",
 
       text: {
-        primary: mode === 'light' ? "#111827" : "#F3F4F6",
+        // primary: mode === 'light' ? "#111827" : "#F3F4F6",
         // dark: mode === 'light' ? "#111827" : "#6610f2"
         // secondary: "#100d0dff",
       },
