@@ -1,63 +1,36 @@
-import React, { useEffect, useState } from "react";
-import {
-  Container,
-  Typography,
-  Grid,
-  Paper,
-  // Avatar,
-  CircularProgress,
-  Box,
-  Chip,
-  Divider,
-  alpha,
-  useTheme,
-  Tooltip,
-  // Rating
-} from "@mui/material";
-import {
-  Email,
-  Phone,
-  Cake,
-  LocationOn,
-  LinkedIn,
-  GitHub,
-  Language,
-  Facebook,
-  CardMembership
-} from "@mui/icons-material";
-
-// import {AlternateEmailIcon} from '@mui/icons-material';
-import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
-import WorkOutlineSharpIcon from '@mui/icons-material/WorkOutlineSharp';
-import SchoolSharpIcon from '@mui/icons-material/SchoolSharp';
-import EmojiEventsSharpIcon from '@mui/icons-material/EmojiEventsSharp';
-import HomeRepairServiceSharpIcon from '@mui/icons-material/HomeRepairServiceSharp';
-import InterestsSharpIcon from '@mui/icons-material/InterestsSharp';
-import MilitaryTechSharpIcon from '@mui/icons-material/MilitaryTechSharp';
-import LanguageSharpIcon from '@mui/icons-material/LanguageSharp';
-
-// import WorkOutlineSharpIcon from '@material-ui/icons/WorkOutlineSharp';
-// import { apiUrl } from "../../utils/common";
-// import { useSelector } from "react-redux";
-// import { useParams } from "react-router-dom";
-import MarkdownPreview from '@uiw/react-markdown-preview';
-import { apiUrl } from "../../utils/common";
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { apiUrl } from "../../utils/common";
 import { useParams, useSearchParams } from "react-router-dom";
+import MarkdownPreview from "@uiw/react-markdown-preview";
 import { useSelector } from "react-redux";
-
-
+import { Box, Typography } from "@mui/material";
+import printJS from "print-js";
 
 const Cv6 = ({ UserDataFromDesignPage }) => {
-  const theme = useTheme();
+  // --- 1. Identify Context (URL & Redux) ---
   const [searchParams] = useSearchParams({ UserDataFromDesignPage });
-  // Path parameter: e.g., 'johnsmith' from URL route /johnsmith?cv=true
   const { username } = useParams();
-  // Query parameter: 'true' or null (for public view from HomePage)
   const cvPublicView = searchParams.get("cv");
+  const [showLoading, setShowLoading] = useState(true);
 
-  const userProfile = useSelector(state => state.userProfile?.data?.fetchedUsed);
-  const userNameRedux = userProfile?.userName; // Logged-in user's username 
+  // Ref for the CV content
+  const cvContentRef = useRef();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoading(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const userProfile = useSelector(
+    (state) => state.userProfile?.data?.fetchedUsed
+  );
+  const userNameRedux = userProfile?.userName;
 
   // --- 2. State Management ---
   const [cvData, setCvData] = useState(null);
@@ -67,27 +40,24 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
     const fetchCvData = async () => {
       setLoading(true);
       let usernameToFetch = null;
-      let isDifferentUser = (username && userNameRedux && username !== userNameRedux);
+      let isDifferentUser =
+        username && userNameRedux && username !== userNameRedux;
 
-      // --- 1. PRIORITY CHECK: DIFFERENT USER OR EXPLICIT PUBLIC FLAG ---
-      // Condition: Agar URL mein username hai AND (ya toh user alag hai OR 'cv=true' hai)
-      // Ya agar user logged in nahi hai but URL mein username hai.
-      if (username && (isDifferentUser || cvPublicView === "true" || !userNameRedux)) {
-
-        // Lekin agar user logged-in hai AUR woh apna hi public link dekh raha hai, 
-        // tab bhi hume URL user ko fetch karna hai.
+      if (
+        username &&
+        (isDifferentUser || cvPublicView === "true" || !userNameRedux)
+      ) {
         usernameToFetch = username;
-        console.log(`✅ Public View (URL based) Activated. Fetching: ${username}`);
-      }
-
-      // --- 2. FALLBACK: PRIVATE VIEW (Logged-in user) ---
-      // Yeh block tab chalega jab koi URL username nahi hai ya URL username hi Redux user hai (Home page)
-      else if (userNameRedux) {
+        console.log(
+          `✅ Public View (URL based) Activated. Fetching: ${username}`
+        );
+      } else if (userNameRedux) {
         usernameToFetch = userNameRedux;
-        console.log(`👤 Private View (Redux based) Activated. Fetching: ${userNameRedux}`);
+        console.log(
+          `👤 Private View (Redux based) Activated. Fetching: ${userNameRedux}`
+        );
       }
 
-      // --- 3. EXECUTE FETCH ---
       if (usernameToFetch) {
         try {
           const res = await axios.get(`${apiUrl}/defaultCv/${usernameToFetch}`);
@@ -105,445 +75,1483 @@ const Cv6 = ({ UserDataFromDesignPage }) => {
     };
 
     fetchCvData();
-
   }, [cvPublicView, username, userNameRedux]);
 
-  if (loading) {
+  // PRINT-JS PRINT FUNCTION - Single continuous layout
+  const handlePrint = () => {
+    if (!cvContentRef.current) {
+      console.error("CV content not found");
+      return;
+    }
+
+    // Get the HTML content
+    const printContent = cvContentRef.current.innerHTML;
+
+    // Use print-js with raw HTML - print.js will handle page breaks automatically
+    printJS({
+      printable: printContent,
+      type: "raw-html",
+      documentTitle: `${cvData?.firstName || "CV"} ${
+        cvData?.lastName || ""
+      } - Resume`,
+      style: `
+        @page {
+          size: A4;
+          margin: 15mm;
+        }
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        body {
+          margin: 0 !important;
+          padding: 0 !important;
+          background: #ffffff !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif !important;
+          line-height: 1.5 !important;
+          color: #2c3e50 !important;
+        }
+        .cv6-container {
+          max-width: 210mm !important;
+          margin: 0 auto !important;
+          background: white !important;
+          font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif !important;
+          line-height: 1.5 !important;
+          color: #2c3e50 !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+        }
+        .cv6-content {
+          width: 210mm !important;
+          background: white !important;
+          margin: 0 auto !important;
+          padding: 0 !important;
+        }
+        .cv6-print-button-container {
+          display: none !important;
+        }
+        .cv6-header {
+          background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+          color: white !important;
+          padding: 15px 40px !important;
+          margin-bottom: 0 !important;
+          text-align: center !important;
+        }
+        .cv6-name-section {
+          text-align: center !important;
+        }
+        .cv6-name {
+          font-size: 42px !important;
+          font-weight: 700 !important;
+          line-height: 1.1 !important;
+          margin-bottom: 10px !important;
+          color: white !important;
+          text-transform: uppercase !important;
+          letter-spacing: 3px !important;
+        }
+        .cv6-last-name {
+          font-weight: 300 !important;
+          color: #ecf0f1 !important;
+        }
+        .cv6-designation {
+          font-size: 20px !important;
+          color: #bdc3c7 !important;
+          font-weight: 400 !important;
+          margin: 0 0 25px 0 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 2px !important;
+        }
+        .cv6-contact-section {
+          display: flex !important;
+          padding-top: 0px !important;
+          padding-bottom: 0px !important;
+          margin-bottom: 15px !important;
+          justify-content: center !important;
+          gap: 46px !important;
+          flex-wrap: wrap !important;
+        }
+        .cv6-contact-item {
+          font-size: 14px !important;
+          color: #ecf0f1 !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+        }
+        .cv6-link-url {
+          color: #ecf0f1 !important;
+          text-decoration: none !important;
+        }
+        .cv6-main-content {
+          padding: 40px !important;
+        }
+        .cv6-section {
+          margin-bottom: 35px !important;
+          page-break-inside: avoid !important;
+        }
+        .cv6-section:last-child {
+          margin-bottom: 0 !important;
+        }
+        .cv6-section-title {
+          font-size: 24px !important;
+          font-weight: 700 !important;
+          color: #2c3e50 !important;
+          margin-bottom: 20px !important;
+          text-transform: uppercase !important;
+          letter-spacing: 2px !important;
+          border-bottom: 3px solid #e74c3c !important;
+          padding-bottom: 10px !important;
+          position: relative !important;
+        }
+        .cv6-section-title::after {
+          content: '' !important;
+          position: absolute !important;
+          bottom: -3px !important;
+          left: 0 !important;
+          width: 80px !important;
+          height: 3px !important;
+          background: #3498db !important;
+        }
+        .cv6-section-content {
+          padding-left: 0 !important;
+        }
+        .cv6-summary-text {
+          line-height: 1.7 !important;
+          font-size: 16px !important;
+          text-align: left !important;
+          color: #34495e !important;
+          margin: 0 !important;
+          hyphens: auto !important;
+        }
+        .cv6-experience-item {
+          margin-bottom: 25px !important;
+          page-break-inside: avoid !important;
+          padding: 25px !important;
+          background: #f8f9fa !important;
+          border-radius: 10px !important;
+          border-left: 5px solid #e74c3c !important;
+        }
+        .cv6-experience-header {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: flex-start !important;
+          margin-bottom: 15px !important;
+        }
+        .cv6-experience-title-container {
+          flex: 1 !important;
+        }
+        .cv6-experience-title {
+          font-size: 20px !important;
+          font-weight: 600 !important;
+          color: #2c3e50 !important;
+          margin: 0 0 8px 0 !important;
+        }
+        .cv6-experience-company {
+          font-size: 16px !important;
+          color: #e74c3c !important;
+          display: block !important;
+          font-weight: 500 !important;
+        }
+        .cv6-experience-dates {
+          font-size: 14px !important;
+          color: #7f8c8d !important;
+          font-style: italic !important;
+          white-space: nowrap !important;
+          margin-left: 20px !important;
+          background: white !important;
+          padding: 6px 12px !important;
+          border-radius: 6px !important;
+          border: 1px solid #e9ecef !important;
+        }
+        .cv6-experience-description {
+          line-height: 1.7 !important;
+          font-size: 15px !important;
+          color: #34495e !important;
+          margin: 0 !important;
+        }
+        .cv6-project-item {
+          margin-bottom: 20px !important;
+          page-break-inside: avoid !important;
+          padding: 20px !important;
+          background: #f8f9fa !important;
+          border-radius: 10px !important;
+          border: 2px solid #e9ecef !important;
+        }
+        .cv6-project-header {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: flex-start !important;
+          margin-bottom: 12px !important;
+        }
+        .cv6-project-name {
+          font-size: 18px !important;
+          font-weight: 600 !important;
+          color: #2c3e50 !important;
+          margin: 0 0 8px 0 !important;
+          flex: 1 !important;
+        }
+        .cv6-technologies-container {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 8px !important;
+          justify-content: flex-start !important;
+          margin-top: 12px !important;
+        }
+        .cv6-technology-tag {
+          background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+          color: #ffffff !important;
+          padding: 6px 12px !important;
+          border-radius: 20px !important;
+          font-size: 12px !important;
+          white-space: nowrap !important;
+          font-weight: 500 !important;
+        }
+        .cv6-project-description {
+          line-height: 1.7 !important;
+          font-size: 15px !important;
+          color: #34495e !important;
+          margin: 0 !important;
+        }
+        .cv6-education-item {
+          margin-bottom: 20px !important;
+          page-break-inside: avoid !important;
+          padding: 20px !important;
+          background: #f8f9fa !important;
+          border-radius: 10px !important;
+          border-left: 5px solid #3498db !important;
+        }
+        .cv6-education-main {
+          flex: 1 !important;
+        }
+        .cv6-education-course {
+          font-size: 18px !important;
+          font-weight: 600 !important;
+          color: #2c3e50 !important;
+          margin: 0 0 8px 0 !important;
+        }
+        .cv6-education-college {
+          font-size: 16px !important;
+          color: #3498db !important;
+          display: block !important;
+          font-weight: 500 !important;
+        }
+        .cv6-education-location {
+          font-size: 14px !important;
+          color: #7f8c8d !important;
+          display: block !important;
+        }
+        .cv6-education-dates {
+          font-size: 14px !important;
+          color: #7f8c8d !important;
+          font-style: italic !important;
+          white-space: nowrap !important;
+          background: white !important;
+          padding: 6px 12px !important;
+          border-radius: 6px !important;
+          display: inline-block !important;
+          margin-top: 8px !important;
+          border: 1px solid #e9ecef !important;
+        }
+        .cv6-skills-category {
+          margin-bottom: 20px !important;
+        }
+        .cv6-category-tag {
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          color: #2c3e50 !important;
+          display: block !important;
+          margin-bottom: 12px !important;
+          padding-left: 20px !important;
+          position: relative !important;
+        }
+        .cv6-category-tag::before {
+          content: '' !important;
+          position: absolute !important;
+          left: 0 !important;
+          top: 50% !important;
+          transform: translateY(-50%) !important;
+          width: 8px !important;
+          height: 8px !important;
+          background: #e74c3c !important;
+          border-radius: 50% !important;
+        }
+        .cv6-skills-list {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 8px !important;
+        }
+        .cv6-skill-item {
+          font-size: 15px !important;
+          color: #34495e !important;
+          line-height: 1.5 !important;
+          padding: 10px 16px !important;
+          background: white !important;
+          border-radius: 8px !important;
+          border-left: 4px solid #3498db !important;
+          border: 1px solid #e9ecef !important;
+        }
+        .cv6-certification-item,
+        .cv6-award-item {
+          margin-bottom: 15px !important;
+          padding: 15px !important;
+          background: #f8f9fa !important;
+          border-radius: 8px !important;
+          border-left: 4px solid #e74c3c !important;
+        }
+        .cv6-certification-name,
+        .cv6-award-title {
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          margin-bottom: 6px !important;
+          color: #2c3e50 !important;
+        }
+        .cv6-certification-institute,
+        .cv6-certification-date,
+        .cv6-award-issuer,
+        .cv6-award-date {
+          font-size: 14px !important;
+          color: #3498db !important;
+          display: block !important;
+        }
+        .cv6-award-description {
+          font-size: 14px !important;
+          color: #34495e !important;
+          margin-top: 8px !important;
+          line-height: 1.6 !important;
+        }
+        .cv6-achievements-list {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 10px !important;
+        }
+        .cv6-achievement-item {
+          display: flex !important;
+          align-items: flex-start !important;
+          gap: 10px !important;
+          padding: 12px 16px !important;
+          background: #f8f9fa !important;
+          border-radius: 8px !important;
+          border-left: 4px solid #3498db !important;
+        }
+        .cv6-achievement-text {
+          font-size: 15px !important;
+          color: #34495e !important;
+          line-height: 1.6 !important;
+        }
+        .cv6-languages-container {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 10px !important;
+        }
+        .cv6-language-item {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          font-size: 15px !important;
+          color: #34495e !important;
+          padding: 12px 16px !important;
+          background: #f8f9fa !important;
+          border-radius: 8px !important;
+          border-left: 4px solid #e74c3c !important;
+        }
+        .cv6-language-proficiency {
+          color: #3498db !important;
+          font-weight: 600 !important;
+        }
+        .cv6-interests-container {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 10px !important;
+        }
+        .cv6-interest-tag {
+          background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+          color: #ffffff !important;
+          padding: 8px 16px !important;
+          border-radius: 25px !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+        }
+        /* Markdown Preview Styles - Consistent throughout */
+        .wmde-markdown {
+          background: transparent !important;
+          color: inherit !important;
+          padding: 0 !important;
+          font-size: 15px !important;
+          line-height: 1.7 !important;
+          font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif !important;
+        }
+        .wmde-markdown p {
+          margin: 0 0 10px 0 !important;
+          line-height: 1.7 !important;
+        }
+        .wmde-markdown ul, .wmde-markdown ol {
+          margin: 0 0 10px 0 !important;
+          padding-left: 24px !important;
+        }
+        .wmde-markdown li {
+          margin: 6px 0 !important;
+          line-height: 1.6 !important;
+        }
+        .wmde-markdown strong {
+          font-weight: 600 !important;
+          color: #2c3e50 !important;
+        }
+        .wmde-markdown em {
+          font-style: italic !important;
+        }
+        .cv6-contact-icon {
+          font-size: 16px !important;
+        }
+      `,
+      onPrintDialogClose: () => {
+        console.log("Print dialog closed");
+      },
+      onError: (error) => {
+        console.error("Print error:", error);
+        // Fallback to browser print
+        window.print();
+      },
+    });
+  };
+
+  // ============ SECTION COMPONENTS ============
+
+  // Header Section Component
+  const HeaderSection = () => (
+    <div className="cv6-header">
+      <div className="cv6-contact-section">
+        {cvData.phoneNo && (
+          <div className="cv6-contact-item">
+            <span className="cv6-contact-icon">📱</span>
+            <span className="cv6-contact-text">{cvData.phoneNo}</span>
+          </div>
+        )}
+        {cvData.email && (
+          <div className="cv6-contact-item">
+            <span className="cv6-contact-icon">📧</span>
+            <span className="cv6-contact-text">{cvData.email}</span>
+          </div>
+        )}
+        {cvData.address?.city && (
+          <div className="cv6-contact-item">
+            <span className="cv6-contact-icon">📍</span>
+            <span className="cv6-contact-text">
+              {cvData.address.city}
+              {cvData.address.state ? `, ${cvData.address.state}` : ""}
+            </span>
+          </div>
+        )}
+        {cvData.socialLinks?.map((link, i) => (
+          <div key={i} className="cv6-contact-item">
+            <span className="cv6-contact-icon">🔗</span>
+            <a
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cv6-link-url"
+            >
+              {link.replace(/^https?:\/\//, "").split("/")[0]}
+            </a>
+          </div>
+        ))}
+      </div>
+      <div className="cv6-name-section">
+        <h1 className="cv6-name">
+          {cvData.firstName}{" "}
+          <span className="cv6-last-name">{cvData.lastName}</span>
+        </h1>
+        <h2 className="cv6-designation">{cvData.designation}</h2>
+      </div>
+    </div>
+  );
+
+  // Summary Section Component
+  const SummarySection = () => {
+    const summarySection = cvData.sections?.find((s) => s.name === "Summary");
+    if (!summarySection?.data) return null;
+
     return (
-      <Box sx={{ p: 2, textAlign: 'center' }}>
-        <CircularProgress size={24} />
-        <Typography variant="body2" color="text.secondary">Loading CV...</Typography>
+      <div className="cv6-section">
+        <h3 className="cv6-section-title">Professional Summary</h3>
+        <div className="cv6-section-content">
+          <p className="cv6-summary-text">{summarySection.data}</p>
+        </div>
+      </div>
+    );
+  };
+
+  // Skills Section Component
+  const SkillsSection = () => {
+    const skillsSection = cvData.sections?.find((s) => s.name === "Skill");
+    if (!skillsSection?.data?.length) return null;
+
+    return (
+      <div className="cv6-section">
+        <h3 className="cv6-section-title">Skills</h3>
+        <div className="cv6-section-content">
+          <div className="cv6-skills-category">
+            <div className="cv6-skills-list">
+              {skillsSection.data.map((skill, i) => (
+                <span key={i} className="cv6-skill-item">
+                  {skill.skill} {skill.rating && `(${skill.rating}/5)`}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Education Section Component
+  const EducationSection = () => {
+    const educationSection = cvData.sections?.find(
+      (s) => s.name === "Education"
+    );
+    if (!educationSection?.data?.length) return null;
+
+    return (
+      <div className="cv6-section">
+        <h3 className="cv6-section-title">Education</h3>
+        <div className="cv6-section-content">
+          {educationSection.data.map((edu, i) => (
+            <div key={i} className="cv6-education-item">
+              <div className="cv6-education-main">
+                <h4 className="cv6-education-course">{edu.course}</h4>
+                <span className="cv6-education-college">{edu.college}</span>
+                {edu.grade && (
+                  <span className="cv6-education-location">
+                    Grade: {edu.grade}
+                  </span>
+                )}
+                <span className="cv6-education-dates">
+                  {edu.startDate} – {edu.endDate}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Experience Section Component
+  const ExperienceSection = () => {
+    const experienceSection = cvData.sections?.find(
+      (s) => s.name === "Experience"
+    );
+    if (!experienceSection?.data?.length) return null;
+
+    return (
+      <div className="cv6-section">
+        <h3 className="cv6-section-title">Work Experience</h3>
+        <div className="cv6-section-content">
+          {experienceSection.data.map((exp, i) => (
+            <div key={i} className="cv6-experience-item">
+              <div className="cv6-experience-header">
+                <div className="cv6-experience-title-container">
+                  <h4 className="cv6-experience-title">{exp.jobTitle}</h4>
+                  <span className="cv6-experience-company">
+                    {exp.company} - {exp.location}
+                  </span>
+                </div>
+                <span className="cv6-experience-dates">
+                  {exp.startDate} – {exp.endDate}
+                </span>
+              </div>
+              <div className="cv6-experience-description">
+                <MarkdownPreview
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "inherit",
+                    padding: 0,
+                    fontSize: "15px",
+                    lineHeight: 1.7,
+                    fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif",
+                  }}
+                  source={exp.description || ""}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Projects Section Component
+  const ProjectsSection = () => {
+    const projectsSection = cvData.sections?.find((s) => s.name === "Project");
+    if (!projectsSection?.data?.length) return null;
+
+    return (
+      <div className="cv6-section">
+        <h3 className="cv6-section-title">Projects</h3>
+        <div className="cv6-section-content">
+          {projectsSection.data.map((proj, i) => (
+            <div key={i} className="cv6-project-item">
+              <div className="cv6-project-header">
+                <h4 className="cv6-project-name">{proj.name}</h4>
+              </div>
+              <div className="cv6-project-description">
+                <MarkdownPreview
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "inherit",
+                    padding: 0,
+                    fontSize: "15px",
+                    lineHeight: 1.7,
+                    fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif",
+                  }}
+                  source={proj.description || ""}
+                />
+              </div>
+              {proj.technologies && (
+                <div className="cv6-technologies-container">
+                  {proj.technologies.map((tech, idx) => (
+                    <span key={idx} className="cv6-technology-tag">
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Certifications Section Component
+  const CertificationsSection = () => {
+    const certificationsSection = cvData.sections?.find(
+      (s) => s.name === "Certification"
+    );
+    if (!certificationsSection?.data?.length) return null;
+
+    return (
+      <div className="cv6-section">
+        <h3 className="cv6-section-title">Certifications</h3>
+        <div className="cv6-section-content">
+          {certificationsSection.data.map((cert, i) => (
+            <div key={i} className="cv6-certification-item">
+              <h4 className="cv6-certification-name">{cert.name}</h4>
+              <span className="cv6-certification-institute">
+                {cert.institute}
+              </span>
+              <span className="cv6-certification-date">
+                Issued: {cert.issueDate}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Award Section Component
+  const AwardSection = () => {
+    const awardSection = cvData.sections?.find((s) => s.name === "Award");
+    if (!awardSection?.data?.length) return null;
+
+    return (
+      <div className="cv6-section">
+        <h3 className="cv6-section-title">Awards</h3>
+        <div className="cv6-section-content">
+          {awardSection.data.map((award, i) => (
+            <div key={i} className="cv6-award-item">
+              <h4 className="cv6-award-title">{award.title}</h4>
+              <span className="cv6-award-issuer">{award.issuer}</span>
+              <span className="cv6-award-date">{award.date}</span>
+              {award.description && (
+                <p className="cv6-award-description">{award.description}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Interest Section Component
+  const InterestSection = () => {
+    const interestSection = cvData.sections?.find((s) => s.name === "Interest");
+    if (!interestSection?.data?.length) return null;
+
+    return (
+      <div className="cv6-section">
+        <h3 className="cv6-section-title">Interests</h3>
+        <div className="cv6-section-content">
+          <div className="cv6-interests-container">
+            {interestSection.data.map((interest, i) => (
+              <span key={i} className="cv6-interest-tag">
+                {interest}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Achievement Section Component
+  const AchievementSection = () => {
+    const achievementSection = cvData.sections?.find(
+      (s) => s.name === "Achievement"
+    );
+    if (!achievementSection?.data?.length) return null;
+
+    return (
+      <div className="cv6-section">
+        <h3 className="cv6-section-title">Achievements</h3>
+        <div className="cv6-section-content">
+          <div className="cv6-achievements-list">
+            {achievementSection.data.map((achievement, i) => (
+              <div key={i} className="cv6-achievement-item">
+                <span className="cv6-achievement-icon">🏆</span>
+                <span className="cv6-achievement-text">{achievement}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Language Section Component
+  const LanguageSection = () => {
+    const languageSection = cvData.sections?.find((s) => s.name === "Language");
+    if (!languageSection?.data?.length) return null;
+
+    return (
+      <div className="cv6-section">
+        <h3 className="cv6-section-title">Languages</h3>
+        <div className="cv6-section-content">
+          <div className="cv6-languages-container">
+            {languageSection.data.map((language, i) => (
+              <div key={i} className="cv6-language-item">
+                <span className="cv6-language-name">{language.language}</span>
+                <span className="cv6-language-proficiency">
+                  {language.proficiency}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const PrintButton = () => (
+    <div className="cv6-print-button-container">
+      <button className="cv6-print-button" onClick={handlePrint}>
+        🖨️ Print CV
+      </button>
+    </div>
+  );
+
+  if (showLoading || !cvData) {
+    const letters = [
+      "P",
+      "o",
+      "r",
+      "t",
+      "f",
+      "o",
+      "l",
+      "i",
+      "o",
+      ".",
+      "D",
+      "r",
+      "i",
+      "v",
+      "e",
+      "O",
+      "S",
+      "x",
+    ];
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          backgroundColor: "#f8f9fa",
+          p: 2,
+        }}
+      >
+        <Box sx={{ mb: 4, textAlign: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              mb: 1,
+              flexWrap: "wrap",
+            }}
+          >
+            {letters.map((letter, index) => (
+              <Typography
+                key={index}
+                variant="h2"
+                component="span"
+                sx={{
+                  fontSize: { xs: "0.9rem", sm: "2.5rem" },
+                  fontWeight: 400,
+                  display: "inline-block",
+                  animation: `fadeInOut 2s ease-in-out infinite`,
+                  animationDelay: `${index * 0.12}s`,
+                  color:
+                    index === 0
+                      ? "#4285F4"
+                      : index === 1
+                      ? "#EA4335"
+                      : index === 2
+                      ? "#FBBC05"
+                      : index === 3
+                      ? "#4285F4"
+                      : index === 4
+                      ? "#34A853"
+                      : index === 5
+                      ? "#EA4335"
+                      : index === 6
+                      ? "#FBBC05"
+                      : index === 7
+                      ? "#4285F4"
+                      : index === 8
+                      ? "#34A853"
+                      : index === 9
+                      ? "#5f6368"
+                      : index === 10
+                      ? "#4285F4"
+                      : index === 11
+                      ? "#EA4335"
+                      : index === 12
+                      ? "#FBBC05"
+                      : index === 13
+                      ? "#34A853"
+                      : index === 14
+                      ? "#EA4335"
+                      : index === 15
+                      ? "#4285F4"
+                      : index === 16
+                      ? "#FBBC05"
+                      : "#34A853",
+                }}
+              >
+                {letter}
+              </Typography>
+            ))}
+          </Box>
+        </Box>
+        <style>
+          {`
+            @keyframes fadeInOut {
+              0% { opacity: 0; transform: translateY(10px); }
+              20% { opacity: 1; transform: translateY(0); }
+              80% { opacity: 1; transform: translateY(0); }
+              100% { opacity: 0; transform: translateY(-10px); }
+            }
+          `}
+        </style>
       </Box>
     );
   }
 
   if (!cvData) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center', backgroundColor: '#f9f9f9' }}>
-        <Typography color="error">No CV data available for this user.</Typography>
-      </Box>
+      <div className="cv6-error-container">
+        <p className="cv6-error-text">No CV data available for this user.</p>
+      </div>
     );
   }
 
-  const {
-    firstName,
-    lastName,
-    designation,
-    dob,
-    email,
-    gender,
-    phoneNo,
-    socialLinks,
-    sections,
-  } = cvData;
-
-  // Helper function to render social links with icons
-  const renderSocialLinks = () => {
-    if (!socialLinks || socialLinks.length === 0) return null;
-
-    return (
-      <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
-        {socialLinks.map((link, index) => {
-          let icon = <Language />;
-          if (link.includes("linkedin")) icon = <LinkedIn />;
-          if (link.includes("github")) icon = <GitHub />;
-          if (link.includes("facebook")) icon = <Facebook />;
-          if (link.includes("gmail")) icon = <AlternateEmailIcon />;
-
-          return (
-            <Chip
-              key={index}
-              icon={icon}
-              label={link}
-              onClick={() => window.open(link, "_blank")}
-              size="small"
-              variant="outlined"
-            />
-          );
-        })}
-      </Box>
-    );
-  };
-
-  // Helper function to render sections
-  const renderSection = (section) => {
-    if (!section || !section.data || section.data.length === 0) return null;
-
-    switch (section.name) {
-      case "Summary":
-        return (
-          <Paper elevation={2} sx={{ p: 3, mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
-              <WorkOutlineSharpIcon sx={{ mr: 1, color: "primary.main" }} />
-              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-                Professional Summary
-              </Typography>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
-              {section.data}
-            </Typography>
-          </Paper>
-        );
-      case "Skill":
-        return (
-          <Paper elevation={2} sx={{ p: 3, mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
-              <WorkOutlineSharpIcon sx={{ mr: 1, color: "primary.main" }} />
-              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-                Skills
-              </Typography>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {section.data.map((skill, idx) => (
-                <Chip
-                  key={idx}
-                  label={skill.skill ? `${skill.skill} (${skill.rating}/5)` : skill.skill}
-                  variant="outlined"
-                  color="primary"
-                  sx={{ mb: 1 }}
-                />
-              ))}
-            </Box>
-          </Paper>
-        );
-      case "Experience":
-        return (
-          <Paper elevation={2} sx={{ p: 3, mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
-              <HomeRepairServiceSharpIcon sx={{ mr: 1, color: "primary.main" }} />
-              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-                Work Experience
-              </Typography>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            {section.data.map((exp, idx) => (
-              <React.Fragment key={idx}>
-                <Box key={idx} mb={3}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
-                    <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        {exp.jobTitle}
-                      </Typography>
-                      <Typography variant="subtitle2" color="text.secondary">
-                        {exp.company}
-                      </Typography>
-                    </Box>
-
-                    <Box>
-                      {exp.endDate ? (<Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
-                        {exp.startDate} - {exp.endDate}
-                      </Typography>) : (<Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
-                        Present
-                      </Typography>)}
-                      
-                      <Typography sx={{ fontWeight: 600, textAlign: "end" }} variant="body2" color="text.secondary">
-                        {exp.location}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" component="div" sx={{ lineHeight: 1.6 }}>
-                      <MarkdownPreview
-                        style={{
-                          backgroundColor: 'transparent',  // removes black
-                          color: 'inherit',                // use your text color
-                          padding: 0,                      // optional
-                        }}
-                        source={exp.description || ""} />
-                    </Typography>
-                  </Box>
-
-                  {idx < section.data.length - 1 && <Divider sx={{ mt: 2 }} />}
-
-                </Box>
-              </React.Fragment>
-
-            ))}
-          </Paper>
-        );
-      case "Education":
-        return (
-          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
-              <Tooltip title="Education Section" placement="top">
-                <SchoolSharpIcon sx={{ mr: 1, color: "primary.main" }} />
-              </Tooltip>
-              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-                Education
-              </Typography>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-
-            {section.data.map((edu, idx) => (
-              //  console.log(edu.grade,"Grade"),
-              <React.Fragment key={idx}>
-                <Box mb={3} sx={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
-                  <Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {edu.course}
-                    </Typography>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      {edu.college}
-                    </Typography>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      {edu.fieldOfStudy}
-                    </Typography>
-                    {edu.grade ? (<Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
-                      Grade: {edu.grade}
-                    </Typography>) : null}
-
-                  </Box>
-
-                  <Box>
-                    {edu.endDate ? (<Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
-                      {edu.startDate} - {edu.endDate}
-                    </Typography>) : (<Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", mb: 1 }}>
-                      Present
-                    </Typography>)}
-                    <Typography sx={{ fontWeight: 600, textAlign: "end" }} variant="body2" color="text.secondary">
-                      {edu.location}
-                    </Typography>
-                  </Box>
-                </Box>
-                {idx < section.data.length - 1 && <Divider sx={{ my: 2 }} />}
-              </React.Fragment>
-            ))}
-          </Paper>
-
-        );
-      case "Project":
-        return (
-          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-              Projects
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            {section.data.map((proj, idx) => (
-              // console.log(proj.technologies,"jjjj"),
-
-              <Box key={idx} mb={3}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {idx + 1}. {proj.name}
-                </Typography>
-                <Typography variant="body2" component="div" sx={{ mb: 1, lineHeight: 1.6 }}>
-                  <MarkdownPreview
-                    style={{
-                      backgroundColor: 'transparent',  // removes black
-                      color: 'inherit',                // use your text color
-                      padding: 0,                      // optional
-                    }}
-                    source={proj.description || ""} />
-                </Typography>
-                {proj.technologies && proj.technologies.length > 0 ? (
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    <Box component="span" sx={{ fontWeight: 600 }}>Technologies: </Box>
-                    {proj.technologies.join(", ")}
-                  </Typography>
-                ) : null}
-                {proj.url && (
-                  <Typography variant="body2">
-                    <Box component="span" sx={{ fontWeight: 600 }}>URL: </Box>
-                    <Box
-                      component="a"
-                      href={proj.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      sx={{ color: "primary.main", textDecoration: "none" }}
-                    >
-                      {proj.url}
-                    </Box>
-                  </Typography>
-                )}
-                {idx < section.data.length - 1 && <Divider sx={{ mt: 2 }} />}
-              </Box>
-            ))}
-          </Paper>
-        );
-      case "Certification":
-        return (
-          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
-              <CardMembership sx={{ mr: 1, color: "primary.main" }} />
-              <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
-                Certifications
-              </Typography>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            {section.data.map((cert, idx) => (
-              <Box key={idx} mb={2}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  {cert.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {cert.institute}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Issued: {cert.issueDate}
-                </Typography>
-              </Box>
-            ))}
-          </Paper>
-        );
-      case "Language":
-        return (
-          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
-              <LanguageSharpIcon sx={{ mr: 1, color: "primary.main" }} />
-              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-                Languages
-              </Typography>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-              {section.data.map((lang, idx) => (
-                <Box key={idx}>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    {lang.language}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {lang.proficiency}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        );
-      case "Award":
-        return (
-          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
-              <EmojiEventsSharpIcon sx={{ mr: 1, color: "primary.main" }} />
-              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-                Awards
-              </Typography>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-              {section.data.map((award, idx) => (
-                <Box key={idx}>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    Title: {award.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Issuer: {award.issuer}
-                  </Typography>
-
-                  <Typography variant="body2" component="div" color="text.secondary">
-                    <MarkdownPreview
-                      style={{
-                        backgroundColor: 'transparent',  // removes black
-                        color: 'inherit',                // use your text color
-                        padding: 0,                      // optional
-                      }}
-                      source={`description :${award.description || ""}`} />
-
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Issued: {award.date}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        );
-      case "Achievement":
-        return (
-          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
-              <MilitaryTechSharpIcon sx={{ mr: 1, color: "primary.main" }} />
-              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-                Achievement
-              </Typography>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-              {section.data.map((Achievement, idx) => (
-                <Box key={idx}>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    {idx + 1}: {Achievement}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        );
-      case "Interest":
-        return (
-          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
-              <InterestsSharpIcon sx={{ mr: 1, color: "primary.main" }} />
-              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-                Interests
-              </Typography>
-            </Box>
-
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-              {section.data.map((interest, idx) => (
-                <Box key={idx}>
-
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    {idx + 1}: {interest}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header Section */}
-      <Paper elevation={2} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-        <Grid container spacing={4} alignItems="center">
-          <Grid item xs={12} md={9}>
-            <Typography variant="h3" gutterBottom sx={{ fontWeight: 700 }}>
-              {firstName} {lastName}
-            </Typography>
-            <Typography variant="h5" color="primary" gutterBottom sx={{ fontWeight: 600 }}>
-              {designation}
-            </Typography>
+    <>
+      <PrintButton />
+      {/* SINGLE COLUMN LAYOUT - Modern Professional Design */}
+      <div className="cv6-container" ref={cvContentRef}>
+        <div className="cv6-content">
+          <HeaderSection />
+          <div className="cv6-main-content">
+            <SummarySection />
+            <ExperienceSection />
+            <ProjectsSection />
+            <EducationSection />
+            <SkillsSection />
+            <CertificationsSection />
+            <AwardSection />
+            <AchievementSection />
+            <LanguageSection />
+            <InterestSection />
+          </div>
+        </div>
 
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} md={6}>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <Email sx={{ mr: 1, color: "primary.main" }} />
-                  <Typography variant="body1">{email}</Typography>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <Phone sx={{ mr: 1, color: "primary.main" }} />
-                  <Typography variant="body1">{phoneNo}</Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <Cake sx={{ mr: 1, color: "primary.main" }} />
-                  <Typography variant="body1">
-                    {new Date(dob).toLocaleDateString()} ({gender})
-                  </Typography>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <LocationOn sx={{ mr: 1, color: "primary.main" }} />
-                  <Typography variant="body1">
-                    {cvData?.address?.city}, {cvData?.address?.state}, {cvData?.address?.country}
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-            {renderSocialLinks()}
-          </Grid>
-        </Grid>
-      </Paper>
+        <style jsx global>{`
+          /* ===== GLOBAL STYLES ===== */
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
 
-      {/* Sections */}
-      {sections?.map((section, idx) => (
-        <React.Fragment key={idx}>{renderSection(section)}</React.Fragment>
-      ))}
-    </Container>
+          html,
+          body {
+            font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+            line-height: 1.5;
+            background: #ecf0f1;
+          }
+
+          /* ===== SINGLE COLUMN CONTENT ===== */
+          .cv6-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+          }
+
+          .cv6-content {
+            width: 210mm;
+            background: white;
+            margin: 0 auto;
+          }
+
+          /* ===== HEADER SECTION ===== */
+          .cv6-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 15px 40px;
+            margin-bottom: 0;
+            text-align: center;
+          }
+
+          .cv6-name-section {
+            text-align: center;
+          }
+
+          .cv6-name {
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 10px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+          }
+
+          .cv6-last-name {
+            font-weight: 300;
+            color: #ecf0f1;
+          }
+
+          .cv6-designation {
+            font-size: 20px;
+            color: #bdc3c7;
+            font-weight: 400;
+            margin: 0 0 30px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+          }
+
+          .cv6-contact-section {
+            display: flex;
+            padding-top: 0px;
+            padding-bottom: 0px;
+            margin-bottom: 15px;
+            justify-content: center;
+            gap: 46px;
+            flex-wrap: wrap;
+          }
+
+          .cv6-contact-item {
+            font-size: 14px;
+            color: #ecf0f1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+
+          .cv6-contact-icon {
+            font-size: 16px;
+          }
+
+          .cv6-link-url {
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: color 0.3s ease;
+          }
+
+          .cv6-link-url:hover {
+            color: white;
+          }
+
+          /* ===== MAIN CONTENT LAYOUT ===== */
+          .cv6-main-content {
+            padding: 50px 40px;
+          }
+
+          /* ===== SECTION STYLES ===== */
+          .cv6-section {
+            margin-bottom: 35px;
+          }
+
+          .cv6-section:last-child {
+            margin-bottom: 0;
+          }
+
+          .cv6-section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 10px;
+            position: relative;
+          }
+
+          .cv6-section-title::after {
+            content: "";
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background: #3498db;
+          }
+
+          .cv6-section-content {
+            padding-left: 0;
+          }
+
+          /* ===== SUMMARY ===== */
+          .cv6-summary-text {
+            line-height: 1.7;
+            font-size: 16px;
+            text-align: left;
+            color: #34495e;
+            margin: 0;
+            hyphens: auto;
+          }
+
+          /* ===== EXPERIENCE ===== */
+          .cv6-experience-item {
+            margin-bottom: 25px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #e74c3c;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+          }
+
+          .cv6-experience-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+          }
+
+          .cv6-experience-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+          }
+
+          .cv6-experience-title-container {
+            flex: 1;
+          }
+
+          .cv6-experience-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 8px 0;
+          }
+
+          .cv6-experience-company {
+            font-size: 16px;
+            color: #e74c3c;
+            display: block;
+            font-weight: 500;
+          }
+
+          .cv6-experience-dates {
+            font-size: 14px;
+            color: #7f8c8d;
+            font-style: italic;
+            white-space: nowrap;
+            margin-left: 20px;
+            background: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+          }
+
+          .cv6-experience-description {
+            line-height: 1.7;
+            font-size: 15px;
+            color: #34495e;
+            margin: 0;
+          }
+
+          /* ===== PROJECTS ===== */
+          .cv6-project-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: transform 0.3s ease;
+          }
+
+          .cv6-project-item:hover {
+            transform: translateY(-2px);
+          }
+
+          .cv6-project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+          }
+
+          .cv6-project-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 8px 0;
+            flex: 1;
+          }
+
+          .cv6-technologies-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-start;
+            margin-top: 12px;
+          }
+
+          .cv6-technology-tag {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            white-space: nowrap;
+            font-weight: 500;
+            transition: transform 0.3s ease;
+          }
+
+          .cv6-technology-tag:hover {
+            transform: scale(1.05);
+          }
+
+          .cv6-project-description {
+            line-height: 1.7;
+            font-size: 15px;
+            color: #34495e;
+            margin: 0;
+          }
+
+          /* ===== EDUCATION ===== */
+          .cv6-education-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+            transition: transform 0.3s ease;
+          }
+
+          .cv6-education-item:hover {
+            transform: translateY(-2px);
+          }
+
+          .cv6-education-main {
+            flex: 1;
+          }
+
+          .cv6-education-course {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 8px 0;
+          }
+
+          .cv6-education-college {
+            font-size: 16px;
+            color: #3498db;
+            display: block;
+            font-weight: 500;
+          }
+
+          .cv6-education-location {
+            font-size: 14px;
+            color: #7f8c8d;
+            display: block;
+          }
+
+          .cv6-education-dates {
+            font-size: 14px;
+            color: #7f8c8d;
+            font-style: italic;
+            white-space: nowrap;
+            background: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 8px;
+            border: 1px solid #e9ecef;
+          }
+
+          /* ===== SKILLS ===== */
+          .cv6-skills-category {
+            margin-bottom: 20px;
+          }
+
+          .cv6-category-tag {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 12px;
+            padding-left: 20px;
+            position: relative;
+          }
+
+          .cv6-category-tag::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: #e74c3c;
+            border-radius: 50%;
+          }
+
+          .cv6-skills-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+
+          .cv6-skill-item {
+            font-size: 15px;
+            color: #34495e;
+            line-height: 1.5;
+            padding: 10px 16px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            border: 1px solid #e9ecef;
+            transition: background 0.3s ease;
+          }
+
+          .cv6-skill-item:hover {
+            background: #e9ecef;
+          }
+
+          /* ===== CERTIFICATIONS & AWARDS ===== */
+          .cv6-certification-item,
+          .cv6-award-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+            transition: transform 0.3s ease;
+          }
+
+          .cv6-certification-item:hover,
+          .cv6-award-item:hover {
+            transform: translateY(-2px);
+          }
+
+          .cv6-certification-name,
+          .cv6-award-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #2c3e50;
+          }
+
+          .cv6-certification-institute,
+          .cv6-certification-date,
+          .cv6-award-issuer,
+          .cv6-award-date {
+            font-size: 14px;
+            color: #3498db;
+            display: block;
+          }
+
+          .cv6-award-description {
+            font-size: 14px;
+            color: #34495e;
+            margin-top: 8px;
+            line-height: 1.6;
+          }
+
+          /* ===== ACHIEVEMENTS ===== */
+          .cv6-achievements-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+          }
+
+          .cv6-achievement-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            transition: transform 0.3s ease;
+          }
+
+          .cv6-achievement-item:hover {
+            transform: translateX(5px);
+          }
+
+          .cv6-achievement-icon {
+            font-size: 16px;
+            margin-top: 2px;
+          }
+
+          .cv6-achievement-text {
+            font-size: 15px;
+            color: #34495e;
+            line-height: 1.6;
+          }
+
+          /* ===== LANGUAGES & INTERESTS ===== */
+          .cv6-languages-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+          }
+
+          .cv6-language-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            color: #34495e;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+            transition: background 0.3s ease;
+          }
+
+          .cv6-language-item:hover {
+            background: #e9ecef;
+          }
+
+          .cv6-language-proficiency {
+            color: #3498db;
+            font-weight: 600;
+          }
+
+          .cv6-interests-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+          }
+
+          .cv6-interest-tag {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: transform 0.3s ease;
+          }
+
+          .cv6-interest-tag:hover {
+            transform: scale(1.05);
+          }
+
+          /* ===== PRINT BUTTON ===== */
+          .cv6-print-button-container {
+            text-align: center;
+            padding: 25px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+          }
+
+          .cv6-print-button {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+          }
+
+          .cv6-print-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+          }
+
+          /* ===== RESPONSIVE DESIGN ===== */
+          @media (max-width: 768px) {
+            .cv6-container {
+              margin: 10px;
+            }
+
+            .cv6-content {
+              width: 100%;
+            }
+
+            .cv6-main-content {
+              padding: 30px 20px;
+            }
+
+            .cv6-header {
+              padding: 30px 20px;
+            }
+
+            .cv6-contact-section {
+              gap: 15px;
+              flex-direction: column;
+              align-items: center;
+            }
+
+            .cv6-name {
+              font-size: 32px;
+            }
+
+            .cv6-designation {
+              font-size: 16px;
+            }
+
+            .cv6-section-title {
+              font-size: 20px;
+            }
+          }
+
+          /* Browser-specific styling */
+          @media screen {
+            .cv6-container {
+              margin: 20px auto;
+            }
+          }
+        `}</style>
+      </div>
+    </>
   );
 };
 

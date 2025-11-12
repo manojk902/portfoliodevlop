@@ -55,6 +55,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const handleNavigationClick = (path) => {
     if (!userProfile?.firstName && path !== "/editprofile") {
@@ -81,6 +82,20 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const open = Boolean(anchorEl);
+
+  // Scroll event handler
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 10;
+      setScrolled(isScrolled);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     dispatch(
@@ -193,12 +208,15 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
         position="fixed"
         sx={{
           height: { xs: "80px", sm: "70px" },
-          background: "transparent", // ✅ Background transparent
-          boxShadow: "none", // ✅ Subtle shadow
-          backdropFilter: "blur(10px)", // ✅ Glass morphism effect
-          // backgroundColor: "#fffafae6", // ✅ Light overlay
+          background: "transparent",
+          boxShadow: "none",
+          backdropFilter: "blur(10px)",
+          backgroundColor: scrolled ? "transparent" : "#fffafae6", // ✅ Background changes on scroll
           py: { xs: 0.5, sm: 1 },
-          // borderBottom: "1px solid rgba(0,0,0,0.05)", // ✅ Subtle border
+          borderBottom: scrolled
+            ? "1px solid transparent" // ✅ Transparent when scrolled
+            : "1px solid rgba(0,0,0,0.05)", // ✅ Visible when at top
+          transition: "all 0.3s ease", // ✅ Smooth transition
         }}
       >
         <Toolbar
@@ -244,11 +262,11 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                 onClick={() => handleNavigationClick("/")}
               >
                 {/* Logo Container */}
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                   <LibraryBooksIcon
                     sx={{
-                      color: "#2c3e50", // ✅ Dark professional color
-                      fontSize: { xs: "32px", sm: "36px" }, // ✅ Adjusted size
+                      color: "#2c3e50",
+                      fontSize: { xs: "42px" },
                     }}
                   />
 
@@ -262,9 +280,9 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                   >
                     <Typography
                       sx={{
-                        color: "#2c3e50", // ✅ Dark professional color
+                        color: "#2c3e50",
                         fontWeight: 700,
-                        fontSize: { xs: "1rem", sm: "1.3rem" },
+                        fontSize: { xs: "16px" },
                         letterSpacing: "0.5px",
                         lineHeight: 1.1,
                         fontFamily:
@@ -278,7 +296,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                       sx={{
                         width: "100%",
                         height: "2px",
-                        background: "linear-gradient(90deg, #3498db, #2c3e50)", // ✅ Gradient accent
+                        background: "linear-gradient(90deg, #3498db, #2c3e50)",
                         my: 0.3,
                       }}
                     />
@@ -288,7 +306,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                     >
                       <Typography
                         sx={{
-                          color: "#7f8c8d", // ✅ Subtle gray
+                          color: "#7f8c8d",
                           fontWeight: 400,
                           fontSize: { xs: "10px", sm: "11px" },
                           letterSpacing: "0.3px",
@@ -300,9 +318,9 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                       </Typography>
                       <Typography
                         sx={{
-                          color: "#3498db", // ✅ Professional blue
+                          color: "#3498db",
                           fontWeight: 600,
-                          fontSize: { xs: "0.7rem", sm: "0.85rem" },
+                          fontSize: { xs: "0.7rem" },
                           letterSpacing: "0.5px",
                           lineHeight: 1.1,
                           fontFamily: "'Inter', sans-serif",
@@ -324,10 +342,10 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                 }}
               >
                 {/* Theme Toggle */}
-                <IconButton
+                {/* <IconButton
                   onClick={toggleTheme}
                   sx={{
-                    color: "#5d6d7e", // ✅ Professional gray
+                    color: "#5d6d7e",
                     backgroundColor: "rgba(52, 152, 219, 0.1)",
                     "&:hover": {
                       bgcolor: "rgba(52, 152, 219, 0.2)",
@@ -339,13 +357,13 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                   }}
                 >
                   {mode === "light" ? <NightlightIcon /> : <WbSunnyIcon />}
-                </IconButton>
+                </IconButton> */}
 
                 {/* Navigation Buttons */}
                 {!isMobile && (
                   <Box sx={{ display: "flex", gap: 1 }}>
                     <Button
-                      onClick={() => handleNavigationClick("/Designpage")}
+                      onClick={() => handleNavigationClick("/edit/template")}
                       sx={{
                         color: "#2c3e50",
                         px: 2,
@@ -418,7 +436,6 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                           sx={{
                             color: "#141516ff",
                             fontSize: "20px",
-                            ml: 0.2,
                             transition: "all 0.2s ease",
                             opacity: 0.7,
                           }}
@@ -430,13 +447,14 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                         anchorEl={anchorEl}
                         open={open}
                         onClose={handleMenuClose}
-                        onMouseLeave={handleMenuClose} // ✅ Mouse menu se bahar jaye toh close
+                        onMouseLeave={handleMenuClose}
+                        disableScrollLock={true}
                         slotProps={{
                           paper: {
                             elevation: 0,
                             sx: {
                               mt: 1.5,
-                              minWidth: 280,
+                              minWidth: 100,
                               borderRadius: "16px",
                               background: "#FFFFFF",
                               color: "#1a1a1a",
@@ -449,182 +467,182 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                       >
                         {/* My Profile Menu Item */}
                         <MenuItem
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "rgba(52, 152, 219, 0.08)")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "transparent")
-                          }
                           onClick={() => {
                             handleMenuClose();
                             navigate("/profile");
                           }}
                           sx={{
-                            gap: 2,
-                            px: 3,
-                            py: 2,
+                            gap: 1.5,
+                            px: 2,
+                            py: 1.2,
                             borderBottom: "1px solid rgba(0,0,0,0.04)",
                             transition: "all 0.2s ease",
                             cursor: "pointer",
+                            "&:hover": {
+                              backgroundColor: "rgba(52, 152, 219, 0.08)",
+                            },
+                            minHeight: "auto",
                           }}
                         >
                           <AccountCircleIcon
-                            className="menu-icon"
                             sx={{
                               color: "#5d6d7e",
-                              transition: "all 0.2s ease",
-                              fontSize: "22px",
+                              fontSize: "18px",
+                              flexShrink: 0,
                             }}
                           />
                           <Box sx={{ flex: 1 }}>
                             <Typography
-                              className="menu-text"
                               sx={{
-                                fontWeight: 600,
-                                fontSize: "0.95rem",
-                                transition: "all 0.2s ease",
+                                fontWeight: 500,
+                                fontSize: "0.85rem",
+                                lineHeight: 1.2,
                               }}
                             >
                               My Profile
                             </Typography>
                             <Typography
                               sx={{
-                                fontSize: "0.75rem",
+                                fontSize: "0.7rem",
                                 color: "#6c757d",
-                                mt: 0.2,
+                                lineHeight: 1.2,
                               }}
                             >
-                              View and edit your profile
+                              View and edit profile
                             </Typography>
                           </Box>
                           <ArrowForwardIosIcon
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMenuClose();
+                              navigate("/profile");
+                            }}
                             sx={{
-                              fontSize: "14px",
+                              fontSize: "12px",
                               color: "#adb5bd",
-                              ml: 1,
+                              cursor: "pointer",
+                              flexShrink: 0,
                             }}
                           />
                         </MenuItem>
 
                         {/* Builder Menu Item */}
                         <MenuItem
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "rgba(52, 152, 219, 0.08)")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "transparent")
-                          }
                           onClick={() => {
                             handleMenuClose();
                             navigate("/edit");
                           }}
                           sx={{
-                            gap: 2,
-                            px: 3,
-                            py: 2,
+                            gap: 1.5,
+                            px: 2,
+                            py: 1.2,
                             borderBottom: "1px solid rgba(0,0,0,0.04)",
                             transition: "all 0.2s ease",
                             cursor: "pointer",
+                            "&:hover": {
+                              backgroundColor: "rgba(52, 152, 219, 0.08)",
+                            },
+                            minHeight: "auto",
                           }}
                         >
                           <BuildIcon
-                            className="menu-icon"
                             sx={{
                               color: "#5d6d7e",
-                              transition: "all 0.2s ease",
-                              fontSize: "22px",
+                              fontSize: "18px",
+                              flexShrink: 0,
                             }}
                           />
                           <Box sx={{ flex: 1 }}>
                             <Typography
-                              className="menu-text"
                               sx={{
-                                fontWeight: 600,
-                                fontSize: "0.95rem",
-                                transition: "all 0.2s ease",
+                                fontWeight: 500,
+                                fontSize: "0.85rem",
+                                lineHeight: 1.2,
                               }}
                             >
                               Builder
                             </Typography>
                             <Typography
                               sx={{
-                                fontSize: "0.75rem",
+                                fontSize: "0.7rem",
                                 color: "#6c757d",
-                                mt: 0.2,
+                                lineHeight: 1.2,
                               }}
                             >
-                              Create and edit your portfolio
+                              Create and edit portfolio
                             </Typography>
                           </Box>
                           <ArrowForwardIosIcon
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMenuClose();
+                              navigate("/edit");
+                            }}
                             sx={{
-                              fontSize: "14px",
+                              fontSize: "12px",
                               color: "#adb5bd",
-                              ml: 1,
+                              cursor: "pointer",
+                              flexShrink: 0,
                             }}
                           />
                         </MenuItem>
 
                         {/* Logout Menu Item */}
                         <MenuItem
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "rgba(231, 76, 60, 0.08)")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "transparent")
-                          }
                           onClick={() => {
                             handleMenuClose();
                             setLogoutConfirmOpen(true);
                           }}
                           sx={{
-                            gap: 2,
-                            px: 3,
-                            py: 2,
+                            gap: 1.5,
+                            px: 2,
+                            py: 1.2,
                             transition: "all 0.2s ease",
                             cursor: "pointer",
+                            "&:hover": {
+                              backgroundColor: "rgba(231, 76, 60, 0.08)",
+                            },
+                            minHeight: "auto",
                           }}
                         >
                           <ExitToAppIcon
-                            className="menu-icon"
                             sx={{
                               color: "#5d6d7e",
-                              transition: "all 0.2s ease",
-                              fontSize: "22px",
+                              fontSize: "18px",
+                              flexShrink: 0,
                             }}
                           />
                           <Box sx={{ flex: 1 }}>
                             <Typography
-                              className="menu-text"
                               sx={{
-                                fontWeight: 600,
-                                fontSize: "0.95rem",
-                                transition: "all 0.2s ease",
+                                fontWeight: 500,
+                                fontSize: "0.85rem",
+                                lineHeight: 1.2,
                               }}
                             >
                               Logout
                             </Typography>
                             <Typography
                               sx={{
-                                fontSize: "0.75rem",
+                                fontSize: "0.7rem",
                                 color: "#6c757d",
-                                mt: 0.2,
+                                lineHeight: 1.2,
                               }}
                             >
-                              Sign out from your account
+                              Sign out from account
                             </Typography>
                           </Box>
                           <ArrowForwardIosIcon
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMenuClose();
+                              setLogoutConfirmOpen(true);
+                            }}
                             sx={{
-                              fontSize: "14px",
+                              fontSize: "12px",
                               color: "#adb5bd",
-                              ml: 1,
+                              cursor: "pointer",
+                              flexShrink: 0,
                             }}
                           />
                         </MenuItem>
@@ -632,15 +650,15 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                         {/* Footer Section */}
                         <Box
                           sx={{
-                            px: 3,
-                            py: 2,
+                            px: 2,
+                            py: 1.5,
                             borderTop: "1px solid rgba(0,0,0,0.06)",
                             background: "rgba(248, 249, 250, 0.6)",
                           }}
                         >
                           <Typography
                             sx={{
-                              fontSize: "0.7rem",
+                              fontSize: "0.65rem",
                               color: "#6c757d",
                               textAlign: "center",
                             }}

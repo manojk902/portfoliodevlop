@@ -30,6 +30,7 @@ import {
 import { Link } from "react-router-dom";
 import { apiUrl } from "../../utils/common";
 import axios from "axios";
+import ResumeSlider from "./ResumeSlider.jsx";
 
 const HomePage = ({ mode }) => {
   const [users, setUsers] = useState([]);
@@ -73,7 +74,7 @@ const HomePage = ({ mode }) => {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+        background: "#fffafae6",
         py: 0,
       }}
     >
@@ -506,6 +507,8 @@ const HomePage = ({ mode }) => {
             </Typography>
           </Box>
         )}
+
+        <ResumeSlider />
 
         {/* Why Use Our Resume Builder Section */}
         <Box
@@ -964,46 +967,6 @@ const HomePage = ({ mode }) => {
                 </Box>
               </Grid>
             </Grid>
-
-            {/* CTA Section */}
-            <Box sx={{ textAlign: "center", mt: 8 }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  color: "#1e293b",
-                  fontWeight: 600,
-                  mb: 3,
-                  fontFamily: "'Inter', sans-serif",
-                }}
-              >
-                Ready to create your professional resume?
-              </Typography>
-              <Button
-                variant="contained"
-                sx={{
-                  background:
-                    "linear-gradient(135deg, #3498db 0%, #2980b9 100%)",
-                  color: "white",
-                  borderRadius: "16px",
-                  py: 2,
-                  px: 6,
-                  fontWeight: 700,
-                  fontSize: "1.1rem",
-                  textTransform: "none",
-                  fontFamily: "'Inter', sans-serif",
-                  boxShadow: "0 8px 25px rgba(52, 152, 219, 0.3)",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #2980b9 0%, #2471a3 100%)",
-                    boxShadow: "0 12px 35px rgba(52, 152, 219, 0.4)",
-                    transform: "translateY(-2px)",
-                  },
-                  transition: "all 0.3s ease",
-                }}
-              >
-                Create Your Resume Now
-              </Button>
-            </Box>
           </Container>
         </Box>
       </Container>

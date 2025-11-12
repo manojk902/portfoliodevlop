@@ -10,8 +10,8 @@ import Cv4 from "./Cv4";
 import DefaultCvDesign from "./DefaultCvDesign";
 import Cv2 from "./Cv2";
 import Cv6 from "./Cv6";
-import Cv7 from "./Cv7";
-import Cv8 from "./Cv8";
+// import Cv7 from "./Cv7";
+// import Cv8 from "./Cv8";
 // import CV6 from "./Cv5";
 
 export default function Designpreview() {
@@ -24,8 +24,8 @@ export default function Designpreview() {
     { id: 4, Component: Cv4 },
     { id: 5, Component: DefaultCvDesign },
     { id: 6, Component: Cv6 },
-    { id: 7, Component: Cv7 },
-    { id: 8, Component: Cv8 },
+    // { id: 7, Component: Cv7 },
+    // { id: 8, Component: Cv8 },
   ];
 
   // ✅ Safe find with memo + console log
@@ -71,7 +71,7 @@ export default function Designpreview() {
       >
         <Button
           component={Link}
-          to="/Designpage"
+          to="/edit/template"
           variant="contained"
           color="primary"
         >
