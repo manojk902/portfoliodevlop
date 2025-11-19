@@ -162,16 +162,16 @@ const Sidebar = ({ variant = "permanent", onClose }) => {
                     "&:before":
                       location.pathname === item.path
                         ? {
-                            content: '""',
-                            position: "absolute",
-                            left: 0,
-                            top: 0,
-                            height: "100%",
-                            width: "3px",
-                            background:
-                              "linear-gradient(180deg, #2c3e50 0%, #3498db 100%)",
-                            borderRadius: "0 2px 2px 0",
-                          }
+                          content: '""',
+                          position: "absolute",
+                          left: 0,
+                          top: 0,
+                          height: "100%",
+                          width: "3px",
+                          background:
+                            "linear-gradient(180deg, #2c3e50 0%, #3498db 100%)",
+                          borderRadius: "0 2px 2px 0",
+                        }
                         : {},
                     "&:hover": {
                       background:

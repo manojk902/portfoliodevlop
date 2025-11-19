@@ -27,7 +27,6 @@ const AppRoutes = () => {
 
       {/* Design Routes */}
       <Route path="/Designpreview/:type/:id" element={<Designpreview />} />
-
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/Designpage" element={<Designpage />} />
