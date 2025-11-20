@@ -1911,7 +1911,7 @@ const GroupForm = () => {
             payloadCreateCv
           );
           
-          navigate("/edit/template");
+          navigate("/edit");
         } catch (error) {
           setSubmitError(
             "Failed to save your CV. Please check all required fields and try again."
