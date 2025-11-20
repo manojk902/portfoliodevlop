@@ -211,7 +211,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
           background: "transparent",
           boxShadow: "none",
           backdropFilter: "blur(10px)",
-          backgroundColor: scrolled ? "transparent" : "#fffafae6", // ✅ Background changes on scroll
+          backgroundColor: scrolled ? "#fffafae6" : "#fffafae6", // ✅ Background changes on scroll
           py: { xs: 0.5, sm: 1 },
           borderBottom: scrolled
             ? "1px solid transparent" // ✅ Transparent when scrolled

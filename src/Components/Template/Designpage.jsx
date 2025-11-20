@@ -44,10 +44,27 @@ function DesignPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [openDemo, setOpenDemo] = useState(false);
   const [selectedCv, setSelectedCv] = useState(null);
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
+  console.log(showWelcomeMessage);
+
 
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
   const userId = userProfile?.fetchedUsed?.userId;
+  console.log("ooo", !!userId);
+
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const key = `first_time_template_${userId}`;
+    const val = localStorage.getItem(key);
+
+    if (val === "true") {
+      setShowWelcomeMessage(true);
+      localStorage.removeItem(key); // so it won't show twice
+    }
+  }, [userId]);
 
   useEffect(() => {
     const fetchDefaultCv = async () => {
@@ -231,6 +248,21 @@ function DesignPage() {
       }}
     >
       <Container maxWidth="xl" sx={{ px: isMobile ? 1 : 3 }}>
+        {showWelcomeMessage && (
+          <Box sx={{ mb: 3 }}>
+            <Alert
+              severity="info"
+              onClose={() => setShowWelcomeMessage(false)}
+              sx={{
+                borderRadius: 2,
+                boxShadow: 1,
+                fontWeight: 600,
+              }}
+            >
+              Welcome! Choose a template to start — this message will show only once.
+            </Alert>
+          </Box>
+        )}
         {/* Search Bar Section */}
         <Box
           sx={{

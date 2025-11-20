@@ -153,7 +153,6 @@ const formatDisplayDate = (dateString) => {
     return dateString;
   }
 };
-
 // Calculate duration between two dates
 const calculateDuration = (startDate, endDate, currentlyActive = false) => {
   if (!startDate) return "";
@@ -386,15 +385,15 @@ const SectionPreview = ({ section, onEdit }) => {
                 "Language",
                 "Project",
               ].includes(section.name) && (
-                <Typography
-                  variant="body2"
-                  color="text.primary"
-                  sx={{ fontSize: "0.85rem" }}
-                >
-                  {item[sectionTypes[section.name].fields[0]] ||
-                    `Entry #${index + 1}`}
-                </Typography>
-              )}
+                  <Typography
+                    variant="body2"
+                    color="text.primary"
+                    sx={{ fontSize: "0.85rem" }}
+                  >
+                    {item[sectionTypes[section.name].fields[0]] ||
+                      `Entry #${index + 1}`}
+                  </Typography>
+                )}
 
               {/* Divider between entries except for the last one */}
               {index < section.data.length - 1 &&
@@ -499,17 +498,15 @@ const DraggableSection = ({
 
   const getDeleteMessage = () => {
     if (deleteDialog.type === "section") {
-      return `Are you sure you want to remove the ${
-        sectionTypes[section.name].title
-      } section? This action cannot be undone.`;
+      return `Are you sure you want to remove the ${sectionTypes[section.name].title
+        } section? This action cannot be undone.`;
     } else if (deleteDialog.type === "entry") {
       const entry = section.data[deleteDialog.entryIndex];
       let entryName = `Entry #${deleteDialog.entryIndex + 1}`;
 
       if (section.name === "Experience" && entry.jobTitle) {
-        entryName = `${entry.jobTitle} at ${
-          entry.company || "Unknown Company"
-        }`;
+        entryName = `${entry.jobTitle} at ${entry.company || "Unknown Company"
+          }`;
       } else if (section.name === "Education" && entry.college) {
         entryName = entry.college;
       } else if (section.name === "Project" && entry.name) {
@@ -518,9 +515,8 @@ const DraggableSection = ({
         entryName = entry[sectionTypes[section.name].fields[0]];
       }
 
-      return `Are you sure you want to remove "${entryName}" from ${
-        sectionTypes[section.name].title
-      }?`;
+      return `Are you sure you want to remove "${entryName}" from ${sectionTypes[section.name].title
+        }?`;
     }
     return "";
   };
@@ -693,14 +689,13 @@ const DraggableSection = ({
                           sx={{ fontSize: "0.9rem" }}
                         >
                           {section.name === "Experience"
-                            ? `${entry.jobTitle || "Untitled"} at ${
-                                entry.company || "Unknown Company"
-                              }`
+                            ? `${entry.jobTitle || "Untitled"} at ${entry.company || "Unknown Company"
+                            }`
                             : section.name === "Education"
-                            ? entry.college || "Untitled Education"
-                            : section.name === "Project"
-                            ? entry.name || "Untitled Project"
-                            : `Entry #${entryIndex + 1}`}
+                              ? entry.college || "Untitled Education"
+                              : section.name === "Project"
+                                ? entry.name || "Untitled Project"
+                                : `Entry #${entryIndex + 1}`}
                         </Typography>
                         <Button
                           variant="outlined"
@@ -879,19 +874,19 @@ const DraggableSection = ({
                                       /date$/i.test(field)
                                         ? "date"
                                         : field === "rating"
-                                        ? "number"
-                                        : "text"
+                                          ? "number"
+                                          : "text"
                                     }
                                     multiline={field === "summary"}
                                     rows={field === "summary" ? 4 : 1}
                                     value={
                                       field === "technologies" ||
-                                      field === "projectImages"
+                                        field === "projectImages"
                                         ? Array.isArray(entry[field])
                                           ? entry[field].join(", ")
                                           : entry[field] || ""
                                         : /date$/i.test(field) && entry[field]
-                                        ? (() => {
+                                          ? (() => {
                                             try {
                                               const parsed = parseISO(
                                                 entry[field]
@@ -903,16 +898,16 @@ const DraggableSection = ({
                                               return "";
                                             }
                                           })()
-                                        : entry[field] || ""
+                                          : entry[field] || ""
                                     }
                                     onChange={(e) => {
                                       const value =
                                         field === "technologies" ||
-                                        field === "projectImages"
+                                          field === "projectImages"
                                           ? e.target.value
-                                              .split(",")
-                                              .map((item) => item.trim())
-                                              .filter((item) => item)
+                                            .split(",")
+                                            .map((item) => item.trim())
+                                            .filter((item) => item)
                                           : e.target.value;
                                       handleSectionChange(
                                         section.name,
@@ -1624,10 +1619,10 @@ const GroupForm = () => {
           field === "rating"
             ? 1
             : field === "technologies" || field === "projectImages"
-            ? []
-            : field === "currentlyWorking" || field === "currentlyStudying"
-            ? false
-            : "",
+              ? []
+              : field === "currentlyWorking" || field === "currentlyStudying"
+                ? false
+                : "",
       }),
       {}
     );
@@ -1646,8 +1641,8 @@ const GroupForm = () => {
         ...prev,
         sections: existingSection
           ? prev.sections.map((s) =>
-              s.name === sectionName ? { ...s, data: [...s.data, fields] } : s
-            )
+            s.name === sectionName ? { ...s, data: [...s.data, fields] } : s
+          )
           : [...prev.sections, { name: sectionName, data: [fields] }],
       };
     });
@@ -1789,9 +1784,8 @@ const GroupForm = () => {
         sectionConfig.required.forEach((field) => {
           const value = section.data;
           if (!value || (Array.isArray(value) && value.length === 0)) {
-            newErrors[`${section.name}_0_${field}`] = `${
-              field.charAt(0).toUpperCase() + field.slice(1)
-            } is required`;
+            newErrors[`${section.name}_0_${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)
+              } is required`;
             isValid = false;
           }
         });
@@ -1813,9 +1807,8 @@ const GroupForm = () => {
               (typeof fieldValue === "string" && !fieldValue.trim()) ||
               (typeof fieldValue === "number" && isNaN(fieldValue))
             ) {
-              newErrors[`${section.name}_${entryIndex}_${field}`] = `${
-                field.charAt(0).toUpperCase() + field.slice(1)
-              } is required`;
+              newErrors[`${section.name}_${entryIndex}_${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)
+                } is required`;
               isValid = false;
             }
           });
@@ -1884,7 +1877,8 @@ const GroupForm = () => {
         };
 
         await axios.put(`${apiUrl}/updateCvInfoSet`, payloadCvupdate);
-        navigate("/edit");
+        navigate("/edit/template");
+        // navigate("/edit");
       } else {
         const payloadCreateCv = {
           userId: userId,
@@ -1916,7 +1910,8 @@ const GroupForm = () => {
             `${apiUrl}/create-cv`,
             payloadCreateCv
           );
-          navigate("/edit");
+          
+          navigate("/edit/template");
         } catch (error) {
           setSubmitError(
             "Failed to save your CV. Please check all required fields and try again."
@@ -2187,6 +2182,7 @@ const GroupForm = () => {
           >
             <Button
               variant="outlined"
+              bgcolor="red"
               sx={{
                 textTransform: "none",
                 fontSize: "0.85rem",
