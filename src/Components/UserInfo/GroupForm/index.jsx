@@ -565,7 +565,7 @@ const DraggableSection = ({
                 <DragIndicator sx={{ color: "text.secondary", fontSize: 16 }} />
                 <Avatar
                   sx={{
-                    bgcolor: "primary.main",
+                    bgcolor: "primary",
                     width: 32,
                     height: 32,
                     fontSize: "0.8rem",
@@ -595,6 +595,7 @@ const DraggableSection = ({
             <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
               <Button
                 variant={isExpanded ? "outlined" : "contained"}
+                color="primary"
                 size="small"
                 startIcon={isExpanded ? <CheckCircleIcon /> : <Edit />}
                 sx={{
@@ -602,8 +603,10 @@ const DraggableSection = ({
                   fontSize: "0.75rem",
                   borderRadius: 1,
                   minWidth: 60,
-                  px: 1,
-                  py: 0.5,
+                  px: 1.4,
+                  py: 0.4,
+                  // px: 1,
+                  // py: 0.5,
                 }}
                 onClick={() => toggleSection(section.name)}
               >
@@ -1024,7 +1027,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
           p: 1.5,
           borderBottom: expanded ? "1px solid" : "none",
           borderColor: "divider",
-          backgroundColor: "transparent",
+          backgroundColor: "#fefefe",
         }}
       >
         {/* Personal Info Header */}
@@ -1040,7 +1043,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
               <Avatar
                 sx={{
-                  bgcolor: "primary.main",
+                  bgcolor: "primary",
                   width: 32,
                   height: 32,
                   fontSize: "0.8rem",
@@ -1133,7 +1136,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
-                      backgroundColor: "white",
+                      backgroundColor: "transparent",
                       fontSize: "0.85rem",
                     },
                   }}
@@ -1153,7 +1156,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
-                      backgroundColor: "white",
+                      // backgroundColor: "white",
                       fontSize: "0.85rem",
                     },
                   }}
@@ -1173,7 +1176,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
-                      backgroundColor: "white",
+                      // backgroundColor: "white",
                       fontSize: "0.85rem",
                     },
                   }}
@@ -1192,7 +1195,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
-                      backgroundColor: "white",
+                      // backgroundColor: "white",
                       fontSize: "0.85rem",
                     },
                   }}
@@ -1210,7 +1213,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
-                      backgroundColor: "white",
+                      // backgroundColor: "white",
                       fontSize: "0.85rem",
                     },
                   }}
@@ -1230,7 +1233,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
-                      backgroundColor: "white",
+                      // backgroundColor: "white",
                       fontSize: "0.85rem",
                     },
                   }}
@@ -1248,7 +1251,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                     sx={{
                       borderRadius: 1,
                       fontSize: "0.85rem",
-                      backgroundColor: "white",
+                      // backgroundColor: "white",
                     }}
                   >
                     <MenuItem value="Male" sx={{ fontSize: "0.85rem" }}>
@@ -1910,7 +1913,7 @@ const GroupForm = () => {
             `${apiUrl}/create-cv`,
             payloadCreateCv
           );
-          
+
           navigate("/edit");
         } catch (error) {
           setSubmitError(
@@ -1999,7 +2002,8 @@ const GroupForm = () => {
               </Typography>
 
               <Button
-                variant="contained"
+                variant="outlined"
+                color="primary"
                 startIcon={<Add />}
                 sx={{
                   textTransform: "none",
@@ -2022,7 +2026,7 @@ const GroupForm = () => {
                   border: "2px dashed",
                   borderColor: "divider",
                   borderRadius: 1.5,
-                  backgroundColor: "transparent",
+                  backgroundColor: "#fefefe",
                 }}
               >
                 <Typography

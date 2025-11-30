@@ -30,11 +30,11 @@ import {
   Close,
 } from "@mui/icons-material";
 
-const Sidebar = ({ variant = "permanent", onClose }) => {
+const Sidebar = ({ variant = "permanent", onClose ,isExpanded, setIsExpanded }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
-  const [isExpanded, setIsExpanded] = useState(false);
+  // const [isExpanded, setIsExpanded] = useState(false);
   const [isManuallyOpen, setIsManuallyOpen] = useState(false);
 
   const mainMenuItems = [

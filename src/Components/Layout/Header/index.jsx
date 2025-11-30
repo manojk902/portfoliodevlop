@@ -360,7 +360,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                 </IconButton> */}
 
                 {/* Navigation Buttons */}
-                {!isMobile && (
+                {isLoggedIn ? (
                   <Box sx={{ display: "flex", gap: 1 }}>
                     <Button
                       onClick={() => handleNavigationClick("/edit/template")}
@@ -380,7 +380,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                       Templates
                     </Button>
                   </Box>
-                )}
+                ):""}
 
                 {isLoggedIn ? (
                   userProfile?.firstName ? (
