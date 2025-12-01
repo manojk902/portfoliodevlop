@@ -593,6 +593,24 @@ const DraggableSection = ({
             </Box>
 
             <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
+
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                startIcon={<Delete />}
+                sx={{
+                  textTransform: "none",
+                  fontSize: "0.75rem",
+                  borderRadius: 1,
+                  minWidth: "auto",
+                  px: 0.75,
+                  py: 0.5,
+                }}
+                onClick={() => handleRemoveClick("section")}
+              >
+                Remove
+              </Button>
               <Button
                 variant={isExpanded ? "outlined" : "contained"}
                 color="primary"
@@ -611,23 +629,6 @@ const DraggableSection = ({
                 onClick={() => toggleSection(section.name)}
               >
                 {isExpanded ? "Done" : "Edit"}
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
-                startIcon={<Delete />}
-                sx={{
-                  textTransform: "none",
-                  fontSize: "0.75rem",
-                  borderRadius: 1,
-                  minWidth: "auto",
-                  px: 0.75,
-                  py: 0.5,
-                }}
-                onClick={() => handleRemoveClick("section")}
-              >
-                Remove
               </Button>
             </Box>
           </Box>
@@ -965,27 +966,51 @@ const DraggableSection = ({
               )}
 
               {!sectionTypes[section.name].single && (
-                <Button
-                  variant="outlined"
-                  startIcon={<Add />}
-                  sx={{
-                    textTransform: "none",
-                    fontSize: "0.75rem",
-                    borderRadius: 1,
-                    px: 1.5,
-                    mt: 1,
-                    borderColor: "primary.main",
-                    color: "primary.main",
-                    backgroundColor: "white",
-                    "&:hover": {
-                      borderColor: "primary.dark",
-                      backgroundColor: "primary.light",
-                    },
-                  }}
-                  onClick={() => addSectionEntry(section.name)}
-                >
-                  Add {sectionTypes[section.name].title.slice(0, -1)}
-                </Button>
+                <Box sx={{ mt: 1, display: "flex", justifyContent: "space-between" }}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<Add />}
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "0.75rem",
+                      borderRadius: 1,
+                      px: 1.4,
+                      py: 0.4,
+                      borderColor: "primary.main",
+                      color: "primary.main",
+                      backgroundColor: "white",
+                      "&:hover": {
+                        borderColor: "primary.dark",
+                        backgroundColor: "primary.light",
+                      },
+                    }}
+                    onClick={() => addSectionEntry(section.name)}
+                  >
+                    --Add {sectionTypes[section.name].title.slice(0, -1)}
+                  </Button>
+
+                  {/* mmm */}
+
+                  <Button
+                    variant={isExpanded ? "outlined" : "contained"}
+                    color="primary"
+                    size="small"
+                    startIcon={isExpanded ? <CheckCircleIcon /> : <Edit />}
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "0.75rem",
+                      borderRadius: 1,
+                      minWidth: 60,
+                      px: 1.4,
+                      py: 0.4,
+                      // px: 1,
+                      // py: 0.5,
+                    }}
+                    onClick={() => toggleSection(section.name)}
+                  >
+                    {isExpanded ? "Done" : "Edit"}
+                  </Button>
+                </Box>
               )}
             </Box>
           </Collapse>
@@ -2086,7 +2111,7 @@ const GroupForm = () => {
             open={showModal}
             onClose={() => setShowModal(false)}
             PaperProps={{
-              sx: { borderRadius: 1.5, maxWidth: 400 },
+              sx: { borderRadius: 1.5, maxWidth: 500, },
             }}
           >
             <DialogTitle
@@ -2095,6 +2120,8 @@ const GroupForm = () => {
                 color: "white",
                 fontWeight: 600,
                 fontSize: "1rem",
+                textAlign: "center",
+
                 p: 1.5,
               }}
             >
@@ -2104,11 +2131,12 @@ const GroupForm = () => {
               <Typography
                 variant="body2"
                 color="text.secondary"
-                sx={{ mb: 1.5, fontSize: "0.8rem" }}
+                sx={{ mb: 1.5, fontSize: "0.8rem", textAlign: "center" }}
+
               >
                 Choose a section to add to your CV
               </Typography>
-              <Grid container spacing={0.75}>
+              <Grid container spacing={0.75} sx={{ display: "flex", flexDirection: "column" }}>
                 {Object.keys(sectionTypes).map((section) => (
                   <Grid item xs={12} key={section}>
                     <Button

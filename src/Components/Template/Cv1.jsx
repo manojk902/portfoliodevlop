@@ -91,9 +91,8 @@ const Cv1 = ({ UserDataFromDesignPage }) => {
     printJS({
       printable: printContent,
       type: "raw-html",
-      documentTitle: `${cvData?.firstName || "CV"} ${
-        cvData?.lastName || ""
-      } - Resume`,
+      documentTitle: `${cvData?.firstName || "CV"} ${cvData?.lastName || ""
+        } - Resume`,
       style: `
         @page {
           size: A4;
@@ -703,38 +702,38 @@ const Cv1 = ({ UserDataFromDesignPage }) => {
                     index === 0
                       ? "#4285F4" // P - blue
                       : index === 1
-                      ? "#EA4335" // o - red
-                      : index === 2
-                      ? "#FBBC05" // r - yellow
-                      : index === 3
-                      ? "#4285F4" // t - blue
-                      : index === 4
-                      ? "#34A853" // f - green
-                      : index === 5
-                      ? "#EA4335" // o - red
-                      : index === 6
-                      ? "#FBBC05" // l - yellow
-                      : index === 7
-                      ? "#4285F4" // i - blue
-                      : index === 8
-                      ? "#34A853" // o - green
-                      : index === 9
-                      ? "#5f6368" // . - gray
-                      : index === 10
-                      ? "#4285F4" // D - blue
-                      : index === 11
-                      ? "#EA4335" // r - red
-                      : index === 12
-                      ? "#FBBC05" // i - yellow
-                      : index === 13
-                      ? "#34A853" // v - green
-                      : index === 14
-                      ? "#EA4335" // e - red
-                      : index === 15
-                      ? "#4285F4" // O - blue
-                      : index === 16
-                      ? "#FBBC05" // S - yellow
-                      : "#34A853", // x - green
+                        ? "#EA4335" // o - red
+                        : index === 2
+                          ? "#FBBC05" // r - yellow
+                          : index === 3
+                            ? "#4285F4" // t - blue
+                            : index === 4
+                              ? "#34A853" // f - green
+                              : index === 5
+                                ? "#EA4335" // o - red
+                                : index === 6
+                                  ? "#FBBC05" // l - yellow
+                                  : index === 7
+                                    ? "#4285F4" // i - blue
+                                    : index === 8
+                                      ? "#34A853" // o - green
+                                      : index === 9
+                                        ? "#5f6368" // . - gray
+                                        : index === 10
+                                          ? "#4285F4" // D - blue
+                                          : index === 11
+                                            ? "#EA4335" // r - red
+                                            : index === 12
+                                              ? "#FBBC05" // i - yellow
+                                              : index === 13
+                                                ? "#34A853" // v - green
+                                                : index === 14
+                                                  ? "#EA4335" // e - red
+                                                  : index === 15
+                                                    ? "#4285F4" // O - blue
+                                                    : index === 16
+                                                      ? "#FBBC05" // S - yellow
+                                                      : "#34A853", // x - green
                 }}
               >
                 {letter}
