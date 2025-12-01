@@ -28,6 +28,7 @@ import Cv2 from "./Cv2";
 import Cv3 from "./Cv3";
 import Cv4 from "./Cv4";
 import Cv6 from "./Cv6";
+import Cv7 from "./Cv7";
 // import Cv7 from "./Cv7";
 // import Cv8 from "./Cv8";
 import DemoDialog from "./DemoDialog";
@@ -206,6 +207,22 @@ function DesignPage() {
         "modern",
       ],
       heading: "Best for Executives",
+    },
+    {
+      id: 7,
+      name: "Cv7",
+      displayName: "Executive Modern",
+      Component: Cv7,
+      category: "Executive7",
+      tags: [
+        "executive",
+        "manager",
+        "senior",
+        "lead",
+        "executive modern",
+        "modern",
+      ],
+      heading: "Best for Executives7",
     },
     // {
     //   id: 7,
