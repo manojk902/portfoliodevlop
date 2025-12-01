@@ -115,10 +115,12 @@ const Cv1 = ({ UserDataFromDesignPage }) => {
           background: white;
         }
         .cv1-content {
-          width: 210mm;
-          background: white;
-          margin: 0 auto;
-          padding: 25mm;
+          width: 794px !important;
+  min-height: 1123px !important;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  box-sizing: border-box;
         }
         .cv1-header {
           margin-bottom: 20px;
@@ -764,6 +766,34 @@ const Cv1 = ({ UserDataFromDesignPage }) => {
     );
   }
 
+  // Map backend sections in order
+  const renderSection = (section) => {
+    switch (section.name) {
+      case "Summary":
+        return <SummarySection data={section.data} />;
+      case "Skill":
+        return <SkillsSection data={section.data} />;
+      case "Experience":
+        return <ExperienceSection data={section.data} />;
+      case "Education":
+        return <EducationSection data={section.data} />;
+      case "Project":
+        return <ProjectsSection data={section.data} />;
+      case "Certification":
+        return <CertificationsSection data={section.data} />;
+      case "Award":
+        return <AwardSection data={section.data} />;
+      case "Interest":
+        return <InterestSection data={section.data} />;
+      case "Achievement":
+        return <AchievementSection data={section.data} />;
+      case "Language":
+        return <LanguageSection data={section.data} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
       <PrintButton />
@@ -771,16 +801,12 @@ const Cv1 = ({ UserDataFromDesignPage }) => {
         {/* ============ SINGLE CONTINUOUS LAYOUT ============ */}
         <div className="cv1-content">
           <HeaderSection />
-          <SummarySection />
-          <ExperienceSection />
-          <EducationSection />
-          <SkillsSection />
-          <ProjectsSection />
-          <LanguageSection />
-          <AwardSection />
-          <AchievementSection />
-          <CertificationsSection />
-          <InterestSection />
+          {/* Render all sections */}
+          {cvData.sections?.map((section, idx) => (
+            <React.Fragment key={idx}>
+              {renderSection(section)}
+            </React.Fragment>
+          ))}
         </div>
 
         <style jsx>{`
