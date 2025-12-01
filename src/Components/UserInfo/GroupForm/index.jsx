@@ -33,6 +33,8 @@ import {
   Alert,
   Snackbar,
 } from "@mui/material";
+import MDEditor from '@uiw/react-md-editor';
+// import '@uiw/react-markdown-preview/dist/markdown.css';
 import InfoIcon from "@mui/icons-material/Info";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
@@ -210,7 +212,7 @@ const SectionPreview = ({ section, onEdit }) => {
           {section.data.map((item, index) => (
             <Box key={index}>
               {/* Experience Section */}
-              {section.name === "Experience" && (
+                  {section.name === "Experience" && (
                 <Box>
                   <Typography
                     variant="subtitle2"
@@ -257,19 +259,9 @@ const SectionPreview = ({ section, onEdit }) => {
                     </Typography>
                   )}
                   {item.description && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        mt: 0.5,
-                        lineHeight: 1.4,
-                        color: "text.primary",
-                        fontSize: "0.8rem",
-                      }}
-                    >
-                      {item.description.length > 100
-                        ? `${item.description.substring(0, 100)}...`
-                        : item.description}
-                    </Typography>
+                    <Box sx={{ mt: 0.5 }}>
+                      <MDEditor.Markdown source={item.description || ""} />
+                    </Box>
                   )}
                 </Box>
               )}
@@ -298,7 +290,7 @@ const SectionPreview = ({ section, onEdit }) => {
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ fontSize: "0.75rem" }}
+                    sx={{ fontSize:  "0.75rem" }}
                   >
                     {formatDisplayDate(item.startDate)} -{" "}
                     {item.currentlyStudying
@@ -361,18 +353,9 @@ const SectionPreview = ({ section, onEdit }) => {
                     {item.name}
                   </Typography>
                   {item.description && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        lineHeight: 1.4,
-                        color: "text.primary",
-                        fontSize: "0.8rem",
-                      }}
-                    >
-                      {item.description.length > 100
-                        ? `${item.description.substring(0, 100)}...`
-                        : item.description}
-                    </Typography>
+                    <Box sx={{ mt: 0.5 }}>
+                      <MDEditor.Markdown source={item.description || ""} />
+                    </Box>
                   )}
                 </Box>
               )}
@@ -732,33 +715,30 @@ const DraggableSection = ({
                             >
                               <Box sx={{ mb: 1 }}>
                                 {field === "description" ? (
-                                  <TextField
-                                    fullWidth
-                                    size="small"
-                                    label="Description"
-                                    multiline
-                                    rows={4}
-                                    value={entry[field] || ""}
-                                    onChange={(e) =>
-                                      handleSectionChange(
-                                        section.name,
-                                        index,
-                                        entryIndex,
-                                        field,
-                                        e.target.value
-                                      )
-                                    }
-                                    variant="outlined"
-                                    error={!!fieldError}
-                                    helperText={fieldError}
-                                    sx={{
-                                      "& .MuiOutlinedInput-root": {
-                                        borderRadius: 1,
-                                        backgroundColor: "white",
-                                        fontSize: "0.85rem",
-                                      },
-                                    }}
-                                  />
+                                  <Box sx={{ '& .wmde-markdown': { background: 'white' } }}>
+                                    <MDEditor
+                                      value={entry[field] || ""}
+                                      onChange={(val) =>
+                                        handleSectionChange(
+                                          section.name,
+                                          index,
+                                          entryIndex,
+                                          field,
+                                          val ?? ""
+                                        )
+                                      }
+                                      height={180}
+                                    />
+                                    {fieldError && (
+                                      <Typography
+                                        color="error"
+                                        variant="caption"
+                                        sx={{ fontSize: "0.7rem", mt: 0.5, display: 'block' }}
+                                      >
+                                        {fieldError}
+                                      </Typography>
+                                    )}
+                                  </Box>
                                 ) : field === "currentlyWorking" &&
                                   section.name === "Experience" ? (
                                   <FormControlLabel
