@@ -797,19 +797,19 @@ const Cv1 = ({ UserDataFromDesignPage }) => {
   return (
     <>
       <PrintButton />
-      <div className="cv1-container" ref={cvContentRef}>
-        {/* ============ SINGLE CONTINUOUS LAYOUT ============ */}
-        <div className="cv1-content">
-          <HeaderSection />
-          {/* Render all sections */}
-          {cvData.sections?.map((section, idx) => (
-            <React.Fragment key={idx}>
-              {renderSection(section)}
-            </React.Fragment>
-          ))}
-        </div>
+      <div className="cv-pages-container">
+        <div className="cv-page" ref={cvContentRef}>
+          {/* ============ SINGLE CONTINUOUS LAYOUT ============ */}
+          <div className="cv1-content">
+            <HeaderSection />
+            {cvData.sections?.map((section, idx) => (
+              <React.Fragment key={idx}>
+                {renderSection(section)}
+              </React.Fragment>
+            ))}
+          </div>
 
-        <style jsx>{`
+          <style jsx>{`
           /* Global Styles */
           * {
             box-sizing: border-box;
@@ -1255,7 +1255,48 @@ const Cv1 = ({ UserDataFromDesignPage }) => {
               padding: 16px;
             }
           }
+        @media print {
+        body { margin: 0; padding: 0; }
+        
+        .cv-pages-container {
+          display: block !important;
+        }
+
+        .cv-page {
+          width: 210mm;
+          min-height: 297mm;
+          padding: 20mm;
+          margin: 0 auto 0;
+          page-break-after: always;
+          page-break-inside: avoid;
+          box-shadow: 0 0 5px rgba(0,0,0,0.1);
+          background: white;
+          overflow: hidden;
+        }
+
+        .cv-page:last-child {
+          page-break-after: avoid;
+        }
+
+        .cv1-content {
+          width: 100% !important;
+          min-height: auto !important;
+          padding: 0 !important;
+        }
+
+        /* जरूरी: content को force न करें एक page में */
+        .cv1-section,
+        .cv1-experience-item,
+        .cv1-project-item {
+          page-break-inside: avoid;
+        }
+
+        h3.cv1-section-title {
+          page-break-after: avoid;
+        }
+      }
         `}</style>
+        </div>
       </div>
     </>
   );
