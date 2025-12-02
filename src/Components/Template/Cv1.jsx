@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { apiUrl } from "../../utils/common";
@@ -9,1294 +7,244 @@ import { useSelector } from "react-redux";
 import { Box, Typography } from "@mui/material";
 import printJS from "print-js";
 
-const Cv1 = ({ UserDataFromDesignPage }) => {
-  // --- 1. Identify Context (URL & Redux) ---
-  const [searchParams] = useSearchParams({ UserDataFromDesignPage });
+const Cv1 = () => {
+  const [searchParams] = useSearchParams();
   const { username } = useParams();
   const cvPublicView = searchParams.get("cv");
-  const [showLoading, setShowLoading] = useState(true);
-
-  // Ref for the CV content
-  const cvContentRef = useRef();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowLoading(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const userProfile = useSelector(
-    (state) => state.userProfile?.data?.fetchedUsed
-  );
+  const userProfile = useSelector((state) => state.userProfile?.data?.fetchedUsed);
   const userNameRedux = userProfile?.userName;
 
-  // --- 2. State Management ---
   const [cvData, setCvData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [pages, setPages] = useState([]);
+  const measureRef = useRef(null);
+
+  const A4_HEIGHT = 1123;
+  const USABLE_HEIGHT = A4_HEIGHT - 140; // safe margin
 
   useEffect(() => {
-    const fetchCvData = async () => {
-      setLoading(true);
-      let usernameToFetch = null;
-      let isDifferentUser =
-        username && userNameRedux && username !== userNameRedux;
+    const fetchData = async () => {
+      let uname = username || userNameRedux;
+      if (cvPublicView === "true" || !userNameRedux) uname = username;
 
-      if (
-        username &&
-        (isDifferentUser || cvPublicView === "true" || !userNameRedux)
-      ) {
-        usernameToFetch = username;
-        console.log(
-          `✅ Public View (URL based) Activated. Fetching: ${username}`
-        );
-      } else if (userNameRedux) {
-        usernameToFetch = userNameRedux;
-        console.log(
-          `👤 Private View (Redux based) Activated. Fetching: ${userNameRedux}`
-        );
+      if (!uname) return;
+
+      try {
+        const res = await axios.get(`${apiUrl}/defaultCv/${uname}`);
+        setCvData(res.data.fetchedCvInfo.defaultCvInfo);
+      } catch (err) {
+        console.error("CV fetch error:", err);
       }
+    };
+    fetchData();
+  }, [username, userNameRedux, cvPublicView]);
 
-      if (usernameToFetch) {
-        try {
-          const res = await axios.get(`${apiUrl}/defaultCv/${usernameToFetch}`);
-          setCvData(res?.data?.fetchedCvInfo?.defaultCvInfo);
-          console.log(`⭐ Data Fetched for: ${usernameToFetch}.`);
-        } catch (err) {
-          console.error(`❌ Error fetching CV for ${usernameToFetch}:`, err);
-          setCvData(null);
-        }
-      } else {
-        setCvData(null);
-      }
+  // Auto Pagination
+  useEffect(() => {
+    if (!cvData || !measureRef.current) return;
 
-      setLoading(false);
+    const container = measureRef.current;
+    const items = Array.from(container.children);
+    const newPages = [];
+    let currentPage = null;
+    let currentHeight = 0;
+
+    const newPageDiv = () => {
+      const div = document.createElement("div");
+      div.className = "cv-page";
+      div.style.cssText = `
+        width: 210mm;
+        min-height: 297mm;
+        padding: 35mm 25mm;
+        background: white;
+        margin: 0 auto 50px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        border-radius: 10px;
+        box-sizing: border-box;
+        page-break-after: always;
+        font-family: Arial, sans-serif;
+      `;
+      newPages.push(div);
+      return div;
     };
 
-    fetchCvData();
-  }, [cvPublicView, username, userNameRedux]);
+    items.forEach((item) => {
+      const clone = item.cloneNode(true);
+      document.body.appendChild(clone);
+      clone.style.visibility = "hidden";
+      clone.style.position = "absolute";
+      const h = clone.offsetHeight + 30;
+      document.body.removeChild(clone);
 
-  // Print-js print function
+      if (!currentPage || currentHeight + h > USABLE_HEIGHT) {
+        currentPage = newPageDiv();
+        currentHeight = 0;
+      }
+      currentPage.appendChild(item.cloneNode(true));
+      currentHeight += h;
+    });
+
+    setPages(newPages.map(p => p.outerHTML));
+  }, [cvData]);
+
   const handlePrint = () => {
-    if (!cvContentRef.current) {
-      console.error("CV content not found");
-      return;
-    }
-
-    // Get the HTML content
-    const printContent = cvContentRef.current.innerHTML;
-
-    // Use print-js with raw HTML
     printJS({
-      printable: printContent,
+      printable: pages.join(""),
       type: "raw-html",
-      documentTitle: `${cvData?.firstName || "CV"} ${cvData?.lastName || ""
-        } - Resume`,
+      documentTitle: `${cvData.firstName} ${cvData.lastName} - Resume`,
       style: `
-        @page {
-          size: A4;
-          margin: 15mm;
-        }
-        body {
+        @page { size: A4; margin: 0; }
+        html, body { margin:0; padding:0; background:white !important; }
+        .cv-page {
+          width: 210mm !important;
+          min-height: 297mm !important;
+          padding: 35mm 25mm !important;
+          page-break-after: always !important;
+          box-shadow: none !important;
           margin: 0 !important;
-          padding: 0 !important;
-          background: white !important;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-          font-family: "Arial", "Helvetica", sans-serif;
-          line-height: 1.3;
-          width: 210mm;
+          border-radius: 0 !important;
         }
-        .cv1-container {
-          max-width: 210mm;
-          margin: 0 auto;
-          color: #000000;
-          background: white;
-        }
-        .cv1-content {
-          width: 794px !important;
-  min-height: 1123px !important;
-  margin: 0 auto;
-  background: white;
-  padding: 40px;
-  box-sizing: border-box;
-        }
-        .cv1-header {
-          margin-bottom: 20px;
-          padding-bottom: 15px;
-          border-bottom: 2px solid #000000;
-          text-align: left;
-        }
-        .cv1-name {
-          font-size: 26px;
-          font-weight: bold;
-          line-height: 1.1;
-          margin-bottom: 4px;
-          color: #000000;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .cv1-designation {
-          font-size: 16px;
-          color: #000000;
-          margin-bottom: 15px;
-          font-weight: normal;
-        }
-        .cv1-contact-info {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-        .cv1-contact-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
-          font-size: 10px;
-          line-height: 1.3;
-        }
-        .cv1-contact-label {
-          font-weight: bold;
-          min-width: 55px;
-          color: #000000;
-        }
-        .cv1-contact-text {
-          font-weight: normal;
-          color: #000000;
-          word-break: break-word;
-        }
-        .cv1-section {
-          margin-bottom: 20px;
-          padding-bottom: 12px;
-          border-bottom: 1px solid #cccccc;
-        }
-        .cv1-section:last-child {
-          border-bottom: none;
-          margin-bottom: 0;
-        }
-        .cv1-section-title {
-          font-size: 13px;
-          font-weight: bold;
-          color: #000000;
-          margin-bottom: 8px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          padding-bottom: 4px;
-          border-bottom: 1px solid #000000;
-          display: inline-block;
-        }
-        .cv1-summary-text {
-          line-height: 1.3;
-          font-size: 10px;
-          text-align: justify;
-          color: #000000;
-          margin: 0;
-          hyphens: auto;
-          word-break: break-word;
-        }
-        .cv1-skills-list {
-          list-style-type: none;
-          padding: 0;
-          margin: 0;
-        }
-        .cv1-skill-item {
-          font-size: 10px;
-          margin-bottom: 4px;
-          color: #000000;
-          line-height: 1.3;
-        }
-        .cv1-education-item {
-          margin-bottom: 12px;
-        }
-        .cv1-education-course {
-          font-size: 11px;
-          font-weight: bold;
-          margin-bottom: 2px;
-          color: #000000;
-          line-height: 1.3;
-        }
-        .cv1-education-college {
-          font-size: 10px;
-          color: #000000;
-          margin-bottom: 2px;
-          line-height: 1.3;
-        }
-        .cv1-education-dates {
-          font-size: 10px;
-          color: #666666;
-          font-style: italic;
-          margin: 0;
-          line-height: 1.3;
-        }
-        .cv1-experience-item {
-          margin-bottom: 16px;
-        }
-        .cv1-experience-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 4px;
-        }
-        .cv1-experience-title {
-          font-size: 11px;
-          font-weight: bold;
-          color: #000000;
-          margin: 0;
-          line-height: 1.3;
-        }
-        .cv1-experience-dates {
-          font-size: 10px;
-          color: #666666;
-          font-style: italic;
-          margin: 0;
-          line-height: 1.3;
-        }
-        .cv1-experience-company {
-          font-size: 10px;
-          color: #000000;
-          margin-bottom: 6px;
-          font-weight: bold;
-          line-height: 1.3;
-        }
-        .cv1-experience-description {
-          line-height: 1.3;
-          font-size: 10px;
-          color: #000000;
-          margin: 0;
-          hyphens: auto;
-          word-break: break-word;
-        }
-        .cv1-project-item {
-          margin-bottom: 16px;
-        }
-        .cv1-project-name {
-          font-size: 11px;
-          font-weight: bold;
-          margin-bottom: 4px;
-          color: #000000;
-          line-height: 1.3;
-        }
-        .cv1-project-description {
-          line-height: 1.3;
-          font-size: 10px;
-          margin-bottom: 6px;
-          color: #000000;
-          hyphens: auto;
-          word-break: break-word;
-        }
-        .cv1-technologies-container {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 4px;
-          margin-bottom: 0;
-        }
-        .cv1-tech-label {
-          font-size: 10px;
-          font-weight: bold;
-          color: #000000;
-          margin-right: 4px;
-          line-height: 1.3;
-        }
-        .cv1-technology-tag {
-          border: 1px solid #cccccc;
-          border-radius: 3px;
-          padding: 2px 6px;
-          font-size: 9px;
-          background: #f9f9f9;
-          color: #000000;
-          font-weight: normal;
-          line-height: 1.3;
-        }
-        .cv1-divider {
-          border: none;
-          border-top: 1px solid #cccccc;
-          margin: 12px 0;
-        }
-        .cv1-print-button-container {
-          display: none !important;
-        }
-        .cv1-language-item {
-          font-size: 10px;
-          margin-bottom: 4px;
-          color: #000000;
-          line-height: 1.3;
-        }
-        .cv1-language-level {
-          font-weight: normal;
-          color: #666666;
-        }
-      `,
-      onPrintDialogClose: () => {
-        console.log("Print dialog closed");
-      },
-      onError: (error) => {
-        console.error("Print error:", error);
-        // Fallback to browser print
-        window.print();
-      },
+        .cv-page:last-child { page-break-after: avoid !important; }
+        .print-btn, nav, header, footer, aside { display: none !important; }
+      `
     });
   };
 
-  // ============ SECTION COMPONENTS ============
-
-  // Header Section Component
-  const HeaderSection = () => (
-    <div className="cv1-header">
-      <div className="cv1-header-content">
-        <h1 className="cv1-name">
-          {cvData.firstName} {cvData.lastName}
-        </h1>
-        <h2 className="cv1-designation">{cvData.designation}</h2>
-
-        <div className="cv1-contact-info">
-          {/* Email */}
-          <div className="cv1-contact-item">
-            <span className="cv1-contact-label">Email:</span>
-            <span className="cv1-contact-text">{cvData.email}</span>
-          </div>
-
-          {/* Phone */}
-          <div className="cv1-contact-item">
-            <span className="cv1-contact-label">Phone:</span>
-            <span className="cv1-contact-text">{cvData.phoneNo}</span>
-          </div>
-
-          {/* Address */}
-          <div className="cv1-contact-item">
-            <span className="cv1-contact-label">Address:</span>
-            <span className="cv1-contact-text">
-              {cvData.address?.city}, {cvData.address?.state}
-            </span>
-          </div>
-
-          {/* Social Links */}
-          {cvData.socialLinks.map((link, i) => (
-            <div key={i} className="cv1-contact-item">
-              <span className="cv1-contact-label">Link:</span>
-              <a
-                href={link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="cv1-link-url"
-              >
-                {link}
-              </a>
-            </div>
+  if (!cvData) {
+    return (
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", bgcolor: "#f8f9fa" }}>
+        <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
+          {"Portfolio.DriveOSx".split("").map((l, i) => (
+            <Typography key={i} variant="h2" sx={{
+              animation: `fade 2s infinite ${i * 0.1}s`,
+              color: i === 0 ? "#4285F4" : i === 1 ? "#EA4335" : i === 2 ? "#FBBC05" : "#34A853"
+            }}>{l}</Typography>
           ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  // Summary Section Component
-  const SummarySection = () => {
-    const summarySection = cvData.sections?.find((s) => s.name === "Summary");
-    if (!summarySection?.data) return null;
-
-    return (
-      <div className="cv1-section">
-        <h3 className="cv1-section-title">Professional Summary</h3>
-        <p className="cv1-summary-text">{summarySection.data}</p>
-      </div>
-    );
-  };
-
-  // Skills Section Component
-  const SkillsSection = () => {
-    const skillsSection = cvData.sections?.find((s) => s.name === "Skill");
-    if (!skillsSection?.data?.length) return null;
-
-    return (
-      <div className="cv1-section">
-        <h3 className="cv1-section-title">Skills</h3>
-        <ul className="cv1-skills-list">
-          {skillsSection.data.map((skill, i) => (
-            <li key={i} className="cv1-skill-item">
-              {skill.skill}{" "}
-              <span className="cv1-skill-rating">({skill.rating}/5)</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  };
-
-  // Education Section Component
-  const EducationSection = () => {
-    const educationSection = cvData.sections?.find(
-      (s) => s.name === "Education"
-    );
-    if (!educationSection?.data?.length) return null;
-
-    return (
-      <div className="cv1-section">
-        <h3 className="cv1-section-title">Education</h3>
-        {educationSection.data.map((edu, i) => (
-          <div key={i} className="cv1-education-item">
-            <h4 className="cv1-education-course">{edu.course}</h4>
-            <p className="cv1-education-college">{edu.college}</p>
-            <p className="cv1-education-dates">
-              {edu.startDate} – {edu.endDate} | Grade: {edu.grade}
-            </p>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  // Experience Section Component
-  const ExperienceSection = () => {
-    const experienceSection = cvData.sections?.find(
-      (s) => s.name === "Experience"
-    );
-    if (!experienceSection?.data?.length) return null;
-
-    return (
-      <div className="cv1-section">
-        <h3 className="cv1-section-title">Professional Experience</h3>
-        {experienceSection.data.map((exp, i) => (
-          <div key={i} className="cv1-experience-item">
-            <div className="cv1-experience-header">
-              <h4 className="cv1-experience-title">{exp.jobTitle}</h4>
-              <span className="cv1-experience-dates">
-                {exp.startDate} – {exp.endDate}
-              </span>
-            </div>
-            <p className="cv1-experience-company">
-              {exp.company}, {exp.location}
-            </p>
-            <div className="cv1-experience-description">
-              <MarkdownPreview
-                style={{
-                  backgroundColor: "transparent",
-                  color: "inherit",
-                  padding: 0,
-                  fontSize: "10px",
-                  lineHeight: 1.3,
-                  fontFamily: "'Arial', 'Helvetica', sans-serif",
-                }}
-                source={exp.description || ""}
-              />
-            </div>
-            {i < experienceSection.data.length - 1 && (
-              <hr className="cv1-divider" />
-            )}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  // Projects Section Component
-  const ProjectsSection = () => {
-    const projectsSection = cvData.sections?.find((s) => s.name === "Project");
-    if (!projectsSection?.data?.length) return null;
-
-    return (
-      <div className="cv1-section">
-        <h3 className="cv1-section-title">Projects</h3>
-        {projectsSection.data.map((proj, i) => (
-          <div key={i} className="cv1-project-item">
-            <h4 className="cv1-project-name">{proj.name}</h4>
-            <div className="cv1-project-description">
-              <MarkdownPreview
-                style={{
-                  backgroundColor: "transparent",
-                  color: "inherit",
-                  padding: 0,
-                  fontSize: "10px",
-                  lineHeight: 1.3,
-                  fontFamily: "'Arial', 'Helvetica', sans-serif",
-                }}
-                source={proj.description || ""}
-              />
-            </div>
-            {proj.technologies && (
-              <div className="cv1-technologies-container">
-                <span className="cv1-tech-label">Technologies:</span>
-                {proj.technologies.map((tech, idx) => (
-                  <span key={idx} className="cv1-technology-tag">
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            )}
-            {i < projectsSection.data.length - 1 && (
-              <hr className="cv1-divider" />
-            )}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  // Certifications Section Component
-  const CertificationsSection = () => {
-    const certificationsSection = cvData.sections?.find(
-      (s) => s.name === "Certification"
-    );
-    if (!certificationsSection?.data?.length) return null;
-
-    return (
-      <div className="cv1-section">
-        <h3 className="cv1-section-title">Certifications</h3>
-        {certificationsSection.data.map((cert, i) => (
-          <div key={i} className="cv1-certification-item">
-            <h4 className="cv1-certification-name">{cert.name}</h4>
-            <p className="cv1-certification-institute">{cert.institute}</p>
-            <p className="cv1-certification-date">{cert.issueDate}</p>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  // Award Section Component
-  const AwardSection = () => {
-    const awardSection = cvData.sections?.find((s) => s.name === "Award");
-    if (!awardSection?.data?.length) return null;
-
-    return (
-      <div className="cv1-section">
-        <h3 className="cv1-section-title">Awards</h3>
-        {awardSection.data.map((award, i) => (
-          <div key={i} className="cv1-award-item">
-            <h4 className="cv1-award-title">{award.title}</h4>
-            <p className="cv1-award-issuer">{award.issuer}</p>
-            <p className="cv1-award-date">{award.date}</p>
-            {award.description && (
-              <p className="cv1-award-description">{award.description}</p>
-            )}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  // Interest Section Component
-  const InterestSection = () => {
-    const interestSection = cvData.sections?.find((s) => s.name === "Interest");
-    if (!interestSection?.data?.length) return null;
-
-    return (
-      <div className="cv1-section">
-        <h3 className="cv1-section-title">Interests</h3>
-        <ul className="cv1-interests-list">
-          {interestSection.data.map((interest, i) => (
-            <li key={i} className="cv1-interest-item">
-              {interest}
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  };
-
-  // Achievement Section Component
-  const AchievementSection = () => {
-    const achievementSection = cvData.sections?.find(
-      (s) => s.name === "Achievement"
-    );
-    if (!achievementSection?.data?.length) return null;
-
-    return (
-      <div className="cv1-section">
-        <h3 className="cv1-section-title">Achievements</h3>
-        <ul className="cv1-achievements-list">
-          {achievementSection.data.map((achievement, i) => (
-            <li key={i} className="cv1-achievement-item">
-              {achievement}
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  };
-
-  // Language Section Component
-  const LanguageSection = () => {
-    const languageSection = cvData.sections?.find((s) => s.name === "Language");
-    if (!languageSection?.data?.length) return null;
-
-    return (
-      <div className="cv1-section">
-        <h3 className="cv1-section-title">Languages</h3>
-        <ul className="cv1-languages-list">
-          {languageSection.data.map((language, i) => (
-            <li key={i} className="cv1-language-item">
-              {language.language}{" "}
-              {language.proficiency && (
-                <span className="cv1-language-level">
-                  ({language.proficiency})
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  };
-
-  const PrintButton = () => (
-    <div className="cv1-print-button-container">
-      <button className="cv1-print-button" onClick={handlePrint}>
-        Print CV
-      </button>
-    </div>
-  );
-
-  if (showLoading || !cvData) {
-    const letters = [
-      "P",
-      "o",
-      "r",
-      "t",
-      "f",
-      "o",
-      "l",
-      "i",
-      "o",
-      ".",
-      "D",
-      "r",
-      "i",
-      "v",
-      "e",
-      "O",
-      "S",
-      "x",
-    ];
-
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          backgroundColor: "#f8f9fa",
-          p: 2,
-        }}
-      >
-        {/* Animated Portfolio.DriveOSx Logo */}
-        <Box sx={{ mb: 4, textAlign: "center" }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              mb: 1,
-              flexWrap: "wrap",
-            }}
-          >
-            {letters.map((letter, index) => (
-              <Typography
-                key={index}
-                variant="h2"
-                component="span"
-                sx={{
-                  fontSize: { xs: "0.9rem", sm: "2.5rem" },
-                  fontWeight: 400,
-                  display: "inline-block",
-                  animation: `fadeInOut 2s ease-in-out infinite`,
-                  animationDelay: `${index * 0.12}s`,
-                  color:
-                    index === 0
-                      ? "#4285F4" // P - blue
-                      : index === 1
-                        ? "#EA4335" // o - red
-                        : index === 2
-                          ? "#FBBC05" // r - yellow
-                          : index === 3
-                            ? "#4285F4" // t - blue
-                            : index === 4
-                              ? "#34A853" // f - green
-                              : index === 5
-                                ? "#EA4335" // o - red
-                                : index === 6
-                                  ? "#FBBC05" // l - yellow
-                                  : index === 7
-                                    ? "#4285F4" // i - blue
-                                    : index === 8
-                                      ? "#34A853" // o - green
-                                      : index === 9
-                                        ? "#5f6368" // . - gray
-                                        : index === 10
-                                          ? "#4285F4" // D - blue
-                                          : index === 11
-                                            ? "#EA4335" // r - red
-                                            : index === 12
-                                              ? "#FBBC05" // i - yellow
-                                              : index === 13
-                                                ? "#34A853" // v - green
-                                                : index === 14
-                                                  ? "#EA4335" // e - red
-                                                  : index === 15
-                                                    ? "#4285F4" // O - blue
-                                                    : index === 16
-                                                      ? "#FBBC05" // S - yellow
-                                                      : "#34A853", // x - green
-                }}
-              >
-                {letter}
-              </Typography>
-            ))}
-          </Box>
         </Box>
-        {/* 🔁 CSS animations */}
-        <style>
-          {`
-            @keyframes fadeInOut {
-              0% { opacity: 0; transform: translateY(10px); }
-              20% { opacity: 1; transform: translateY(0); }
-              80% { opacity: 1; transform: translateY(0); }
-              100% { opacity: 0; transform: translateY(-10px); }
-            }
-          `}
-        </style>
+        <style>{`@keyframes fade{0%,100%{opacity:0;transform:translateY(20px)}50%{opacity:1;transform:translateY(0)}}`}</style>
       </Box>
     );
   }
 
-  if (!cvData) {
-    return (
-      <div className="cv1-error-container">
-        <p className="cv1-error-text">No CV data available for this user.</p>
-      </div>
-    );
-  }
-
-  // Map backend sections in order
-  const renderSection = (section) => {
-    switch (section.name) {
-      case "Summary":
-        return <SummarySection data={section.data} />;
-      case "Skill":
-        return <SkillsSection data={section.data} />;
-      case "Experience":
-        return <ExperienceSection data={section.data} />;
-      case "Education":
-        return <EducationSection data={section.data} />;
-      case "Project":
-        return <ProjectsSection data={section.data} />;
-      case "Certification":
-        return <CertificationsSection data={section.data} />;
-      case "Award":
-        return <AwardSection data={section.data} />;
-      case "Interest":
-        return <InterestSection data={section.data} />;
-      case "Achievement":
-        return <AchievementSection data={section.data} />;
-      case "Language":
-        return <LanguageSection data={section.data} />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <>
-      <PrintButton />
-      <div className="cv-pages-container">
-        <div className="cv-page" ref={cvContentRef}>
-          {/* ============ SINGLE CONTINUOUS LAYOUT ============ */}
-          <div className="cv1-content">
-            <HeaderSection />
-            {cvData.sections?.map((section, idx) => (
-              <React.Fragment key={idx}>
-                {renderSection(section)}
-              </React.Fragment>
-            ))}
+      {/* Print Button */}
+      <div style={{ textAlign: "center", padding: "25px 0", background: "#0d47a1" }}>
+        <button onClick={handlePrint} className="print-btn" style={{
+          background: "white", color: "#0d47a1", fontSize: "20px", fontWeight: "bold",
+          padding: "16px 50px", border: "none", borderRadius: "50px", cursor: "pointer", boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
+        }}>
+          Print / Download PDF ({pages.length || 1} Page{pages.length > 1 ? "s" : ""})
+        </button>
+      </div>
+
+      {/* Hidden Measurement Container */}
+      <div ref={measureRef} style={{ position: "absolute", left: "-9999px", top: 0, width: "210mm" }}>
+        {/* Header */}
+        <div style={{ marginBottom: "30px", paddingBottom: "20px", borderBottom: "3px solid #000" }}>
+          <h1 style={{ fontSize: "32px", fontWeight: "bold", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "1px" }}>
+            {cvData.firstName} {cvData.lastName}
+          </h1>
+          <h2 style={{ fontSize: "20px", margin: "0 0 15px", color: "#333" }}>{cvData.designation}</h2>
+          <div style={{ fontSize: "12px", lineHeight: "1.6", color: "#000" }}>
+            <div><strong>Email:</strong> {cvData.email}</div>
+            <div><strong>Phone:</strong> {cvData.phoneNo}</div>
+            <div><strong>Location:</strong> {cvData.address?.city}, {cvData.address?.state}</div>
+            {cvData.socialLinks?.map((l, i) => <div key={i}><strong>Link:</strong> {l}</div>)}
           </div>
-
-          <style jsx>{`
-          /* Global Styles */
-          * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-          }
-
-          html,
-          body {
-            font-family: "Arial", "Helvetica", sans-serif;
-            line-height: 1.3;
-            background: #ffffff;
-          }
-
-          .cv1-container {
-            max-width: 210mm;
-            margin: 0 auto;
-            color: #000000;
-            background: white;
-          }
-
-          /* Single continuous layout - NO FIXED PAGES */
-          .cv1-content {
-            width: 210mm;
-            background: white;
-            margin: 0 auto;
-            padding: 25mm;
-            position: relative;
-          }
-
-          /* Print Button */
-          .cv1-print-button-container {
-            text-align: center;
-            margin-bottom: 16px;
-          }
-
-          .cv1-print-button {
-            background-color: #2e538aff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 0;
-            cursor: pointer;
-            font-size: 14px;
-            font-family: "Arial", sans-serif;
-            transition: background-color 0.3s ease;
-          }
-
-          .cv1-print-button:hover {
-            background-color: #1b3fc1ff;
-          }
-
-          /* Header Section */
-          .cv1-header {
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #000000;
-            text-align: left;
-          }
-
-          .cv1-header-content {
-            width: 100%;
-          }
-
-          .cv1-name {
-            font-size: 26px;
-            font-weight: bold;
-            line-height: 1.1;
-            margin-bottom: 4px;
-            color: #000000;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
-
-          .cv1-designation {
-            font-size: 16px;
-            color: #000000;
-            margin-bottom: 15px;
-            font-weight: normal;
-          }
-
-          .cv1-contact-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-          }
-
-          .cv1-contact-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            font-size: 10px;
-            line-height: 1.3;
-          }
-
-          .cv1-contact-label {
-            font-weight: bold;
-            min-width: 55px;
-            color: #000000;
-          }
-
-          .cv1-contact-text {
-            font-weight: normal;
-            color: #000000;
-            word-break: break-word;
-          }
-
-          /* CV Content Layout */
-          .cv1-section {
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #cccccc;
-          }
-
-          .cv1-section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-          }
-
-          .cv1-section-title {
-            font-size: 13px;
-            font-weight: bold;
-            color: #000000;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding-bottom: 4px;
-            border-bottom: 1px solid #000000;
-            display: inline-block;
-          }
-
-          /* Summary */
-          .cv1-summary-text {
-            line-height: 1.3;
-            font-size: 10px;
-            text-align: justify;
-            color: #000000;
-            margin: 0;
-            hyphens: auto;
-            word-break: break-word;
-          }
-
-          /* Skills */
-          .cv1-skills-list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-          }
-
-          .cv1-skill-item {
-            font-size: 10px;
-            margin-bottom: 4px;
-            color: #000000;
-            line-height: 1.3;
-          }
-
-          .cv1-skill-rating {
-            font-weight: normal;
-            color: #666666;
-          }
-
-          /* Education */
-          .cv1-education-item {
-            margin-bottom: 12px;
-          }
-
-          .cv1-education-course {
-            font-size: 11px;
-            font-weight: bold;
-            margin-bottom: 2px;
-            color: #000000;
-            line-height: 1.3;
-          }
-
-          .cv1-education-college {
-            font-size: 10px;
-            color: #000000;
-            margin-bottom: 2px;
-            line-height: 1.3;
-          }
-
-          .cv1-education-dates {
-            font-size: 10px;
-            color: #666666;
-            font-style: italic;
-            margin: 0;
-            line-height: 1.3;
-          }
-
-          /* Awards */
-          .cv1-award-item {
-            margin-bottom: 12px;
-          }
-
-          .cv1-award-title {
-            font-size: 11px;
-            font-weight: bold;
-            margin-bottom: 2px;
-            color: #000000;
-            line-height: 1.3;
-          }
-
-          .cv1-award-issuer,
-          .cv1-award-date {
-            font-size: 10px;
-            color: #666666;
-            margin-bottom: 2px;
-            line-height: 1.3;
-          }
-
-          .cv1-award-description {
-            font-size: 10px;
-            color: #000000;
-            margin: 0;
-            line-height: 1.3;
-          }
-
-          /* Interests */
-          .cv1-interests-list {
-            list-style-type: disc;
-            padding-left: 18px;
-            margin: 0;
-          }
-
-          .cv1-interest-item {
-            font-size: 10px;
-            color: #000000;
-            margin-bottom: 2px;
-            line-height: 1.3;
-          }
-
-          /* Achievements */
-          .cv1-achievements-list {
-            list-style-type: disc;
-            padding-left: 18px;
-            margin: 0;
-          }
-
-          .cv1-achievement-item {
-            font-size: 10px;
-            color: #000000;
-            margin-bottom: 2px;
-            line-height: 1.3;
-          }
-
-          /* Certifications */
-          .cv1-certification-item {
-            margin-bottom: 12px;
-          }
-
-          .cv1-certification-name {
-            font-size: 11px;
-            font-weight: bold;
-            margin-bottom: 2px;
-            color: #000000;
-            line-height: 1.3;
-          }
-
-          .cv1-certification-institute {
-            font-size: 10px;
-            color: #666666;
-            margin-bottom: 2px;
-            line-height: 1.3;
-          }
-
-          .cv1-certification-date {
-            font-size: 10px;
-            color: #666666;
-            margin: 0;
-            font-weight: normal;
-            line-height: 1.3;
-          }
-
-          /* Languages */
-          .cv1-languages-list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-          }
-
-          .cv1-language-item {
-            font-size: 10px;
-            margin-bottom: 4px;
-            color: #000000;
-            line-height: 1.3;
-          }
-
-          .cv1-language-level {
-            font-weight: normal;
-            color: #666666;
-          }
-
-          /* Links */
-          .cv1-link-url {
-            font-size: 10px;
-            color: #000000;
-            text-decoration: underline;
-            line-height: 1.3;
-          }
-
-          .cv1-link-url:hover {
-            color: #000000;
-          }
-
-          /* Experience */
-          .cv1-experience-item {
-            margin-bottom: 16px;
-          }
-
-          .cv1-experience-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 4px;
-          }
-
-          .cv1-experience-title {
-            font-size: 11px;
-            font-weight: bold;
-            color: #000000;
-            margin: 0;
-            line-height: 1.3;
-          }
-
-          .cv1-experience-dates {
-            font-size: 10px;
-            color: #666666;
-            font-style: italic;
-            margin: 0;
-            line-height: 1.3;
-          }
-
-          .cv1-experience-company {
-            font-size: 10px;
-            color: #000000;
-            margin-bottom: 6px;
-            font-weight: bold;
-            line-height: 1.3;
-          }
-
-          .cv1-experience-description {
-            line-height: 1.3;
-            font-size: 10px;
-            color: #000000;
-            margin: 0;
-            hyphens: auto;
-            word-break: break-word;
-          }
-
-          /* Projects */
-          .cv1-project-item {
-            margin-bottom: 16px;
-          }
-
-          .cv1-project-name {
-            font-size: 11px;
-            font-weight: bold;
-            margin-bottom: 4px;
-            color: #000000;
-            line-height: 1.3;
-          }
-
-          .cv1-project-description {
-            line-height: 1.3;
-            font-size: 10px;
-            margin-bottom: 6px;
-            color: #000000;
-            hyphens: auto;
-            word-break: break-word;
-          }
-
-          .cv1-technologies-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-bottom: 0;
-          }
-
-          .cv1-tech-label {
-            font-size: 10px;
-            font-weight: bold;
-            color: #000000;
-            margin-right: 4px;
-            line-height: 1.3;
-          }
-
-          .cv1-technology-tag {
-            border: 1px solid #cccccc;
-            border-radius: 3px;
-            padding: 2px 6px;
-            font-size: 9px;
-            background: #f9f9f9;
-            color: #000000;
-            font-weight: normal;
-            line-height: 1.3;
-          }
-
-          /* Divider */
-          .cv1-divider {
-            border: none;
-            border-top: 1px solid #cccccc;
-            margin: 12px 0;
-          }
-
-          /* Responsive Design for Screen */
-          @media (max-width: 768px) {
-            .cv1-container {
-              padding: 8px;
-              width: 100%;
-            }
-
-            .cv1-content {
-              width: 100%;
-              min-height: auto;
-              padding: 15mm;
-            }
-
-            .cv1-contact-info {
-              flex-direction: column;
-            }
-
-            .cv1-contact-item {
-              justify-content: flex-start;
-            }
-
-            .cv1-name {
-              font-size: 22px;
-            }
-
-            .cv1-designation {
-              font-size: 14px;
-            }
-
-            .cv1-experience-header {
-              flex-direction: column;
-              align-items: flex-start;
-              gap: 2px;
-            }
-          }
-
-          @media (min-width: 1200px) {
-            .cv1-container {
-              padding: 16px;
-            }
-          }
-        @media print {
-        body { margin: 0; padding: 0; }
-        
-        .cv-pages-container {
-          display: block !important;
-        }
-
-        .cv-page {
-          width: 210mm;
-          min-height: 297mm;
-          padding: 20mm;
-          margin: 0 auto 0;
-          page-break-after: always;
-          page-break-inside: avoid;
-          box-shadow: 0 0 5px rgba(0,0,0,0.1);
-          background: white;
-          overflow: hidden;
-        }
-
-        .cv-page:last-child {
-          page-break-after: avoid;
-        }
-
-        .cv1-content {
-          width: 100% !important;
-          min-height: auto !important;
-          padding: 0 !important;
-        }
-
-        /* जरूरी: content को force न करें एक page में */
-        .cv1-section,
-        .cv1-experience-item,
-        .cv1-project-item {
-          page-break-inside: avoid;
-        }
-
-        h3.cv1-section-title {
-          page-break-after: avoid;
-        }
-      }
-        `}</style>
         </div>
+
+        {/* All Sections */}
+        {cvData.sections?.map((section, idx) => {
+          const titleMap = {
+            Summary: "Professional Summary",
+            Skill: "Technical Skills",
+            Experience: "Professional Experience",
+            Project: "Projects",
+            Education: "Education",
+            Certification: "Certifications",
+            Award: "Awards & Honors",
+            Achievement: "Achievements",
+            Interest: "Interests",
+            Language: "Languages"
+          };
+
+          return (
+            <div key={idx} style={{ marginBottom: "28px" }}>
+              <h3 style={{
+                fontSize: "15px", fontWeight: "bold", textTransform: "uppercase",
+                borderBottom: "2px solid #000", display: "inline-block", paddingBottom: "5px", marginBottom: "12px"
+              }}>
+                {titleMap[section.name] || section.name}
+              </h3>
+
+              {/* Summary */}
+              {section.name === "Summary" && <p style={{ fontSize: "12px", lineHeight: "1.6" }}>{section.data}</p>}
+
+              {/* Skills */}
+              {section.name === "Skill" && (
+                <ul style={{ paddingLeft: "20px", margin: "0" }}>
+                  {section.data.map((s, i) => <li key={i} style={{ fontSize: "12px", marginBottom: "4px" }}>{s.skill} ({s.rating}/5)</li>)}
+                </ul>
+              )}
+
+              {/* Experience & Projects */}
+              {(section.name === "Experience" || section.name === "Project") && section.data.map((item, i) => (
+                <div key={i} style={{ marginBottom: "20px", pageBreakInside: "avoid" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <h4 style={{ fontSize: "13px", fontWeight: "bold", margin: 0 }}>
+                      {section.name === "Experience" ? item.jobTitle : item.name}
+                    </h4>
+                    <span style={{ fontSize: "11px", color: "#555" }}>{item.startDate} – {item.endDate || "Present"}</span>
+                  </div>
+                  {section.name === "Experience" && <p style={{ fontSize: "12px", margin: "3px 0", fontWeight: "bold" }}>{item.company}, {item.location}</p>}
+                  <div style={{ fontSize: "12px", lineHeight: "1.6" }}>
+                    <MarkdownPreview source={item.description || ""} style={{ background: "transparent", padding: 0 }} />
+                  </div>
+                  {item.technologies && (
+                    <div style={{ marginTop: "8px" }}>
+                      <strong style={{ fontSize: "11px" }}>Tech:</strong>
+                      {item.technologies.map((t, k) => (
+                        <span key={k} style={{ display: "inline-block", background: "#f0f0f0", padding: "3px 8px", margin: "3px 5px 3px 0", borderRadius: "4px", fontSize: "10px" }}>{t}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Education */}
+              {section.name === "Education" && section.data.map((e, i) => (
+                <div key={i} style={{ marginBottom: "12px" }}>
+                  <h4 style={{ fontSize: "13px", fontWeight: "bold", margin: "0 0 3px" }}>{e.course}</h4>
+                  <p style={{ fontSize: "12px", margin: 0 }}>{e.college}</p>
+                  <p style={{ fontSize: "11px", color: "#666" }}>{e.startDate} – {e.endDate} | Grade: {e.grade}</p>
+                </div>
+              ))}
+
+              {/* Certifications, Awards, Achievements, Interests, Languages */}
+              {["Certification", "Award", "Achievement", "Interest", "Language"].includes(section.name) && section.data.map((item, i) => (
+                <div key={i} style={{ marginBottom: "10px", fontSize: "12px" }}>
+                  {section.name === "Language" ? `${item.language} - ${item.proficiency || "Proficient"}`
+                    : section.name === "Interest" ? `• ${item}`
+                      : <strong>{item.name || item.title || item}</strong>}
+                  {item.institute && <span> - {item.institute}</span>}
+                  {item.issueDate && <span style={{ color: "#666", fontSize: "11px" }}> ({item.issueDate})</span>}
+                  {item.description && <div style={{ marginTop: "3px", fontSize: "11px" }}>{item.description}</div>}
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Preview */}
+      <div style={{ padding: "40px 20px", background: "#f5f7fa", minHeight: "100vh" }}>
+        {pages.length === 0 ? (
+          <div style={{ textAlign: "center", fontSize: "22px", padding: "100px", color: "#555" }}>Generating Beautiful Pages...</div>
+        ) : (
+          pages.map((page, i) => (
+            <div key={i} dangerouslySetInnerHTML={{ __html: page }} />
+          ))
+        )}
       </div>
     </>
   );
