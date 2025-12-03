@@ -182,9 +182,18 @@ const Cv1 = () => {
 
               {/* Skills */}
               {section.name === "Skill" && (
-                <ul style={{ paddingLeft: "20px", margin: "0" }}>
-                  {section.data.map((s, i) => <li key={i} style={{ fontSize: "12px", marginBottom: "4px" }}>{s.skill} ({s.rating}/5)</li>)}
-                </ul>
+                <div style={{ columns: 2, columnGap: "20px" }}>
+                  {section.data.map((s, i) => (
+                    <div key={i} style={{
+                      fontSize: "12px",
+                      marginBottom: "6px",
+                      pageBreakInside: "avoid",   // ← Sirf har skill pe lagao
+                      breakInside: "avoid"
+                    }}>
+                      • {s.skill} <span style={{ color: "#555" }}>({s.rating}/5)</span>
+                    </div>
+                  ))}
+                </div>
               )}
 
               {/* Experience & Projects */}
@@ -197,7 +206,7 @@ const Cv1 = () => {
                     <span style={{ fontSize: "11px", color: "#555" }}>{item.startDate} – {item.endDate || "Present"}</span>
                   </div>
                   {section.name === "Experience" && <p style={{ fontSize: "12px", margin: "3px 0", fontWeight: "bold" }}>{item.company}, {item.location}</p>}
-                  <div style={{ fontSize: "12px", lineHeight: "1.6" }}>
+                  <div style={{ pageBreakInside: "avoid", fontSize: "12.5px", lineHeight: "1.6", marginTop: "6px" }}>
                     <MarkdownPreview source={item.description || ""} style={{ background: "transparent", padding: 0 }} />
                   </div>
                   {item.technologies && (
@@ -213,7 +222,7 @@ const Cv1 = () => {
 
               {/* Education */}
               {section.name === "Education" && section.data.map((e, i) => (
-                <div key={i} style={{ marginBottom: "12px" }}>
+                <div key={i} style={{ marginBottom: "12px", pageBreakInside: "avoid" }}>
                   <h4 style={{ fontSize: "13px", fontWeight: "bold", margin: "0 0 3px" }}>{e.course}</h4>
                   <p style={{ fontSize: "12px", margin: 0 }}>{e.college}</p>
                   <p style={{ fontSize: "11px", color: "#666" }}>{e.startDate} – {e.endDate} | Grade: {e.grade}</p>

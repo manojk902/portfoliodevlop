@@ -52,6 +52,7 @@ import axios from "axios";
 import { apiUrl } from "../../../utils/common";
 import { useSelector } from "react-redux";
 import { format, parseISO } from "date-fns";
+import { green } from "@mui/material/colors";
 
 // Define section types with fields, required fields, and whether they allow multiple entries
 const sectionTypes = {
@@ -180,6 +181,8 @@ const calculateDuration = (startDate, endDate, currentlyActive = false) => {
 // Preview component for collapsed section - LinkedIn Style
 const SectionPreview = ({ section, onEdit }) => {
   const getPreviewContent = () => {
+    // console.log(section,"opop");
+
     if (
       !section.data ||
       (Array.isArray(section.data) && section.data.length === 0)
@@ -208,184 +211,189 @@ const SectionPreview = ({ section, onEdit }) => {
 
     if (Array.isArray(section.data)) {
       return (
-        <Stack spacing={1.5}>
-          {section.data.map((item, index) => (
-            <Box key={index}>
-              {/* Experience Section */}
-                  {section.name === "Experience" && (
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight={600}
-                    gutterBottom
-                    color="text.primary"
-                    sx={{ fontSize: "0.9rem", mb: 0.25 }}
-                  >
-                    {item.jobTitle}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.primary"
-                    gutterBottom
-                    sx={{ fontSize: "0.8rem" }}
-                  >
-                    {item.company} · Full-time
-                  </Typography>
+        // <Stack spacing={1.5}>
+        <>
+        {section.data.map((item, index) => (
+          console.log(item,"itemitemitem"),
+          <Box key={index}>
+            {/* Experience Section */}
+            {section.name === "Experience" && (
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  fontWeight={600}
+                  gutterBottom
+                  color="text.primary"
+                  sx={{ fontSize: "0.9rem", mb: 0.25 }}
+                >
+                  {item.jobTitle}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.primary"
+                  gutterBottom
+                  sx={{ fontSize: "0.8rem" }}
+                >
+                  {item.company} · Full-time
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  gutterBottom
+                  sx={{ fontSize: "0.75rem" }}
+                >
+                  {formatDisplayDate(item.startDate)} -{" "}
+                  {item.currentlyWorking
+                    ? "Present"
+                    : formatDisplayDate(item.endDate)}{" "}
+                  ·{" "}
+                  {calculateDuration(
+                    item.startDate,
+                    item.endDate,
+                    item.currentlyWorking
+                  )}
+                </Typography>
+                {item.location && (
                   <Typography
                     variant="body2"
                     color="text.secondary"
                     gutterBottom
                     sx={{ fontSize: "0.75rem" }}
                   >
-                    {formatDisplayDate(item.startDate)} -{" "}
-                    {item.currentlyWorking
-                      ? "Present"
-                      : formatDisplayDate(item.endDate)}{" "}
-                    ·{" "}
-                    {calculateDuration(
-                      item.startDate,
-                      item.endDate,
-                      item.currentlyWorking
-                    )}
-                  </Typography>
-                  {item.location && (
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      gutterBottom
-                      sx={{ fontSize: "0.75rem" }}
-                    >
-                      {item.location} · On-site
-                    </Typography>
-                  )}
-                  {item.description && (
-                    <Box sx={{ mt: 0.5 }}>
-                      <MDEditor.Markdown source={item.description || ""} />
-                    </Box>
-                  )}
-                </Box>
-              )}
-
-              {/* Education Section */}
-              {section.name === "Education" && (
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight={600}
-                    gutterBottom
-                    color="text.primary"
-                    sx={{ fontSize: "0.9rem", mb: 0.25 }}
-                  >
-                    {item.college}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.primary"
-                    gutterBottom
-                    sx={{ fontSize: "0.8rem" }}
-                  >
-                    {item.course}
-                    {item.fieldOfStudy ? `, ${item.fieldOfStudy}` : ""}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize:  "0.75rem" }}
-                  >
-                    {formatDisplayDate(item.startDate)} -{" "}
-                    {item.currentlyStudying
-                      ? "Present"
-                      : formatDisplayDate(item.endDate)}
-                  </Typography>
-                </Box>
-              )}
-
-              {/* Skills Section - Show all skills in one line */}
-              {section.name === "Skill" && index === 0 && (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.2 }}>
-                  {section.data.map((skillItem, skillIndex) => (
-                    <Chip
-                      key={skillIndex}
-                      label={skillItem.skill}
-                      variant="outlined"
-                      sx={{
-                        borderRadius: 0.8,
-                        m: 0.1,
-                        fontSize: "0.7rem",
-                        height: 22,
-                      }}
-                      size="small"
-                    />
-                  ))}
-                </Box>
-              )}
-
-              {/* Languages Section - Show all languages in one line */}
-              {section.name === "Language" && index === 0 && (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.2 }}>
-                  {section.data.map((languageItem, languageIndex) => (
-                    <Chip
-                      key={languageIndex}
-                      label={`${languageItem.language} - ${languageItem.proficiency}`}
-                      variant="outlined"
-                      sx={{
-                        borderRadius: 0.8,
-                        m: 0.1,
-                        fontSize: "0.7rem",
-                        height: 22,
-                      }}
-                      size="small"
-                    />
-                  ))}
-                </Box>
-              )}
-
-              {/* Projects Section */}
-              {section.name === "Project" && (
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight={600}
-                    gutterBottom
-                    color="text.primary"
-                    sx={{ fontSize: "0.9rem", mb: 0.25 }}
-                  >
-                    {item.name}
-                  </Typography>
-                  {item.description && (
-                    <Box sx={{ mt: 0.5 }}>
-                      <MDEditor.Markdown source={item.description || ""} />
-                    </Box>
-                  )}
-                </Box>
-              )}
-
-              {/* Other Sections */}
-              {![
-                "Experience",
-                "Education",
-                "Skill",
-                "Language",
-                "Project",
-              ].includes(section.name) && (
-                  <Typography
-                    variant="body2"
-                    color="text.primary"
-                    sx={{ fontSize: "0.85rem" }}
-                  >
-                    {item[sectionTypes[section.name].fields[0]] ||
-                      `Entry #${index + 1}`}
+                    {item.location} · On-site
                   </Typography>
                 )}
-
-              {/* Divider between entries except for the last one */}
-              {index < section.data.length - 1 &&
-                !["Skill", "Language"].includes(section.name) && (
-                  <Divider sx={{ my: 1 }} />
+                {item.description && (
+                  <Box sx={{ mt: 0.5 }}>
+                    <MDEditor.Markdown source={item.description || ""} />
+                  </Box>
                 )}
-            </Box>
-          ))}
-        </Stack>
+              </Box>
+            )}
+
+            {/* Education Section */}
+            {section.name === "Education" && (
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  fontWeight={600}
+                  gutterBottom
+                  color="text.primary"
+                  sx={{ fontSize: "0.9rem", mb: 0.25 }}
+                >
+                  {item.college}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.primary"
+                  gutterBottom
+                  sx={{ fontSize: "0.8rem" }}
+                >
+                  {item.course}
+                  {item.fieldOfStudy ? `, ${item.fieldOfStudy}` : ""}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: "0.75rem" }}
+                >
+                  {formatDisplayDate(item.startDate)} -{" "}
+                  {item.currentlyStudying
+                    ? "Present"
+                    : formatDisplayDate(item.endDate)}
+                </Typography>
+              </Box>
+            )}
+
+            {/* Skills Section - Show all skills in one line outside*/}
+            {section.name === "Skill" && index === 0 && (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.2 }}>
+                {section.data.map((skillItem, skillIndex) => (
+                  <Chip
+                    key={skillIndex}
+                    label={skillItem.skill}
+                    variant="outlined"
+                    sx={{
+                      borderRadius: 0.8,
+                      m: 0.1,
+                      fontSize: "0.7rem",
+                      height: 22,
+
+                    }}
+                    size="small"
+                  />
+                ))}
+              </Box>
+            )}
+
+            {/* Languages Section - Show all languages in one line */}
+            {section.name === "Language" && index === 0 && (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.2 }}>
+                {section.data.map((languageItem, languageIndex) => (
+                  <Chip
+                    key={languageIndex}
+                    label={`${languageItem.language} - ${languageItem.proficiency}`}
+                    variant="outlined"
+                    sx={{
+                      borderRadius: 0.8,
+                      m: 0.1,
+                      fontSize: "0.7rem",
+                      height: 22,
+                    }}
+                    size="small"
+                  />
+                ))}
+              </Box>
+            )}
+
+            {/* Projects Section */}
+            {section.name === "Project" && (
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  fontWeight={600}
+                  gutterBottom
+                  color="text.primary"
+                  sx={{ fontSize: "0.9rem", mb: 0.25 }}
+                >
+                  {item.name}
+                </Typography>
+                {item.description && (
+                  <Box sx={{ mt: 0.5 }}>
+                    <MDEditor.Markdown source={item.description || ""} />
+                  </Box>
+                )}
+              </Box>
+            )}
+
+            {/* Other Sections */}
+            {![
+              "Experience",
+              "Education",
+              "Skill",
+              "Language",
+              "Project",
+            ].includes(section.name) && (
+                <Typography
+                  variant="body2"
+                  color="text.primary"
+                  sx={{ fontSize: "0.85rem", width: '10%' }}
+                >
+                  {item[sectionTypes[section.name].fields[0]] ||
+                    `Entry #${index + 1}`}
+                </Typography>
+              )}
+
+            {/* Divider between entries except for the last one */}
+            {index < section.data.length - 1 &&
+              !["Skill", "Language"].includes(section.name) && (
+                <Divider sx={{ my: 1 }} />
+              )}
+          </Box>
+        ))}
+        
+        </>
+        // </Stack>
       );
     }
 
@@ -538,12 +546,14 @@ const DraggableSection = ({
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start",
+
+              flexDirection: "row",
               mb: isExpanded ? 0 : 1,
             }}
           >
-            <Box
-              sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}
-            >
+            {/* for each section */}
+            <Box sx={{ display: "flex", backgroundColor: "", alignItems: "center", height: "auto", gap: 1, flex: 1 }}>
+              {/* box for avatar and drag icon start*/}
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <DragIndicator sx={{ color: "text.secondary", fontSize: 16 }} />
                 <Avatar
@@ -557,7 +567,8 @@ const DraggableSection = ({
                   {sectionTypes[section.name].icon}
                 </Avatar>
               </Box>
-              <Box sx={{ flex: 1 }}>
+              {/* box for avatar and drag icon end */}
+              <Box sx={{}}>
                 <Typography
                   variant="subtitle1"
                   fontWeight={600}
@@ -575,52 +586,59 @@ const DraggableSection = ({
               </Box>
             </Box>
 
+            {/* outer box delete and edit start*/}
             <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
-
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
-                startIcon={<Delete />}
-                sx={{
-                  textTransform: "none",
-                  fontSize: "0.75rem",
-                  borderRadius: 1,
-                  minWidth: "auto",
-                  px: 0.75,
-                  py: 0.5,
-                }}
-                onClick={() => handleRemoveClick("section")}
-              >
-                Remove
-              </Button>
-              <Button
-                variant={isExpanded ? "outlined" : "contained"}
-                color="primary"
-                size="small"
-                startIcon={isExpanded ? <CheckCircleIcon /> : <Edit />}
-                sx={{
-                  textTransform: "none",
-                  fontSize: "0.75rem",
-                  borderRadius: 1,
-                  minWidth: 60,
-                  px: 1.4,
-                  py: 0.4,
-                  // px: 1,
-                  // py: 0.5,
-                }}
-                onClick={() => toggleSection(section.name)}
-              >
-                {isExpanded ? "Done" : "Edit"}
-              </Button>
+              {/* outer box delete and edit */}
+              <Tooltip title="Delete" arrow placement="bottom-start">
+                <Button
+                  // variant="outlined"
+                  color="error"
+                  size="small"
+                  startIcon={<Delete />}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "0.75rem",
+                    borderRadius: 1,
+                    minWidth: "auto",
+                    px: 0.75,
+                    py: 0.5,
+                  }}
+                  onClick={() => handleRemoveClick("section")}
+                >
+                  {/* Remove */}
+                </Button>
+              </Tooltip>
+              <Tooltip title="Edit" arrow placement="bottom-end">
+                <Button
+                  variant={isExpanded ? "contained" : "outlined"}
+                  color="primary"
+                  size="small"
+                  startIcon={isExpanded ? <CheckCircleIcon /> : <Edit />}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "0.75rem",
+                    borderRadius: 1,
+                    minWidth: 60,
+                    px: 1.4,
+                    py: 0.4,
+                    // px: 1,
+                    // py: 0.5,
+                  }}
+                  onClick={() => toggleSection(section.name)}
+                >
+                  {isExpanded ? "Done" : "Edit"}
+                </Button>
+              </Tooltip>
             </Box>
           </Box>
+          {/* outer box delete and edit end*/}
+
 
           {/* Section Content - Show form when expanded */}
           <Collapse in={isExpanded}>
             <Box sx={{ mt: 1.5 }}>
               {sectionTypes[section.name].single ? (
-                <Box sx={{ mb: 1 }}>
+                <Box sx={{ mb: 1, border: 1 }}>
                   <TextField
                     fullWidth
                     label="Summary"
