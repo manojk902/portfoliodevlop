@@ -219,7 +219,7 @@ function UserInfo() {
                 cursor: "pointer",
                 border: "2px dashed",
                 borderColor: "primary.light",
-                borderRadius: 2,
+                borderRadius: 3,
                 transition: "all 0.3s ease",
                 backgroundColor: "white",
                 "&:hover": { transform: "translateY(-4px)', boxShadow: 4, borderColor: 'primary.main'" },
@@ -245,7 +245,7 @@ function UserInfo() {
                   key={key}
                   sx={{
                     height: "280px",
-                    borderRadius: 2,
+                    borderRadius: 3,
                     boxShadow: 2,
                     transition: "all 0.3s ease",
                     border: isDefault ? "2px solid" : "1px solid",
@@ -302,18 +302,18 @@ function UserInfo() {
                     </Box>
 
                     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
-                      <Button variant="outlined" color="primary" size="small" startIcon={<Edit />} onClick={() => handleEdit(user.cvInfoId)} sx={{ borderRadius: 1, textTransform: "none", fontSize: "0.75rem" }}>
+                      <Button variant="outlined" color="primary" size="small" startIcon={<Edit />} onClick={() => handleEdit(user.cvInfoId)} sx={{ borderRadius: 3, textTransform: "none", fontSize: "0.75rem" }}>
                         Edit
                       </Button>
 
                       <Box sx={{ display: "flex", gap: 0.5 }}>
-                        <Button variant={isDefault ? "contained" : "outlined"} color={isDefault ? "success" : "primary"} size="small" startIcon={isDefault ? <CheckCircle /> : null} onClick={() => handleSetDefault(userid, user.cvInfoId)} disabled={updatingCvId === user.cvInfoId} sx={{ borderRadius: 1, textTransform: "none", minWidth: "auto", px: 1.5, fontSize: "0.7rem" }}>
+                        <Button variant={isDefault ? "contained" : "outlined"} color={isDefault ? "success" : "primary"} size="small" startIcon={isDefault ? <CheckCircle /> : null} onClick={() => handleSetDefault(userid, user.cvInfoId)} disabled={updatingCvId === user.cvInfoId} sx={{ borderRadius: 3, textTransform: "none", minWidth: "auto", px: 1.5, fontSize: "0.7rem" }}>
                           {updatingCvId === user.cvInfoId ? "..." : isDefault ? "Selected" : "Set As Default"}
                         </Button>
 
                         {users.length > 1 && !isDefault && (
                           <Tooltip title="Delete CV" arrow placement="top">
-                            <IconButton color="error" size="small" onClick={() => openDeleteDialog(userid, user.cvInfoId, userName || "Unnamed CV")} disabled={deletingCvId === user.cvInfoId} sx={{ borderRadius: 1 }}>
+                            <IconButton color="error" size="small" onClick={() => openDeleteDialog(userid, user.cvInfoId, userName || "Unnamed CV")} disabled={deletingCvId === user.cvInfoId} sx={{ borderRadius: 3 }}>
                               <Delete fontSize="small" />
                             </IconButton>
                           </Tooltip>

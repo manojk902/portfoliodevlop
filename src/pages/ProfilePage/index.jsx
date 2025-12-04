@@ -170,7 +170,7 @@ function ProfilePage() {
           bgcolor: theme.palette.cardBgColor,
           boxShadow:
             "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-          borderRadius: "16px",
+          borderRadius: 3,
           overflow: "hidden",
         }}
       >
@@ -202,13 +202,13 @@ function ProfilePage() {
                     variant="rectangular"
                     width={120}
                     height={40}
-                    sx={{ borderRadius: "8px" }}
+                    sx={{ borderRadius: 3 }}
                   />
                   <Skeleton
                     variant="rectangular"
                     width={140}
                     height={40}
-                    sx={{ borderRadius: "8px" }}
+                    sx={{ borderRadius: 3}}
                   />
                 </Stack>
               </Box>
@@ -253,13 +253,13 @@ function ProfilePage() {
                     variant="rectangular"
                     width="100%"
                     height={48}
-                    sx={{ borderRadius: "8px" }}
+                    sx={{ borderRadius: 3 }}
                   />
                   <Skeleton
                     variant="rectangular"
                     width="100%"
                     height={48}
-                    sx={{ borderRadius: "8px" }}
+                    sx={{ borderRadius: 3 }}
                   />
                 </Stack>
               </Box>
@@ -332,7 +332,7 @@ function ProfilePage() {
                     sx={{
                       textTransform: "none",
                       fontSize: "0.75rem",
-                      borderRadius: 1,
+                      borderRadius: 3,
                       minWidth: 60,
                       px: 1.4,
                       py: 0.4,
@@ -353,7 +353,7 @@ function ProfilePage() {
                       minWidth: 60,
                       py: 0.4,
                       fontSize: "0.75rem",
-                      borderRadius: 1,
+                      borderRadius: 3,
                     }}
                   >
                     Create Cv Info
@@ -492,7 +492,7 @@ function ProfilePage() {
                       fontWeight: 600,
                       px: 3,
                       py: 1.5,
-                      borderRadius: "8px",
+                      borderRadius: 38px",
                       width: "100%",
                     }}
                   >
@@ -508,7 +508,7 @@ function ProfilePage() {
                       fontWeight: 600,
                       px: 3,
                       py: 1.5,
-                      borderRadius: "8px",
+                      borderRadius: 38px",
                       width: "100%",
                     }}
                   >

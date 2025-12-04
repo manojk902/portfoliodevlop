@@ -384,7 +384,7 @@ function DesignPage() {
                         backgroundColor: "white",
                         p: 2,
                         margin: 1,
-                        borderRadius: 2,
+                        borderRadius: 3,
                         position: "relative",
                       }}
                       onClick={() => handlePreviewOpen(id)}
@@ -404,7 +404,7 @@ function DesignPage() {
                           display: "flex",
                           justifyContent: "center",
                           alignItems: "center",
-                          borderRadius: 2,
+                          borderRadius: 3,
                           opacity: showButtons ? 1 : 0,
                           transition: "all 0.3s ease",
                           zIndex: 2,
@@ -427,7 +427,7 @@ function DesignPage() {
                             variant="outlined"
                             size="medium"
                             sx={{
-                              borderRadius: 2,
+                              borderRadius: 3,
                               fontWeight: 600,
                               color: "white",
                               backgroundColor: "#3498db", // Normal blue
@@ -452,7 +452,7 @@ function DesignPage() {
                             variant="outlined"
                             size="medium"
                             sx={{
-                              borderRadius: 2,
+                              borderRadius: 3,
                               fontWeight: 600,
                               color: "#474a4aff",
                               fontSize: "0.85rem",
@@ -482,7 +482,7 @@ function DesignPage() {
                               variant="contained"
                               size="medium"
                               sx={{
-                                borderRadius: 2,
+                                borderRadius: 3,
                                 fontWeight: 600,
                                 color: "white",
                                 background: "#4cd964",
@@ -506,7 +506,7 @@ function DesignPage() {
                               variant="outlined"
                               size="medium"
                               sx={{
-                                borderRadius: 2,
+                                borderRadius: 3,
                                 fontWeight: 600,
                                 color: "#474a4aff",
                                 borderColor: "#34A853",
@@ -566,7 +566,7 @@ function DesignPage() {
                           display: "inline-block",
                           px: 2,
                           py: 0.5,
-                          borderRadius: 2,
+                          borderRadius: 3,
                           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                         }}
                       >
@@ -629,7 +629,7 @@ function DesignPage() {
             maxWidth: "400px",
             backgroundColor: "#f0f9f0",
             color: "#1e4620",
-            borderRadius: "12px",
+            borderRadius: 3,
             boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
             border: "1px solid #4caf50",
             padding: "16px 20px",
