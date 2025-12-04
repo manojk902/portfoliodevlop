@@ -28,6 +28,7 @@ import { setUserProfile } from "../../store/features/userProfileSlice";
 import { apiUrl } from "../../utils/common";
 import { format, parseISO } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { Edit } from "@mui/icons-material";
 const user1 = {
   profilePhoto: "",
   firstName: "Alpha",
@@ -146,7 +147,10 @@ function ProfilePage() {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        minHeight: {
+          xs: "calc(100vh -80px)",
+          sm: "calc(100vh - 70px)"
+        },
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -166,7 +170,7 @@ function ProfilePage() {
           bgcolor: theme.palette.cardBgColor,
           boxShadow:
             "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-          borderRadius: "16px",
+          borderRadius: 3,
           overflow: "hidden",
         }}
       >
@@ -198,13 +202,13 @@ function ProfilePage() {
                     variant="rectangular"
                     width={120}
                     height={40}
-                    sx={{ borderRadius: "8px" }}
+                    sx={{ borderRadius: 3 }}
                   />
                   <Skeleton
                     variant="rectangular"
                     width={140}
                     height={40}
-                    sx={{ borderRadius: "8px" }}
+                    sx={{ borderRadius: 3}}
                   />
                 </Stack>
               </Box>
@@ -249,13 +253,13 @@ function ProfilePage() {
                     variant="rectangular"
                     width="100%"
                     height={48}
-                    sx={{ borderRadius: "8px" }}
+                    sx={{ borderRadius: 3 }}
                   />
                   <Skeleton
                     variant="rectangular"
                     width="100%"
                     height={48}
-                    sx={{ borderRadius: "8px" }}
+                    sx={{ borderRadius: 3 }}
                   />
                 </Stack>
               </Box>
@@ -268,7 +272,7 @@ function ProfilePage() {
               <Box
                 component="img"
                 sx={{
-                  height: 192,
+                  height: 180,
                   width: "100%",
                   objectFit: "cover",
                 }}
@@ -285,27 +289,7 @@ function ProfilePage() {
                   gap: 1.5,
                 }}
               >
-                <IconButton
-                  // onClick={toggleTheme}
-                  sx={{
-                    bgcolor: "rgba(255, 255, 255, 0.2)",
-                    backdropFilter: "blur(4px)",
-                    color: "white",
-                    "&:hover": { bgcolor: "rgba(255, 255, 255, 0.3)" },
-                  }}
-                >
-                  {/* {isDarkMode ? <WbSunnyIcon /> : <NightlightIcon />} */}
-                </IconButton>
-                <IconButton
-                  sx={{
-                    bgcolor: "rgba(255, 255, 255, 0.2)",
-                    backdropFilter: "blur(4px)",
-                    color: "white",
-                    "&:hover": { bgcolor: "rgba(255, 255, 255, 0.3)" },
-                  }}
-                >
-                  <MoreHorizIcon />
-                </IconButton>
+             
               </Box>
             </Box>
 
@@ -334,6 +318,7 @@ function ProfilePage() {
                   display: "flex",
                   justifyContent: "flex-end",
                   alignItems: "center",
+                  backgroundColor:"#fefefe",
                   pt: 1,
                 }}
               >
@@ -341,36 +326,37 @@ function ProfilePage() {
                   <Button
                     startIcon={<EditIcon sx={{ fontSize: "1rem" }} />}
                     onClick={editProfile}
+                    color="primary"
+                    size="small"
+                    // startIcon={isExpanded ? <CheckCircleIcon /> : <Edit />}
                     sx={{
-                      bgcolor: `${theme.palette.primary.main}1A`,
-                      color: theme.palette.primary.main,
-                      "&:hover": { bgcolor: `${theme.palette.primary.main}33` },
                       textTransform: "none",
-                      fontWeight: 600,
-                      px: 2,
-                      py: 1,
-                      fontSize: "0.875rem",
-                      borderRadius: "8px",
+                      fontSize: "0.75rem",
+                      borderRadius: 3,
+                      minWidth: 60,
+                      px: 1.4,
+                      py: 0.4,
                     }}
                   >
                     Edit Profile
                   </Button>
                   <Button
                     startIcon={<AddIcon sx={{ fontSize: "1rem" }} />}
+                    variant="outlined"
                     onClick={handleCVAction}
+                    size="small"
                     sx={{
-                      bgcolor: theme.palette.primary.main,
-                      color: "white",
-                      "&:hover": { bgcolor: "#4338CA" },
+                      color: "primary",
                       textTransform: "none",
                       fontWeight: 600,
-                      px: 2,
-                      py: 1,
-                      fontSize: "0.875rem",
-                      borderRadius: "8px",
+                      px: 1.4,
+                      minWidth: 60,
+                      py: 0.4,
+                      fontSize: "0.75rem",
+                      borderRadius: 3,
                     }}
                   >
-                    Create Portfolio
+                    Create Cv Info
                   </Button>
                 </Stack>
               </Box>
@@ -437,9 +423,9 @@ function ProfilePage() {
                       value={
                         userProfile?.fetchedUsed?.dob
                           ? format(
-                              parseISO(userProfile.fetchedUsed.dob),
-                              "MMMM d, yyyy"
-                            )
+                            parseISO(userProfile.fetchedUsed.dob),
+                            "MMMM d, yyyy"
+                          )
                           : user1.dob
                       }
                     />
@@ -462,9 +448,8 @@ function ProfilePage() {
                     <InfoItem
                       icon={<LocationOnIcon sx={{ fontSize: "1.25rem" }} />}
                       label="Address"
-                      value={`${
-                        userProfile?.fetchedUsed?.city || user1.city
-                      }, ${userProfile?.fetchedUsed?.state || user1.state}`}
+                      value={`${userProfile?.fetchedUsed?.city || user1.city
+                        }, ${userProfile?.fetchedUsed?.state || user1.state}`}
                     />
                   </Grid>
                   <Grid item xs={12} md={6} lg={8}>
@@ -488,14 +473,15 @@ function ProfilePage() {
               </Box>
 
               {/* Bottom Buttons */}
-              <Box
+              {/* <Box
                 sx={{
                   mt: 4,
                   pt: 3,
                   borderTop: `1px solid ${theme.palette.borderColor}`,
                 }}
               >
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+
+                {/* <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                   <Button
                     startIcon={<UploadFileIcon />}
                     sx={{
@@ -506,12 +492,12 @@ function ProfilePage() {
                       fontWeight: 600,
                       px: 3,
                       py: 1.5,
-                      borderRadius: "8px",
+                      borderRadius: 38px",
                       width: "100%",
                     }}
                   >
                     Update CV
-                  </Button> 
+                  </Button>
                   {/* <Button
                     startIcon={<ShareIcon />}
                     sx={{
@@ -522,14 +508,15 @@ function ProfilePage() {
                       fontWeight: 600,
                       px: 3,
                       py: 1.5,
-                      borderRadius: "8px",
+                      borderRadius: 38px",
                       width: "100%",
                     }}
                   >
                     Share Profile
                   </Button> */}
-                </Stack>
-              </Box>
+              {/* </Stack> */}
+
+              {/* </Box>  */}
             </Box>
           </Box>
         )}

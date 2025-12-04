@@ -10,6 +10,7 @@ import Cv4 from "./Cv4";
 import DefaultCvDesign from "./DefaultCvDesign";
 import Cv2 from "./Cv2";
 import Cv6 from "./Cv6";
+import { ArrowBack } from "@mui/icons-material";
 // import Cv7 from "./Cv7";
 // import Cv8 from "./Cv8";
 // import CV6 from "./Cv5";
@@ -56,26 +57,27 @@ export default function Designpreview() {
   const { Component } = design;
 
   return (
-    <Box sx={{ width: "100%", my: 2 }}>
+    <Box sx={{ width: "100%", my: 2, position: "relative" }}>
       <Box
         sx={{
+          fontSize: "0.95rem",
+          fontWeight: 500,
+          textTransform: "none",
+          color: "text.primary",
+          pl: 1,
           display: "flex",
-          justifyContent: "flex-start",
-          p: 2,
-          borderBottom: "1px solid #eee",
-          mb: 2,
-          "@media print": {
-            display: "none",
-          },
+          alignItems: "center",
+          gap: "4px",
         }}
       >
         <Button
           component={Link}
           to="/edit/template"
-          variant="contained"
+          variant="text"
+          startIcon={<ArrowBack />}
           color="primary"
         >
-          ⬅ Back to Designs
+          Back to Designs
         </Button>
       </Box>
 
@@ -90,6 +92,6 @@ export default function Designpreview() {
       >
         <Component />
       </Box>
-    </Box>
+    </Box >
   );
 }

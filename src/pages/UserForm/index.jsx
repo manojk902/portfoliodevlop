@@ -124,15 +124,23 @@ function UserForm() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
+
+
       if (res.data.status === "success") {
         // refresh profile in redux
         const updated = await axios.get(`${apiUrl}/user-details/${user.userName}`);
         dispatch(setUserProfile(updated.data));
         setSuccess(true);
 
+        // NEW USER FIRST-TIME FLAG
+        if (!isEdit) {
+          const key = `first_time_template_${res.data.user.userId}`;
+          localStorage.setItem(key, "true");
+        }
+
         // fetch CVs
         const cvRes = await axios.get(`${apiUrl}/cv-details/${user.userName}`);
-        console.log(cvRes.data.fetchedCv.cvInfo, "fetchedCv");
+        // console.log(cvRes.data.fetchedCv.cvInfo, "fetchedCv");
 
         const defaultCv = cvRes.data.fetchedCv.cvInfo?.[0]; // first CV if exists
 
@@ -185,9 +193,9 @@ function UserForm() {
         <LinearProgress
           variant="determinate"
           value={(step / totalSteps) * 100}
-          sx={{ height: 8, borderRadius: 4, mb: 3 }}
+          sx={{ height: 8, borderRadius: 4, mb: 2 }}
         />
-        <Typography variant="subtitle1" align="center" color="text.secondary" mb={3}>
+        <Typography variant="subtitle1" align="center" color="text.secondary" mb={2}>
           Step {step} of {totalSteps}
         </Typography>
 
@@ -208,10 +216,16 @@ function UserForm() {
                 >
                   {step === 1 && (
                     <>
-                      <Stack spacing={3} alignItems="center" mb={4}>
+                      <Stack spacing={3} alignItems="center" mb={2.8}>
                         <Box sx={{ position: 'relative' }}>
                           <Avatar
-                            src={values?.profilePhoto}
+                            src={
+                              typeof values?.profilePhoto === "string"
+                                ? values?.profilePhoto
+                                : values?.profilePhoto
+                                  ? URL.createObjectURL(values?.profilePhoto)
+                                  : ""
+                            }
                             sx={{ width: 140, height: 140 }}
                           />
                           {values?.profilePhoto && (

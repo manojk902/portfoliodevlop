@@ -28,6 +28,7 @@ import Cv2 from "./Cv2";
 import Cv3 from "./Cv3";
 import Cv4 from "./Cv4";
 import Cv6 from "./Cv6";
+import Cv7 from "./Cv7";
 // import Cv7 from "./Cv7";
 // import Cv8 from "./Cv8";
 import DemoDialog from "./DemoDialog";
@@ -44,10 +45,27 @@ function DesignPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [openDemo, setOpenDemo] = useState(false);
   const [selectedCv, setSelectedCv] = useState(null);
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
+  console.log(showWelcomeMessage);
+
 
   const userProfile = useSelector((state) => state.userProfile.data);
   const username = userProfile?.fetchedUsed?.userName;
   const userId = userProfile?.fetchedUsed?.userId;
+  console.log("ooo", !!userId);
+
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const key = `first_time_template_${userId}`;
+    const val = localStorage.getItem(key);
+
+    if (val === "true") {
+      setShowWelcomeMessage(true);
+      localStorage.removeItem(key); // so it won't show twice
+    }
+  }, [userId]);
 
   useEffect(() => {
     const fetchDefaultCv = async () => {
@@ -190,6 +208,22 @@ function DesignPage() {
       ],
       heading: "Best for Executives",
     },
+    {
+      id: 7,
+      name: "Cv7",
+      displayName: "Executive Modern",
+      Component: Cv7,
+      category: "Executive7",
+      tags: [
+        "executive",
+        "manager",
+        "senior",
+        "lead",
+        "executive modern",
+        "modern",
+      ],
+      heading: "Best for Executives7",
+    },
     // {
     //   id: 7,
     //   name: "Cv7",
@@ -226,17 +260,32 @@ function DesignPage() {
       sx={{
         bgcolor: theme.palette.background.backgroundColor,
         minHeight: "100vh",
-        pt: 8,
+        pt: 4,
         pb: 4,
       }}
     >
       <Container maxWidth="xl" sx={{ px: isMobile ? 1 : 3 }}>
+        {showWelcomeMessage && (
+          <Box sx={{ mb: 3 }}>
+            <Alert
+              severity="info"
+              onClose={() => setShowWelcomeMessage(false)}
+              sx={{
+                borderRadius: 2,
+                boxShadow: 1,
+                fontWeight: 600,
+              }}
+            >
+              Welcome! Choose a template to start — this message will show only once.
+            </Alert>
+          </Box>
+        )}
         {/* Search Bar Section */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "center",
-            mb: 4,
+            mb: 2,
             mt: 2,
           }}
         >
@@ -268,7 +317,12 @@ function DesignPage() {
           />
         </Box>
         {/* CV Gallery */}
-        <Grid container spacing={3} justifyContent="center">
+        <Box sx={{
+          display: "grid",
+          gap: 3,
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          justifyItems: "center",
+        }}>
           {filteredCvDesigns.map(
             ({ id, name, Component, heading, displayName }, index) => {
               const isDefault = defaultTemplate === name;
@@ -276,7 +330,7 @@ function DesignPage() {
               const showButtons = isDefault || isHovered;
 
               return (
-                <Grid item key={id} xs={12} sm={6} md={4} lg={3}>
+                <Box key={id} sx={{ width: "100%", maxWidth: 320 }}>
                   {/* Template Heading */}
                   <Typography
                     variant="h6"
@@ -297,7 +351,7 @@ function DesignPage() {
 
                   <Card
                     sx={{
-                      width: { xs: "280px" },
+                      // width: { xs: "280px" },
                       position: "relative",
                       height: "400px",
                       zIndex: 0,
@@ -330,7 +384,7 @@ function DesignPage() {
                         backgroundColor: "white",
                         p: 2,
                         margin: 1,
-                        borderRadius: 2,
+                        borderRadius: 3,
                         position: "relative",
                       }}
                       onClick={() => handlePreviewOpen(id)}
@@ -350,7 +404,7 @@ function DesignPage() {
                           display: "flex",
                           justifyContent: "center",
                           alignItems: "center",
-                          borderRadius: 2,
+                          borderRadius: 3,
                           opacity: showButtons ? 1 : 0,
                           transition: "all 0.3s ease",
                           zIndex: 2,
@@ -373,7 +427,7 @@ function DesignPage() {
                             variant="outlined"
                             size="medium"
                             sx={{
-                              borderRadius: 2,
+                              borderRadius: 3,
                               fontWeight: 600,
                               color: "white",
                               backgroundColor: "#3498db", // Normal blue
@@ -398,7 +452,7 @@ function DesignPage() {
                             variant="outlined"
                             size="medium"
                             sx={{
-                              borderRadius: 2,
+                              borderRadius: 3,
                               fontWeight: 600,
                               color: "#474a4aff",
                               fontSize: "0.85rem",
@@ -428,7 +482,7 @@ function DesignPage() {
                               variant="contained"
                               size="medium"
                               sx={{
-                                borderRadius: 2,
+                                borderRadius: 3,
                                 fontWeight: 600,
                                 color: "white",
                                 background: "#4cd964",
@@ -452,7 +506,7 @@ function DesignPage() {
                               variant="outlined"
                               size="medium"
                               sx={{
-                                borderRadius: 2,
+                                borderRadius: 3,
                                 fontWeight: 600,
                                 color: "#474a4aff",
                                 borderColor: "#34A853",
@@ -512,7 +566,7 @@ function DesignPage() {
                           display: "inline-block",
                           px: 2,
                           py: 0.5,
-                          borderRadius: 2,
+                          borderRadius: 3,
                           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                         }}
                       >
@@ -520,11 +574,11 @@ function DesignPage() {
                       </Typography>
                     </Box>
                   </Card>
-                </Grid>
+                </Box>
               );
             }
           )}
-        </Grid>
+        </Box>
 
         {/* No Results Message */}
         {filteredCvDesigns.length === 0 && searchQuery && (
@@ -575,7 +629,7 @@ function DesignPage() {
             maxWidth: "400px",
             backgroundColor: "#f0f9f0",
             color: "#1e4620",
-            borderRadius: "12px",
+            borderRadius: 3,
             boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
             border: "1px solid #4caf50",
             padding: "16px 20px",

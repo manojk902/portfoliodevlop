@@ -33,6 +33,8 @@ import {
   Alert,
   Snackbar,
 } from "@mui/material";
+import MDEditor from '@uiw/react-md-editor';
+// import '@uiw/react-markdown-preview/dist/markdown.css';
 import InfoIcon from "@mui/icons-material/Info";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
@@ -50,6 +52,7 @@ import axios from "axios";
 import { apiUrl } from "../../../utils/common";
 import { useSelector } from "react-redux";
 import { format, parseISO } from "date-fns";
+import { green } from "@mui/material/colors";
 
 // Define section types with fields, required fields, and whether they allow multiple entries
 const sectionTypes = {
@@ -153,7 +156,6 @@ const formatDisplayDate = (dateString) => {
     return dateString;
   }
 };
-
 // Calculate duration between two dates
 const calculateDuration = (startDate, endDate, currentlyActive = false) => {
   if (!startDate) return "";
@@ -179,6 +181,8 @@ const calculateDuration = (startDate, endDate, currentlyActive = false) => {
 // Preview component for collapsed section - LinkedIn Style
 const SectionPreview = ({ section, onEdit }) => {
   const getPreviewContent = () => {
+    // console.log(section,"opop");
+
     if (
       !section.data ||
       (Array.isArray(section.data) && section.data.length === 0)
@@ -207,8 +211,10 @@ const SectionPreview = ({ section, onEdit }) => {
 
     if (Array.isArray(section.data)) {
       return (
-        <Stack spacing={1.5}>
+        // <Stack spacing={1.5}>
+        <>
           {section.data.map((item, index) => (
+            console.log(item, "itemitemitem"),
             <Box key={index}>
               {/* Experience Section */}
               {section.name === "Experience" && (
@@ -258,19 +264,9 @@ const SectionPreview = ({ section, onEdit }) => {
                     </Typography>
                   )}
                   {item.description && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        mt: 0.5,
-                        lineHeight: 1.4,
-                        color: "text.primary",
-                        fontSize: "0.8rem",
-                      }}
-                    >
-                      {item.description.length > 100
-                        ? `${item.description.substring(0, 100)}...`
-                        : item.description}
-                    </Typography>
+                    <Box sx={{ mt: 0.5 }}>
+                      <MDEditor.Markdown source={item.description || ""} />
+                    </Box>
                   )}
                 </Box>
               )}
@@ -309,7 +305,7 @@ const SectionPreview = ({ section, onEdit }) => {
                 </Box>
               )}
 
-              {/* Skills Section - Show all skills in one line */}
+              {/* Skills Section - Show all skills in one line outside*/}
               {section.name === "Skill" && index === 0 && (
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.2 }}>
                   {section.data.map((skillItem, skillIndex) => (
@@ -322,6 +318,7 @@ const SectionPreview = ({ section, onEdit }) => {
                         m: 0.1,
                         fontSize: "0.7rem",
                         height: 22,
+
                       }}
                       size="small"
                     />
@@ -362,18 +359,9 @@ const SectionPreview = ({ section, onEdit }) => {
                     {item.name}
                   </Typography>
                   {item.description && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        lineHeight: 1.4,
-                        color: "text.primary",
-                        fontSize: "0.8rem",
-                      }}
-                    >
-                      {item.description.length > 100
-                        ? `${item.description.substring(0, 100)}...`
-                        : item.description}
-                    </Typography>
+                    <Box sx={{ mt: 0.5 }}>
+                      <MDEditor.Markdown source={item.description || ""} />
+                    </Box>
                   )}
                 </Box>
               )}
@@ -386,15 +374,15 @@ const SectionPreview = ({ section, onEdit }) => {
                 "Language",
                 "Project",
               ].includes(section.name) && (
-                <Typography
-                  variant="body2"
-                  color="text.primary"
-                  sx={{ fontSize: "0.85rem" }}
-                >
-                  {item[sectionTypes[section.name].fields[0]] ||
-                    `Entry #${index + 1}`}
-                </Typography>
-              )}
+                  <Typography
+                    variant="body2"
+                    color="text.primary"
+                    sx={{ fontSize: "0.85rem", width: '10%' }}
+                  >
+                    {item[sectionTypes[section.name].fields[0]] ||
+                      `Entry #${index + 1}`}
+                  </Typography>
+                )}
 
               {/* Divider between entries except for the last one */}
               {index < section.data.length - 1 &&
@@ -403,7 +391,9 @@ const SectionPreview = ({ section, onEdit }) => {
                 )}
             </Box>
           ))}
-        </Stack>
+
+        </>
+        // </Stack>
       );
     }
 
@@ -499,17 +489,15 @@ const DraggableSection = ({
 
   const getDeleteMessage = () => {
     if (deleteDialog.type === "section") {
-      return `Are you sure you want to remove the ${
-        sectionTypes[section.name].title
-      } section? This action cannot be undone.`;
+      return `Are you sure you want to remove the ${sectionTypes[section.name].title
+        } section? This action cannot be undone.`;
     } else if (deleteDialog.type === "entry") {
       const entry = section.data[deleteDialog.entryIndex];
       let entryName = `Entry #${deleteDialog.entryIndex + 1}`;
 
       if (section.name === "Experience" && entry.jobTitle) {
-        entryName = `${entry.jobTitle} at ${
-          entry.company || "Unknown Company"
-        }`;
+        entryName = `${entry.jobTitle} at ${entry.company || "Unknown Company"
+          }`;
       } else if (section.name === "Education" && entry.college) {
         entryName = entry.college;
       } else if (section.name === "Project" && entry.name) {
@@ -518,9 +506,8 @@ const DraggableSection = ({
         entryName = entry[sectionTypes[section.name].fields[0]];
       }
 
-      return `Are you sure you want to remove "${entryName}" from ${
-        sectionTypes[section.name].title
-      }?`;
+      return `Are you sure you want to remove "${entryName}" from ${sectionTypes[section.name].title
+        }?`;
     }
     return "";
   };
@@ -550,7 +537,8 @@ const DraggableSection = ({
             p: 1.5,
             borderBottom: isExpanded ? "1px solid" : "none",
             borderColor: "divider",
-            backgroundColor: "transparent",
+            backgroundColor: "#fefefe",
+
           }}
         >
           {/* Section Header */}
@@ -559,17 +547,19 @@ const DraggableSection = ({
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start",
+
+              flexDirection: "row",
               mb: isExpanded ? 0 : 1,
             }}
           >
-            <Box
-              sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}
-            >
+            {/* for each section */}
+            <Box sx={{ display: "flex", backgroundColor: "", alignItems: "center", height: "auto", gap: 1, flex: 1 }}>
+              {/* box for avatar and drag icon start*/}
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <DragIndicator sx={{ color: "text.secondary", fontSize: 16 }} />
                 <Avatar
                   sx={{
-                    bgcolor: "primary.main",
+                    bgcolor: "primary",
                     width: 32,
                     height: 32,
                     fontSize: "0.8rem",
@@ -578,7 +568,8 @@ const DraggableSection = ({
                   {sectionTypes[section.name].icon}
                 </Avatar>
               </Box>
-              <Box sx={{ flex: 1 }}>
+              {/* box for avatar and drag icon end */}
+              <Box sx={{}}>
                 <Typography
                   variant="subtitle1"
                   fontWeight={600}
@@ -596,48 +587,59 @@ const DraggableSection = ({
               </Box>
             </Box>
 
+            {/* outer box delete and edit start*/}
             <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
-              <Button
-                variant={isExpanded ? "outlined" : "contained"}
-                size="small"
-                startIcon={isExpanded ? <CheckCircleIcon /> : <Edit />}
-                sx={{
-                  textTransform: "none",
-                  fontSize: "0.75rem",
-                  borderRadius: 1,
-                  minWidth: 60,
-                  px: 1,
-                  py: 0.5,
-                }}
-                onClick={() => toggleSection(section.name)}
-              >
-                {isExpanded ? "Done" : "Edit"}
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
-                startIcon={<Delete />}
-                sx={{
-                  textTransform: "none",
-                  fontSize: "0.75rem",
-                  borderRadius: 1,
-                  minWidth: "auto",
-                  px: 0.75,
-                  py: 0.5,
-                }}
-                onClick={() => handleRemoveClick("section")}
-              >
-                Remove
-              </Button>
+              {/* outer box delete and edit */}
+              <Tooltip title="Delete" arrow placement="bottom-start">
+                <Button
+                  // variant="outlined"
+                  color="error"
+                  size="small"
+                  startIcon={<Delete />}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "0.75rem",
+                    borderRadius: 1,
+                    minWidth: "auto",
+                    px: 0.75,
+                    py: 0.5,
+                  }}
+                  onClick={() => handleRemoveClick("section")}
+                >
+                  {/* Remove */}
+                </Button>
+              </Tooltip>
+              <Tooltip title="Edit" arrow placement="bottom-end">
+                <Button
+                  variant={isExpanded ? "contained" : "outlined"}
+                  color="primary"
+                  size="small"
+                  startIcon={isExpanded ? <CheckCircleIcon /> : <Edit />}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "0.75rem",
+                    borderRadius: 1,
+                    minWidth: 60,
+                    px: 1.4,
+                    py: 0.4,
+                    // px: 1,
+                    // py: 0.5,
+                  }}
+                  onClick={() => toggleSection(section.name)}
+                >
+                  {isExpanded ? "Done" : "Edit"}
+                </Button>
+              </Tooltip>
             </Box>
           </Box>
+          {/* outer box delete and edit end*/}
+
 
           {/* Section Content - Show form when expanded */}
           <Collapse in={isExpanded}>
             <Box sx={{ mt: 1.5 }}>
               {sectionTypes[section.name].single ? (
-                <Box sx={{ mb: 1 }}>
+                <Box sx={{ mb: 1, }}>
                   <TextField
                     fullWidth
                     label="Summary"
@@ -693,14 +695,13 @@ const DraggableSection = ({
                           sx={{ fontSize: "0.9rem" }}
                         >
                           {section.name === "Experience"
-                            ? `${entry.jobTitle || "Untitled"} at ${
-                                entry.company || "Unknown Company"
-                              }`
+                            ? `${entry.jobTitle || "Untitled"} at ${entry.company || "Unknown Company"
+                            }`
                             : section.name === "Education"
-                            ? entry.college || "Untitled Education"
-                            : section.name === "Project"
-                            ? entry.name || "Untitled Project"
-                            : `Entry #${entryIndex + 1}`}
+                              ? entry.college || "Untitled Education"
+                              : section.name === "Project"
+                                ? entry.name || "Untitled Project"
+                                : `Entry #${entryIndex + 1}`}
                         </Typography>
                         <Button
                           variant="outlined"
@@ -733,33 +734,30 @@ const DraggableSection = ({
                             >
                               <Box sx={{ mb: 1 }}>
                                 {field === "description" ? (
-                                  <TextField
-                                    fullWidth
-                                    size="small"
-                                    label="Description"
-                                    multiline
-                                    rows={4}
-                                    value={entry[field] || ""}
-                                    onChange={(e) =>
-                                      handleSectionChange(
-                                        section.name,
-                                        index,
-                                        entryIndex,
-                                        field,
-                                        e.target.value
-                                      )
-                                    }
-                                    variant="outlined"
-                                    error={!!fieldError}
-                                    helperText={fieldError}
-                                    sx={{
-                                      "& .MuiOutlinedInput-root": {
-                                        borderRadius: 1,
-                                        backgroundColor: "white",
-                                        fontSize: "0.85rem",
-                                      },
-                                    }}
-                                  />
+                                  <Box sx={{ '& .wmde-markdown': { background: 'white' } }}>
+                                    <MDEditor
+                                      value={entry[field] || ""}
+                                      onChange={(val) =>
+                                        handleSectionChange(
+                                          section.name,
+                                          index,
+                                          entryIndex,
+                                          field,
+                                          val ?? ""
+                                        )
+                                      }
+                                      height={180}
+                                    />
+                                    {fieldError && (
+                                      <Typography
+                                        color="error"
+                                        variant="caption"
+                                        sx={{ fontSize: "0.7rem", mt: 0.5, display: 'block' }}
+                                      >
+                                        {fieldError}
+                                      </Typography>
+                                    )}
+                                  </Box>
                                 ) : field === "currentlyWorking" &&
                                   section.name === "Experience" ? (
                                   <FormControlLabel
@@ -879,19 +877,19 @@ const DraggableSection = ({
                                       /date$/i.test(field)
                                         ? "date"
                                         : field === "rating"
-                                        ? "number"
-                                        : "text"
+                                          ? "number"
+                                          : "text"
                                     }
                                     multiline={field === "summary"}
                                     rows={field === "summary" ? 4 : 1}
                                     value={
                                       field === "technologies" ||
-                                      field === "projectImages"
+                                        field === "projectImages"
                                         ? Array.isArray(entry[field])
                                           ? entry[field].join(", ")
                                           : entry[field] || ""
                                         : /date$/i.test(field) && entry[field]
-                                        ? (() => {
+                                          ? (() => {
                                             try {
                                               const parsed = parseISO(
                                                 entry[field]
@@ -903,16 +901,16 @@ const DraggableSection = ({
                                               return "";
                                             }
                                           })()
-                                        : entry[field] || ""
+                                          : entry[field] || ""
                                     }
                                     onChange={(e) => {
                                       const value =
                                         field === "technologies" ||
-                                        field === "projectImages"
+                                          field === "projectImages"
                                           ? e.target.value
-                                              .split(",")
-                                              .map((item) => item.trim())
-                                              .filter((item) => item)
+                                            .split(",")
+                                            .map((item) => item.trim())
+                                            .filter((item) => item)
                                           : e.target.value;
                                       handleSectionChange(
                                         section.name,
@@ -967,27 +965,51 @@ const DraggableSection = ({
               )}
 
               {!sectionTypes[section.name].single && (
-                <Button
-                  variant="outlined"
-                  startIcon={<Add />}
-                  sx={{
-                    textTransform: "none",
-                    fontSize: "0.75rem",
-                    borderRadius: 1,
-                    px: 1.5,
-                    mt: 1,
-                    borderColor: "primary.main",
-                    color: "primary.main",
-                    backgroundColor: "white",
-                    "&:hover": {
-                      borderColor: "primary.dark",
-                      backgroundColor: "primary.light",
-                    },
-                  }}
-                  onClick={() => addSectionEntry(section.name)}
-                >
-                  Add {sectionTypes[section.name].title.slice(0, -1)}
-                </Button>
+                <Box sx={{ mt: 1, display: "flex", justifyContent: "space-between" }}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<Add />}
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "0.75rem",
+                      borderRadius: 1,
+                      px: 1.4,
+                      py: 0.4,
+                      borderColor: "primary.main",
+                      color: "primary.main",
+                      backgroundColor: "white",
+                      "&:hover": {
+                        borderColor: "primary.dark",
+                        backgroundColor: "primary.light",
+                      },
+                    }}
+                    onClick={() => addSectionEntry(section.name)}
+                  >
+                    --Add {sectionTypes[section.name].title.slice(0, -1)}
+                  </Button>
+
+                  {/* mmm */}
+
+                  <Button
+                    variant={isExpanded ? "outlined" : "contained"}
+                    color="primary"
+                    size="small"
+                    startIcon={isExpanded ? <CheckCircleIcon /> : <Edit />}
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "0.75rem",
+                      borderRadius: 1,
+                      minWidth: 60,
+                      px: 1.4,
+                      py: 0.4,
+                      // px: 1,
+                      // py: 0.5,
+                    }}
+                    onClick={() => toggleSection(section.name)}
+                  >
+                    {isExpanded ? "Done" : "Edit"}
+                  </Button>
+                </Box>
               )}
             </Box>
           </Collapse>
@@ -1029,7 +1051,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
           p: 1.5,
           borderBottom: expanded ? "1px solid" : "none",
           borderColor: "divider",
-          backgroundColor: "transparent",
+          backgroundColor: "#fefefe",
         }}
       >
         {/* Personal Info Header */}
@@ -1045,7 +1067,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
               <Avatar
                 sx={{
-                  bgcolor: "primary.main",
+                  bgcolor: "primary",
                   width: 32,
                   height: 32,
                   fontSize: "0.8rem",
@@ -1138,7 +1160,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
-                      backgroundColor: "white",
+                      backgroundColor: "transparent",
                       fontSize: "0.85rem",
                     },
                   }}
@@ -1158,7 +1180,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
-                      backgroundColor: "white",
+                      // backgroundColor: "white",
                       fontSize: "0.85rem",
                     },
                   }}
@@ -1178,7 +1200,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
-                      backgroundColor: "white",
+                      // backgroundColor: "white",
                       fontSize: "0.85rem",
                     },
                   }}
@@ -1197,7 +1219,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
-                      backgroundColor: "white",
+                      // backgroundColor: "white",
                       fontSize: "0.85rem",
                     },
                   }}
@@ -1215,7 +1237,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
-                      backgroundColor: "white",
+                      // backgroundColor: "white",
                       fontSize: "0.85rem",
                     },
                   }}
@@ -1235,7 +1257,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: 1,
-                      backgroundColor: "white",
+                      // backgroundColor: "white",
                       fontSize: "0.85rem",
                     },
                   }}
@@ -1253,7 +1275,7 @@ const PersonalInformationSection = ({ group, handleInputChange, errors }) => {
                     sx={{
                       borderRadius: 1,
                       fontSize: "0.85rem",
-                      backgroundColor: "white",
+                      // backgroundColor: "white",
                     }}
                   >
                     <MenuItem value="Male" sx={{ fontSize: "0.85rem" }}>
@@ -1624,10 +1646,10 @@ const GroupForm = () => {
           field === "rating"
             ? 1
             : field === "technologies" || field === "projectImages"
-            ? []
-            : field === "currentlyWorking" || field === "currentlyStudying"
-            ? false
-            : "",
+              ? []
+              : field === "currentlyWorking" || field === "currentlyStudying"
+                ? false
+                : "",
       }),
       {}
     );
@@ -1646,8 +1668,8 @@ const GroupForm = () => {
         ...prev,
         sections: existingSection
           ? prev.sections.map((s) =>
-              s.name === sectionName ? { ...s, data: [...s.data, fields] } : s
-            )
+            s.name === sectionName ? { ...s, data: [...s.data, fields] } : s
+          )
           : [...prev.sections, { name: sectionName, data: [fields] }],
       };
     });
@@ -1789,9 +1811,8 @@ const GroupForm = () => {
         sectionConfig.required.forEach((field) => {
           const value = section.data;
           if (!value || (Array.isArray(value) && value.length === 0)) {
-            newErrors[`${section.name}_0_${field}`] = `${
-              field.charAt(0).toUpperCase() + field.slice(1)
-            } is required`;
+            newErrors[`${section.name}_0_${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)
+              } is required`;
             isValid = false;
           }
         });
@@ -1813,9 +1834,8 @@ const GroupForm = () => {
               (typeof fieldValue === "string" && !fieldValue.trim()) ||
               (typeof fieldValue === "number" && isNaN(fieldValue))
             ) {
-              newErrors[`${section.name}_${entryIndex}_${field}`] = `${
-                field.charAt(0).toUpperCase() + field.slice(1)
-              } is required`;
+              newErrors[`${section.name}_${entryIndex}_${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)
+                } is required`;
               isValid = false;
             }
           });
@@ -1884,7 +1904,8 @@ const GroupForm = () => {
         };
 
         await axios.put(`${apiUrl}/updateCvInfoSet`, payloadCvupdate);
-        navigate("/edit");
+        navigate("/edit/template");
+        // navigate("/edit");
       } else {
         const payloadCreateCv = {
           userId: userId,
@@ -1916,6 +1937,7 @@ const GroupForm = () => {
             `${apiUrl}/create-cv`,
             payloadCreateCv
           );
+
           navigate("/edit");
         } catch (error) {
           setSubmitError(
@@ -2004,7 +2026,8 @@ const GroupForm = () => {
               </Typography>
 
               <Button
-                variant="contained"
+                variant="outlined"
+                color="primary"
                 startIcon={<Add />}
                 sx={{
                   textTransform: "none",
@@ -2027,7 +2050,8 @@ const GroupForm = () => {
                   border: "2px dashed",
                   borderColor: "divider",
                   borderRadius: 1.5,
-                  backgroundColor: "transparent",
+                  backgroundColor: "#fefefe",
+
                 }}
               >
                 <Typography
@@ -2087,7 +2111,7 @@ const GroupForm = () => {
             open={showModal}
             onClose={() => setShowModal(false)}
             PaperProps={{
-              sx: { borderRadius: 1.5, maxWidth: 400 },
+              sx: { borderRadius: 1.5, maxWidth: 500, },
             }}
           >
             <DialogTitle
@@ -2096,6 +2120,8 @@ const GroupForm = () => {
                 color: "white",
                 fontWeight: 600,
                 fontSize: "1rem",
+                textAlign: "center",
+
                 p: 1.5,
               }}
             >
@@ -2105,11 +2131,12 @@ const GroupForm = () => {
               <Typography
                 variant="body2"
                 color="text.secondary"
-                sx={{ mb: 1.5, fontSize: "0.8rem" }}
+                sx={{ mb: 1.5, fontSize: "0.8rem", textAlign: "center" }}
+
               >
                 Choose a section to add to your CV
               </Typography>
-              <Grid container spacing={0.75}>
+              <Grid container spacing={0.75} sx={{ display: "flex", flexDirection: "column" }}>
                 {Object.keys(sectionTypes).map((section) => (
                   <Grid item xs={12} key={section}>
                     <Button
@@ -2187,6 +2214,7 @@ const GroupForm = () => {
           >
             <Button
               variant="outlined"
+              bgcolor="red"
               sx={{
                 textTransform: "none",
                 fontSize: "0.85rem",

@@ -12,6 +12,7 @@ import Cv2 from "../Template/Cv2";
 import Cv3 from "../Template/Cv3";
 import Cv4 from "../Template/Cv4";
 import Cv6 from "../Template/Cv6";
+import Cv7 from "../Template/Cv7";
 // import Cv7 from "../Template/Cv7";
 // import Cv8 from "../Template/Cv8";
 
@@ -48,7 +49,7 @@ const DefaultCv = ({ template = "defaultCv" }) => {
     Cv3: Cv3,
     Cv4: Cv4,
     Cv6: Cv6,
-    // Cv7: Cv7,
+    Cv7: Cv7,
     // Cv8: Cv8,
   };
 

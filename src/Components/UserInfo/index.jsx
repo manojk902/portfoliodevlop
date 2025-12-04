@@ -176,438 +176,158 @@ function UserInfo() {
   };
 
   return (
+    /* Replace the entire Grid container block with this */
     <Box
       sx={{
-        py: 3,
-        pr: { xs: 1, sm: 2, md: 3, lg: 4 },
-        pl: { xs: 1, sm: 2, md: 3, lg: 4 },
-        minHeight: "100vh",
-        backgroundColor: "#fffafae6",
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+        gap: 3,
+        alignItems: "stretch",
+        px: { xs: 1, sm: 2, md: 3, lg: 4 },
+        pt: { xs: 2, sm: 3, md: 4 },   // <— ADDED
       }}
     >
-      <Box sx={{ position: "relative" }}>
-        {/* Floating Add Button */}
-        <Tooltip title="Add New CV">
-          <Fab
-            color="primary"
-            aria-label="add"
-            onClick={handleAddNew}
-            sx={{
-              position: "fixed",
-              bottom: { xs: 16, sm: 24 },
-              right: { xs: 16, sm: 24 },
-              zIndex: 1200,
-              boxShadow: 4,
-              transition: "transform 0.2s ease",
-              "&:hover": {
-                transform: "scale(1.1)",
-              },
-            }}
-          >
-            <Add />
-          </Fab>
-        </Tooltip>
-      </Box>
-
-      {/* <Typography
-        variant="h4"
-        component="h1"
-        gutterBottom
-        sx={{
-          fontWeight: 600,
-          mb: 4,
-          textAlign: "center",
-          background: "linear-gradient(135deg, #2c3e50 0%, #3498db 100%)",
-          backgroundClip: "text",
-          WebkitBackgroundClip: "text",
-          color: "transparent",
-          mb: 16,
-          fontSize: { xs: "2.5rem", sm: "3.5rem", md: "4rem" },
-          fontFamily: "'Inter', 'SF Pro Display', sans-serif",
-        }}
-      >
-        My CV Details 
-      </Typography> */}
-
-      <Grid container spacing={3}>
-        {loading ? (
-          // Skeletons while loading
-          Array.from(new Array(4)).map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-              <Card sx={{ p: 2, height: "100%", borderRadius: 2 }}>
-                <Skeleton
-                  variant="text"
-                  height={32}
-                  width="70%"
-                  sx={{ mb: 1, ml: 2 }}
-                />
-                <CardContent>
-                  <Skeleton height={20} width="50%" sx={{ mb: 0.5 }} />
-                  <Skeleton height={20} width="85%" sx={{ mb: 0.5 }} />
-                  <Skeleton height={20} width="95%" sx={{ mb: 1 }} />
-                  <Box
-                    mt={2}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      width: "100%",
-                    }}
-                  >
-                    <Skeleton variant="circular" width={20} height={30} />
-                    <Skeleton
-                      width={140}
-                      height={32}
-                      sx={{ ml: 0.5, mr: 0.5 }}
-                    />
-                    <Skeleton variant="circular" width={20} height={30} />
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))
-        ) : (
+      {loading
+        ? // skeletons
+        Array.from(new Array(8)).map((_, index) => (
+          <Card key={`s-${index}`} sx={{ p: 2, height: "100%", borderRadius: 2 }}>
+            <Skeleton variant="text" height={32} width="70%" sx={{ mb: 1, ml: 2 }} />
+            <CardContent>
+              <Skeleton height={20} width="50%" sx={{ mb: 0.5 }} />
+              <Skeleton height={20} width="85%" sx={{ mb: 0.5 }} />
+              <Skeleton height={20} width="95%" sx={{ mb: 1 }} />
+              <Box mt={2} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+                <Skeleton variant="circular" width={20} height={30} />
+                <Skeleton width={140} height={32} sx={{ ml: 0.5, mr: 0.5 }} />
+                <Skeleton variant="circular" width={20} height={30} />
+              </Box>
+            </CardContent>
+          </Card>
+        ))
+        : (
           <>
-            {/* Add New card */}
-            <Grid item xs={12} sm={6} md={4} lg={3}>
-              <Card
-                sx={{
-                  p: 3,
-                  height: "280px",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  border: "2px dashed",
-                  borderColor: "primary.light",
-                  borderRadius: 2,
-                  transition: "all 0.3s ease",
-                  backgroundColor: "white",
-                  "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow: 4,
-                    borderColor: "primary.main",
-                  },
-                }}
-                onClick={handleAddNew}
-              >
-                <CardContent sx={{ textAlign: "center" }}>
-                  <Add
-                    sx={{
-                      fontSize: 48,
-                      color: "primary.light",
-                      mb: 1,
-                    }}
-                  />
-                  <Typography variant="h6" color="primary" fontWeight={600}>
-                    Create New CV
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mt: 1 }}
-                  >
-                    Add your professional details
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+            {/* Add New card as first grid cell */}
+            <Card
+              onClick={handleAddNew}
+              sx={{
+                p: 3,
+                height: "280px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                border: "2px dashed",
+                borderColor: "primary.light",
+                borderRadius: 3,
+                transition: "all 0.3s ease",
+                backgroundColor: "white",
+                "&:hover": { transform: "translateY(-4px)', boxShadow: 4, borderColor: 'primary.main'" },
+              }}
+            >
+              <CardContent sx={{ textAlign: "center" }}>
+                <Add sx={{ fontSize: 48, color: "primary.light", mb: 1 }} />
+                <Typography variant="h6" color="primary" fontWeight={600}>Create New CV</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Add your professional details
+                </Typography>
+              </CardContent>
+            </Card>
 
             {/* User CV Cards */}
             {users.map((user) => {
               const key = user.cvInfoId ?? userid;
               const isDefault = defaultUser?.cvInfoId === user.cvInfoId;
-              const userName = `${user.firstName || ""} ${
-                user.lastName || ""
-              }`.trim();
+              const userName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
 
               return (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={key}>
-                  <Card
-                    sx={{
-                      height: "280px",
-                      borderRadius: 2,
-                      boxShadow: 2,
-                      transition: "all 0.3s ease",
-                      border: isDefault ? "2px solid" : "1px solid",
-                      borderColor: isDefault ? "primary.light" : "divider",
-                      backgroundColor: "white",
-                      "&:hover": {
-                        transform: "translateY(-4px)",
-                        boxShadow: 4,
-                      },
-                    }}
-                  >
-                    <CardContent
-                      sx={{
-                        p: 2.5,
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                      }}
-                    >
-                      {/* Header with Name and Default Badge */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "flex-start",
-                          justifyContent: "space-between",
-                          mb: 2,
-                        }}
-                      >
-                        <Box sx={{ flex: 1 }}>
-                          <Typography
-                            variant="h6"
-                            component="h2"
-                            fontWeight={600}
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                              fontSize: "1.1rem",
-                            }}
-                          >
-                            <Person color="primary" fontSize="small" />
-                            {userName || "Unnamed CV"}
-                          </Typography>
-                        </Box>
+                <Card
+                  key={key}
+                  sx={{
+                    height: "280px",
+                    borderRadius: 3,
+                    boxShadow: 2,
+                    transition: "all 0.3s ease",
+                    border: isDefault ? "2px solid" : "1px solid",
+                    borderColor: isDefault ? "primary.light" : "divider",
+                    backgroundColor: "white",
+                    "&:hover": { transform: "translateY(-4px)", boxShadow: 4 },
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <CardContent sx={{ p: 2.5, height: "100%", display: "flex", flexDirection: "column" }}>
+                    {/* same inner content as before */}
+                    <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 2 }}>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="h6" component="h2" fontWeight={600} sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: "1.1rem" }}>
+                          <Person color="primary" fontSize="small" />
+                          {userName || "Unnamed CV"}
+                        </Typography>
                       </Box>
+                    </Box>
 
-                      <Divider sx={{ my: 1.5 }} />
+                    <Divider sx={{ my: 1.5 }} />
 
-                      {/* Designation */}
-                      {user.designation && (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                            mb: 1.5,
-                          }}
-                        >
-                          <Work color="action" fontSize="small" />
-                          <Typography variant="body2" fontWeight={500} noWrap>
-                            {user.designation}
-                          </Typography>
+                    {user.designation && (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+                        <Work color="action" fontSize="small" />
+                        <Typography variant="body2" fontWeight={500} noWrap>{user.designation}</Typography>
+                      </Box>
+                    )}
+
+                    <Box sx={{ mb: 2, flex: 1 }}>
+                      {user.email && (
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                          <Email fontSize="small" sx={{ color: "text.secondary", fontSize: 16 }} />
+                          <Typography variant="body2" color="text.secondary" noWrap sx={{ fontSize: "0.8rem" }}>{user.email}</Typography>
                         </Box>
                       )}
 
-                      {/* Contact Information */}
-                      <Box sx={{ mb: 2, flex: 1 }}>
-                        {user.email && (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                              mb: 0.5,
-                            }}
-                          >
-                            <Email
-                              fontSize="small"
-                              sx={{ color: "text.secondary", fontSize: 16 }}
-                            />
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              noWrap
-                              sx={{ fontSize: "0.8rem" }}
-                            >
-                              {user.email}
-                            </Typography>
-                          </Box>
-                        )}
+                      {user.phoneNo && (
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                          <Phone fontSize="small" sx={{ color: "text.secondary", fontSize: 16 }} />
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>{user.phoneNo}</Typography>
+                        </Box>
+                      )}
 
-                        {user.phoneNo && (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                              mb: 0.5,
-                            }}
-                          >
-                            <Phone
-                              fontSize="small"
-                              sx={{ color: "text.secondary", fontSize: 16 }}
-                            />
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ fontSize: "0.8rem" }}
-                            >
-                              {user.phoneNo}
-                            </Typography>
-                          </Box>
-                        )}
+                      {user.address && (
+                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+                          <LocationOn fontSize="small" sx={{ color: "text.secondary", fontSize: 16, mt: 0.25 }} />
+                          <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.3, fontSize: "0.8rem" }} noWrap>
+                            {formatAddress(user.address)}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
 
-                        {user.address && (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "flex-start",
-                              gap: 1,
-                            }}
-                          >
-                            <LocationOn
-                              fontSize="small"
-                              sx={{
-                                color: "text.secondary",
-                                fontSize: 16,
-                                mt: 0.25,
-                              }}
-                            />
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ lineHeight: 1.3, fontSize: "0.8rem" }}
-                              noWrap
-                            >
-                              {formatAddress(user.address)}
-                            </Typography>
-                          </Box>
-                        )}
-                      </Box>
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+                      <Button variant="outlined" color="primary" size="small" startIcon={<Edit />} onClick={() => handleEdit(user.cvInfoId)} sx={{ borderRadius: 3, textTransform: "none", fontSize: "0.75rem" }}>
+                        Edit
+                      </Button>
 
-                      {/* Action Buttons */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 1,
-                        }}
-                      >
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          size="small"
-                          startIcon={<Edit />}
-                          onClick={() => handleEdit(user.cvInfoId)}
-                          sx={{
-                            borderRadius: 1,
-                            textTransform: "none",
-                            flex: 1,
-                            fontSize: "0.75rem",
-                          }}
-                        >
-                          Edit / Preview
+                      <Box sx={{ display: "flex", gap: 0.5 }}>
+                        <Button variant={isDefault ? "contained" : "outlined"} color={isDefault ? "success" : "primary"} size="small" startIcon={isDefault ? <CheckCircle /> : null} onClick={() => handleSetDefault(userid, user.cvInfoId)} disabled={updatingCvId === user.cvInfoId} sx={{ borderRadius: 3, textTransform: "none", minWidth: "auto", px: 1.5, fontSize: "0.7rem" }}>
+                          {updatingCvId === user.cvInfoId ? "..." : isDefault ? "Selected" : "Set As Default"}
                         </Button>
 
-                        <Box sx={{ display: "flex", gap: 0.5 }}>
-                          <Button
-                            variant={isDefault ? "contained" : "outlined"}
-                            color={isDefault ? "success" : "primary"}
-                            size="small"
-                            startIcon={isDefault ? <CheckCircle /> : null}
-                            onClick={() =>
-                              handleSetDefault(userid, user.cvInfoId)
-                            }
-                            disabled={updatingCvId === user.cvInfoId}
-                            sx={{
-                              borderRadius: 1,
-                              textTransform: "none",
-                              minWidth: "auto",
-                              px: 1.5,
-                              fontSize: "0.7rem",
-                            }}
-                          >
-                            {updatingCvId === user.cvInfoId
-                              ? "..."
-                              : isDefault
-                              ? "Selected"
-                              : "Default"}
-                          </Button>
-
-                          {users.length > 1 && (
-                            <IconButton
-                              color="error"
-                              size="small"
-                              onClick={() =>
-                                openDeleteDialog(
-                                  userid,
-                                  user.cvInfoId,
-                                  userName || "Unnamed CV"
-                                )
-                              }
-                              disabled={deletingCvId === user.cvInfoId}
-                              sx={{
-                                borderRadius: 1,
-                              }}
-                            >
+                        {users.length > 1 && !isDefault && (
+                          <Tooltip title="Delete CV" arrow placement="top">
+                            <IconButton color="error" size="small" onClick={() => openDeleteDialog(userid, user.cvInfoId, userName || "Unnamed CV")} disabled={deletingCvId === user.cvInfoId} sx={{ borderRadius: 3 }}>
                               <Delete fontSize="small" />
                             </IconButton>
-                          )}
-                        </Box>
+                          </Tooltip>
+                        )}
                       </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
+                    </Box>
+                  </CardContent>
+                </Card>
               );
             })}
           </>
         )}
-      </Grid>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteDialog.open}
-        onClose={closeDeleteDialog}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ pb: 1, fontWeight: 600 }}>
-          Confirm Delete
-        </DialogTitle>
-        <DialogContent sx={{ pb: 1 }}>
-          <Typography variant="body1">
-            Are you sure you want to delete{" "}
-            <strong>"{deleteDialog.userName}"</strong>?
-          </Typography>
-          <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-            This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 2, pt: 1 }}>
-          <Button
-            onClick={closeDeleteDialog}
-            variant="outlined"
-            sx={{ textTransform: "none" }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleDelete}
-            color="error"
-            variant="contained"
-            disabled={deletingCvId === deleteDialog.cvInfoId}
-            sx={{ textTransform: "none" }}
-          >
-            {deletingCvId === deleteDialog.cvInfoId ? "Deleting..." : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Empty State */}
-      {!loading && users.length === 0 && (
-        <Box
-          sx={{
-            textAlign: "center",
-            py: 8,
-            color: "text.secondary",
-          }}
-        >
-          <Person sx={{ fontSize: 64, mb: 2, opacity: 0.5 }} />
-          <Typography variant="h6" gutterBottom>
-            No CV Profiles Yet
-          </Typography>
-          <Typography variant="body1">
-            Create your first CV profile to get started
-          </Typography>
-        </Box>
-      )}
     </Box>
+
   );
 }
 

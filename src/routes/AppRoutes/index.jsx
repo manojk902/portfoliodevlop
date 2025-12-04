@@ -16,6 +16,7 @@ import GroupForm from "../../Components/UserInfo/GroupForm";
 import Designpreview from "../../Components/Template/Designpreview";
 import Designpage from "../../Components/Template/Designpage";
 import DefaultCv from "../../Components/DefaultCv";
+import ResumeSlider from "../../pages/HomePage/ResumeSlider";
 // import Cv2 from '../../Components/Template/Cv2';
 // import Learn from '../../Learn'
 
@@ -27,7 +28,6 @@ const AppRoutes = () => {
 
       {/* Design Routes */}
       <Route path="/Designpreview/:type/:id" element={<Designpreview />} />
-
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/Designpage" element={<Designpage />} />
@@ -41,6 +41,7 @@ const AppRoutes = () => {
           <Route path="userinfo" element={<UserInfo />} />
           <Route path="template" element={<Template />} />
           <Route path="add-group" element={<GroupForm />} />
+          {/* <Route path="a" element={<ResumeSlider />} /> */}
         </Route>
       </Route>
     </Routes>
