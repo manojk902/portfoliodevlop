@@ -260,7 +260,7 @@ function DesignPage() {
       sx={{
         bgcolor: theme.palette.background.backgroundColor,
         minHeight: "100vh",
-        pt: 8,
+        pt: 4,
         pb: 4,
       }}
     >
@@ -285,7 +285,7 @@ function DesignPage() {
           sx={{
             display: "flex",
             justifyContent: "center",
-            mb: 4,
+            mb: 2,
             mt: 2,
           }}
         >
@@ -317,7 +317,12 @@ function DesignPage() {
           />
         </Box>
         {/* CV Gallery */}
-        <Grid container spacing={3} justifyContent="center">
+        <Box sx={{
+          display: "grid",
+          gap: 3,
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          justifyItems: "center",
+        }}>
           {filteredCvDesigns.map(
             ({ id, name, Component, heading, displayName }, index) => {
               const isDefault = defaultTemplate === name;
@@ -325,7 +330,7 @@ function DesignPage() {
               const showButtons = isDefault || isHovered;
 
               return (
-                <Grid item key={id} xs={12} sm={6} md={4} lg={3}>
+                <Box key={id} sx={{ width: "100%", maxWidth: 320 }}>
                   {/* Template Heading */}
                   <Typography
                     variant="h6"
@@ -346,7 +351,7 @@ function DesignPage() {
 
                   <Card
                     sx={{
-                      width: { xs: "280px" },
+                      // width: { xs: "280px" },
                       position: "relative",
                       height: "400px",
                       zIndex: 0,
@@ -569,11 +574,11 @@ function DesignPage() {
                       </Typography>
                     </Box>
                   </Card>
-                </Grid>
+                </Box>
               );
             }
           )}
-        </Grid>
+        </Box>
 
         {/* No Results Message */}
         {filteredCvDesigns.length === 0 && searchQuery && (

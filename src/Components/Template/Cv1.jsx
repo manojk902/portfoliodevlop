@@ -128,7 +128,7 @@ const Cv1 = () => {
   return (
     <>
       {/* Print Button */}
-      <div style={{ textAlign: "center", padding: "25px 0", background: "#0d47a1" }}>
+      <div style={{ textAlign: "center", padding: "25px 0" }}>
         <button onClick={handlePrint} className="print-btn" style={{
           background: "white", color: "#0d47a1", fontSize: "20px", fontWeight: "bold",
           padding: "16px 50px", border: "none", borderRadius: "50px", cursor: "pointer", boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
