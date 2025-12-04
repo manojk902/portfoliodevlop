@@ -47,6 +47,7 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import BuildIcon from "@mui/icons-material/Build";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
+import { blue } from "@mui/material/colors";
 
 const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
   const user = useSelector((state) => state.user);
@@ -208,10 +209,11 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
         position="fixed"
         sx={{
           height: { xs: "80px", sm: "70px" },
-          background: "transparent",
-          boxShadow: "none",
-          backdropFilter: "blur(10px)",
-          backgroundColor: scrolled ? "#fffafae6" : "#fffafae6", // ✅ Background changes on scroll
+          // boxShadow: "none",
+          boxShadow: "4px 0 20px rgba(0,0,0,0.08)",
+
+          // backgroundColor: scrolled ? "#fefefe" : "#fefefe", // ✅ Background changes on scroll
+          backgroundColor: "#fefefe", // ✅ Background changes on scroll
           py: { xs: 0.5, sm: 1 },
           borderBottom: scrolled
             ? "1px solid transparent" // ✅ Transparent when scrolled
@@ -380,7 +382,7 @@ const Header = ({ onNavigate, onToggleSidebar, mode, setMode }) => {
                       Templates
                     </Button>
                   </Box>
-                ):""}
+                ) : ""}
 
                 {isLoggedIn ? (
                   userProfile?.firstName ? (

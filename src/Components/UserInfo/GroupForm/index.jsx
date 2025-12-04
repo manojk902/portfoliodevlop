@@ -213,185 +213,185 @@ const SectionPreview = ({ section, onEdit }) => {
       return (
         // <Stack spacing={1.5}>
         <>
-        {section.data.map((item, index) => (
-          console.log(item,"itemitemitem"),
-          <Box key={index}>
-            {/* Experience Section */}
-            {section.name === "Experience" && (
-              <Box>
-                <Typography
-                  variant="subtitle2"
-                  fontWeight={600}
-                  gutterBottom
-                  color="text.primary"
-                  sx={{ fontSize: "0.9rem", mb: 0.25 }}
-                >
-                  {item.jobTitle}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.primary"
-                  gutterBottom
-                  sx={{ fontSize: "0.8rem" }}
-                >
-                  {item.company} · Full-time
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  gutterBottom
-                  sx={{ fontSize: "0.75rem" }}
-                >
-                  {formatDisplayDate(item.startDate)} -{" "}
-                  {item.currentlyWorking
-                    ? "Present"
-                    : formatDisplayDate(item.endDate)}{" "}
-                  ·{" "}
-                  {calculateDuration(
-                    item.startDate,
-                    item.endDate,
-                    item.currentlyWorking
-                  )}
-                </Typography>
-                {item.location && (
+          {section.data.map((item, index) => (
+            console.log(item, "itemitemitem"),
+            <Box key={index}>
+              {/* Experience Section */}
+              {section.name === "Experience" && (
+                <Box>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight={600}
+                    gutterBottom
+                    color="text.primary"
+                    sx={{ fontSize: "0.9rem", mb: 0.25 }}
+                  >
+                    {item.jobTitle}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.primary"
+                    gutterBottom
+                    sx={{ fontSize: "0.8rem" }}
+                  >
+                    {item.company} · Full-time
+                  </Typography>
                   <Typography
                     variant="body2"
                     color="text.secondary"
                     gutterBottom
                     sx={{ fontSize: "0.75rem" }}
                   >
-                    {item.location} · On-site
+                    {formatDisplayDate(item.startDate)} -{" "}
+                    {item.currentlyWorking
+                      ? "Present"
+                      : formatDisplayDate(item.endDate)}{" "}
+                    ·{" "}
+                    {calculateDuration(
+                      item.startDate,
+                      item.endDate,
+                      item.currentlyWorking
+                    )}
+                  </Typography>
+                  {item.location && (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                      sx={{ fontSize: "0.75rem" }}
+                    >
+                      {item.location} · On-site
+                    </Typography>
+                  )}
+                  {item.description && (
+                    <Box sx={{ mt: 0.5 }}>
+                      <MDEditor.Markdown source={item.description || ""} />
+                    </Box>
+                  )}
+                </Box>
+              )}
+
+              {/* Education Section */}
+              {section.name === "Education" && (
+                <Box>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight={600}
+                    gutterBottom
+                    color="text.primary"
+                    sx={{ fontSize: "0.9rem", mb: 0.25 }}
+                  >
+                    {item.college}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.primary"
+                    gutterBottom
+                    sx={{ fontSize: "0.8rem" }}
+                  >
+                    {item.course}
+                    {item.fieldOfStudy ? `, ${item.fieldOfStudy}` : ""}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontSize: "0.75rem" }}
+                  >
+                    {formatDisplayDate(item.startDate)} -{" "}
+                    {item.currentlyStudying
+                      ? "Present"
+                      : formatDisplayDate(item.endDate)}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Skills Section - Show all skills in one line outside*/}
+              {section.name === "Skill" && index === 0 && (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.2 }}>
+                  {section.data.map((skillItem, skillIndex) => (
+                    <Chip
+                      key={skillIndex}
+                      label={skillItem.skill}
+                      variant="outlined"
+                      sx={{
+                        borderRadius: 0.8,
+                        m: 0.1,
+                        fontSize: "0.7rem",
+                        height: 22,
+
+                      }}
+                      size="small"
+                    />
+                  ))}
+                </Box>
+              )}
+
+              {/* Languages Section - Show all languages in one line */}
+              {section.name === "Language" && index === 0 && (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.2 }}>
+                  {section.data.map((languageItem, languageIndex) => (
+                    <Chip
+                      key={languageIndex}
+                      label={`${languageItem.language} - ${languageItem.proficiency}`}
+                      variant="outlined"
+                      sx={{
+                        borderRadius: 0.8,
+                        m: 0.1,
+                        fontSize: "0.7rem",
+                        height: 22,
+                      }}
+                      size="small"
+                    />
+                  ))}
+                </Box>
+              )}
+
+              {/* Projects Section */}
+              {section.name === "Project" && (
+                <Box>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight={600}
+                    gutterBottom
+                    color="text.primary"
+                    sx={{ fontSize: "0.9rem", mb: 0.25 }}
+                  >
+                    {item.name}
+                  </Typography>
+                  {item.description && (
+                    <Box sx={{ mt: 0.5 }}>
+                      <MDEditor.Markdown source={item.description || ""} />
+                    </Box>
+                  )}
+                </Box>
+              )}
+
+              {/* Other Sections */}
+              {![
+                "Experience",
+                "Education",
+                "Skill",
+                "Language",
+                "Project",
+              ].includes(section.name) && (
+                  <Typography
+                    variant="body2"
+                    color="text.primary"
+                    sx={{ fontSize: "0.85rem", width: '10%' }}
+                  >
+                    {item[sectionTypes[section.name].fields[0]] ||
+                      `Entry #${index + 1}`}
                   </Typography>
                 )}
-                {item.description && (
-                  <Box sx={{ mt: 0.5 }}>
-                    <MDEditor.Markdown source={item.description || ""} />
-                  </Box>
+
+              {/* Divider between entries except for the last one */}
+              {index < section.data.length - 1 &&
+                !["Skill", "Language"].includes(section.name) && (
+                  <Divider sx={{ my: 1 }} />
                 )}
-              </Box>
-            )}
+            </Box>
+          ))}
 
-            {/* Education Section */}
-            {section.name === "Education" && (
-              <Box>
-                <Typography
-                  variant="subtitle2"
-                  fontWeight={600}
-                  gutterBottom
-                  color="text.primary"
-                  sx={{ fontSize: "0.9rem", mb: 0.25 }}
-                >
-                  {item.college}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.primary"
-                  gutterBottom
-                  sx={{ fontSize: "0.8rem" }}
-                >
-                  {item.course}
-                  {item.fieldOfStudy ? `, ${item.fieldOfStudy}` : ""}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ fontSize: "0.75rem" }}
-                >
-                  {formatDisplayDate(item.startDate)} -{" "}
-                  {item.currentlyStudying
-                    ? "Present"
-                    : formatDisplayDate(item.endDate)}
-                </Typography>
-              </Box>
-            )}
-
-            {/* Skills Section - Show all skills in one line outside*/}
-            {section.name === "Skill" && index === 0 && (
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.2 }}>
-                {section.data.map((skillItem, skillIndex) => (
-                  <Chip
-                    key={skillIndex}
-                    label={skillItem.skill}
-                    variant="outlined"
-                    sx={{
-                      borderRadius: 0.8,
-                      m: 0.1,
-                      fontSize: "0.7rem",
-                      height: 22,
-
-                    }}
-                    size="small"
-                  />
-                ))}
-              </Box>
-            )}
-
-            {/* Languages Section - Show all languages in one line */}
-            {section.name === "Language" && index === 0 && (
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.2 }}>
-                {section.data.map((languageItem, languageIndex) => (
-                  <Chip
-                    key={languageIndex}
-                    label={`${languageItem.language} - ${languageItem.proficiency}`}
-                    variant="outlined"
-                    sx={{
-                      borderRadius: 0.8,
-                      m: 0.1,
-                      fontSize: "0.7rem",
-                      height: 22,
-                    }}
-                    size="small"
-                  />
-                ))}
-              </Box>
-            )}
-
-            {/* Projects Section */}
-            {section.name === "Project" && (
-              <Box>
-                <Typography
-                  variant="subtitle2"
-                  fontWeight={600}
-                  gutterBottom
-                  color="text.primary"
-                  sx={{ fontSize: "0.9rem", mb: 0.25 }}
-                >
-                  {item.name}
-                </Typography>
-                {item.description && (
-                  <Box sx={{ mt: 0.5 }}>
-                    <MDEditor.Markdown source={item.description || ""} />
-                  </Box>
-                )}
-              </Box>
-            )}
-
-            {/* Other Sections */}
-            {![
-              "Experience",
-              "Education",
-              "Skill",
-              "Language",
-              "Project",
-            ].includes(section.name) && (
-                <Typography
-                  variant="body2"
-                  color="text.primary"
-                  sx={{ fontSize: "0.85rem", width: '10%' }}
-                >
-                  {item[sectionTypes[section.name].fields[0]] ||
-                    `Entry #${index + 1}`}
-                </Typography>
-              )}
-
-            {/* Divider between entries except for the last one */}
-            {index < section.data.length - 1 &&
-              !["Skill", "Language"].includes(section.name) && (
-                <Divider sx={{ my: 1 }} />
-              )}
-          </Box>
-        ))}
-        
         </>
         // </Stack>
       );
@@ -537,7 +537,8 @@ const DraggableSection = ({
             p: 1.5,
             borderBottom: isExpanded ? "1px solid" : "none",
             borderColor: "divider",
-            backgroundColor: "transparent",
+            backgroundColor: "#fefefe",
+
           }}
         >
           {/* Section Header */}
@@ -638,7 +639,7 @@ const DraggableSection = ({
           <Collapse in={isExpanded}>
             <Box sx={{ mt: 1.5 }}>
               {sectionTypes[section.name].single ? (
-                <Box sx={{ mb: 1, border: 1 }}>
+                <Box sx={{ mb: 1, }}>
                   <TextField
                     fullWidth
                     label="Summary"
@@ -2050,6 +2051,7 @@ const GroupForm = () => {
                   borderColor: "divider",
                   borderRadius: 1.5,
                   backgroundColor: "#fefefe",
+
                 }}
               >
                 <Typography

@@ -216,7 +216,7 @@ function UserForm() {
                 >
                   {step === 1 && (
                     <>
-                      <Stack spacing={3} alignItems="center" mb={3}>
+                      <Stack spacing={3} alignItems="center" mb={2.8}>
                         <Box sx={{ position: 'relative' }}>
                           <Avatar
                             src={

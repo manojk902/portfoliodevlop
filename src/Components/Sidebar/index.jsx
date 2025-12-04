@@ -30,7 +30,7 @@ import {
   Close,
 } from "@mui/icons-material";
 
-const Sidebar = ({ variant = "permanent", onClose ,isExpanded, setIsExpanded }) => {
+const Sidebar = ({ variant = "permanent", onClose, isExpanded, setIsExpanded }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
