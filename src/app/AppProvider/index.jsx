@@ -31,7 +31,6 @@ const AppProvider = ({ mode, setMode }) => {
     setIsSidebarOpen((prev) => !prev);
     // console.log('Sidebar toggled, now:', !isSidebarOpen);
   };
-
   return (
     <Box sx={{
       fontFamily: 'Inter, sans-serif',
