@@ -3,18 +3,14 @@ import {
   Box,
   Typography,
   Avatar,
-  IconButton,
   Grid,
   Button,
   Stack,
   Skeleton,
   useTheme,
 } from "@mui/material";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import ShareIcon from "@mui/icons-material/Share";
 import CakeIcon from "@mui/icons-material/Cake";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
@@ -28,7 +24,6 @@ import { setUserProfile } from "../../store/features/userProfileSlice";
 import { apiUrl } from "../../utils/common";
 import { format, parseISO } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { Edit } from "@mui/icons-material";
 const user1 = {
   profilePhoto: "",
   firstName: "Alpha",

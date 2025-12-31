@@ -4,11 +4,8 @@ import {
   Box,
   Button,
   Container,
-  Grid,
   Card,
   Typography,
-  Tabs,
-  Tab,
   useTheme,
   useMediaQuery,
   Alert,
@@ -37,7 +34,7 @@ function DesignPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState("cv");
+  // const [selectedCategory, setSelectedCategory] = useState("cv");
   const [defaultTemplate, setDefaultTemplate] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [cvInfoId, setCvInfoId] = useState();
@@ -85,9 +82,9 @@ function DesignPage() {
     fetchDefaultCv();
   }, []);
 
-  const handleCategoryChange = (event, newValue) => {
-    setSelectedCategory(newValue);
-  };
+  // const handleCategoryChange = (event, newValue) => {
+  //   // setSelectedCategory(newValue);
+  // };
 
   const handleSetDefault = async (templateName) => {
     try {

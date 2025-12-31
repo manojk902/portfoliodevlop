@@ -7,11 +7,8 @@ import {
   Box,
   Button,
   IconButton,
-  Grid,
   Skeleton,
-  Fab,
   Tooltip,
-  Chip,
   Divider,
   Dialog,
   DialogTitle,
@@ -145,15 +142,22 @@ function UserInfo() {
   };
 
   const handleDelete = async () => {
-    const { userId, cvInfoId } = deleteDialog;
-    if (!userId || !cvInfoId) return;
+    const userIdToDelete = deleteDialog.userId ?? userid;
+    const cvInfoId = deleteDialog.cvInfoId;
+
+    if (!userIdToDelete || !cvInfoId) {
+      console.warn("Delete aborted: missing userId or cvInfoId", { userId: userIdToDelete, cvInfoId });
+      return;
+    }
 
     setDeletingCvId(cvInfoId);
     try {
+      console.log("Deleting CV:", { userId: userIdToDelete, cvInfoId });
       const res = await axios.delete(`${apiUrl}/deleteCvInfoSet`, {
-        data: { userId, cvInfoId },
+        data: { userId: userIdToDelete, cvInfoId },
       });
       console.log("delete response:", res.data);
+      // Remove the deleted CV from local state
       setUsers((prev) => prev.filter((u) => u.cvInfoId !== cvInfoId));
       closeDeleteDialog();
     } catch (err) {
@@ -222,7 +226,7 @@ function UserInfo() {
                 borderRadius: 3,
                 transition: "all 0.3s ease",
                 backgroundColor: "white",
-                "&:hover": { transform: "translateY(-4px)', boxShadow: 4, borderColor: 'primary.main'" },
+                "&:hover": { transform: "translateY(-4px)", boxShadow: 4, borderColor: "primary.main" },
               }}
             >
               <CardContent sx={{ textAlign: "center" }}>
@@ -326,6 +330,28 @@ function UserInfo() {
             })}
           </>
         )}
+      <Dialog
+        open={deleteDialog.open}
+        onClose={closeDeleteDialog}
+        aria-labelledby="delete-dialog-title"
+      >
+        <DialogTitle id="delete-dialog-title">Delete CV</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete <strong>{deleteDialog.userName}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteDialog} color="primary">Cancel</Button>
+          <Button
+            onClick={handleDelete}
+            color="error"
+            disabled={deletingCvId === deleteDialog.cvInfoId}
+          >
+            {deletingCvId === deleteDialog.cvInfoId ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
 
   );

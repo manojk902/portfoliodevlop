@@ -84,7 +84,7 @@ const Cv1 = () => {
     });
 
     setPages(newPages.map(p => p.outerHTML));
-  }, [cvData]);
+  }, [cvData,USABLE_HEIGHT]);
 
   const handlePrint = () => {
     printJS({
