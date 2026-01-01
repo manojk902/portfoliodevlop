@@ -29,7 +29,7 @@ const Cv2 = ({ UserDataFromDesignPage }) => {
 
   // --- 2. State Management ---
   const [cvData, setCvData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   // PRINT-JS PRINT FUNCTION - Single continuous layout
   const handlePrint = () => {
