@@ -13,9 +13,7 @@ import {
   Avatar,
   Button,
   Skeleton,
-  MenuItem,
   Chip,
-  alpha,
 } from "@mui/material";
 import {
   Phone,
@@ -24,8 +22,6 @@ import {
   Work,
   LocationOn,
   Person,
-  CorporateFare,
-  Flag,
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import { apiUrl } from "../../utils/common";
@@ -228,243 +224,246 @@ const HomePage = ({ mode }) => {
           </Grid>
         ) : users?.length > 0 ? (
           <Grid container spacing={3} justifyContent="center">
-            {users?.map((user, index) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                lg={3}
-                key={index}
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-              >
-                <Card
+            {users?.map((user, index) => {
+              return (
+                <Grid
+                  item
+                  xs={12}
+                  sm={6}
+                  md={4}
+                  lg={3}
+                  key={index}
                   sx={{
-                    height: "100%",
                     display: "flex",
-                    flexDirection: "column",
-                    borderRadius: "20px",
-                    overflow: "hidden",
-                    background: "#ffffff",
-                    boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                    border: "1px solid rgba(255,255,255,0.8)",
-                    width: "100%",
-                    maxWidth: "320px",
-                    "&:hover": {
-                      transform: "translateY(-8px)",
-                      boxShadow: "0 20px 50px rgba(0,0,0,0.12)",
-                    },
+                    justifyContent: "center",
                   }}
                 >
-                  <CardContent
+                  <Card
                     sx={{
-                      p: 3,
-                      pt: 1,
-                      flexGrow: 1,
+                      height: "100%",
                       display: "flex",
                       flexDirection: "column",
+                      borderRadius: "20px",
+                      overflow: "hidden",
+                      background: "#ffffff",
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+                      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                      border: "1px solid rgba(255,255,255,0.8)",
+                      width: "100%",
+                      maxWidth: "320px",
+                      "&:hover": {
+                        transform: "translateY(-8px)",
+                        boxShadow: "0 20px 50px rgba(0,0,0,0.12)",
+                      },
                     }}
                   >
-                    {/* Avatar & Basic Info */}
-                    <Box
-                      sx={{ display: "flex", alignItems: "flex-start", mb: 3 }}
+                    <CardContent
+                      sx={{
+                        p: 3,
+                        pt: 1,
+                        flexGrow: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
                     >
-                      <Avatar
-                        src={user?.profilePhoto}
-                        sx={{
-                          width: 65,
-                          height: 65,
-                          bgcolor: user?.profilePhoto
-                            ? "transparent"
-                            : "#3498db",
-                          border: "3px solid",
-                          borderColor: "rgba(52, 152, 219, 0.2)",
-                          flexShrink: 0,
-                        }}
+                      {/* Avatar & Basic Info */}
+                      <Box
+                        sx={{ display: "flex", alignItems: "flex-start", mb: 3 }}
                       >
-                        {!user?.profilePhoto &&
-                          `${user.firstName?.charAt(0)}${user.lastName?.charAt(
-                            0
-                          )}`}
-                      </Avatar>
-
-                      <Box sx={{ ml: 2, minWidth: 0, flex: 1 }}>
-                        <Typography
-                          variant="h6"
+                        <Avatar
+                          src={user?.profilePhoto}
                           sx={{
-                            fontWeight: 700,
-                            color: "#1e293b",
-                            fontFamily: "'Inter', sans-serif",
-                            lineHeight: 1.3,
-                            mb: 0.5,
+                            width: 65,
+                            height: 65,
+                            bgcolor: user?.profilePhoto
+                              ? "transparent"
+                              : "#3498db",
+                            border: "3px solid",
+                            borderColor: "rgba(52, 152, 219, 0.2)",
+                            flexShrink: 0,
                           }}
                         >
-                          {user.firstName} {user.lastName}
-                        </Typography>
+                          {!user?.profilePhoto &&
+                            `${user.firstName?.charAt(0)}${user.lastName?.charAt(
+                              0
+                            )}`}
+                        </Avatar>
 
-                        <Chip
-                          label={`@${user.userName}`}
-                          size="small"
-                          sx={{
-                            height: 24,
-                            fontSize: "0.7rem",
-                            fontWeight: 500,
-                            background: "rgba(52, 152, 219, 0.1)",
-                            color: "#3498db",
-                            mb: 1,
-                          }}
-                        />
-
-                        {user.designation && (
-                          <Box
+                        <Box sx={{ ml: 2, minWidth: 0, flex: 1 }}>
+                          <Typography
+                            variant="h6"
                             sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              mt: 0.5,
+                              fontWeight: 700,
+                              color: "#1e293b",
+                              fontFamily: "'Inter', sans-serif",
+                              lineHeight: 1.3,
+                              mb: 0.5,
                             }}
                           >
-                            <Work
+                            {user.firstName} {user.lastName}
+                          </Typography>
+
+                          <Chip
+                            label={`@${user.userName}`}
+                            size="small"
+                            sx={{
+                              height: 24,
+                              fontSize: "0.7rem",
+                              fontWeight: 500,
+                              background: "rgba(52, 152, 219, 0.1)",
+                              color: "#3498db",
+                              mb: 1,
+                            }}
+                          />
+
+                          {user.designation && (
+                            <Box
                               sx={{
-                                fontSize: "1rem",
-                                mr: 0.5,
-                                color: "#64748b",
+                                display: "flex",
+                                alignItems: "center",
+                                mt: 0.5,
+                              }}
+                            >
+                              <Work
+                                sx={{
+                                  fontSize: "1rem",
+                                  mr: 0.5,
+                                  color: "#64748b",
+                                }}
+                              />
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: "#64748b",
+                                  fontWeight: 500,
+                                  fontFamily: "'Inter', sans-serif",
+                                }}
+                              >
+                                {user.designation}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
+                      </Box>
+
+                      <Divider sx={{ my: 1, opacity: 2 }} />
+
+                      {/* Contact & Location Info */}
+                      <Box sx={{ flexGrow: 1, pt: 0 }}>
+                        {user.phoneNo && (
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <Phone
+                              sx={{
+                                fontSize: "1.1rem",
+                                mr: 1.5,
+                                color: "#3498db",
+                                mb: 1,
                               }}
                             />
                             <Typography
                               variant="body2"
                               sx={{
-                                color: "#64748b",
-                                fontWeight: 500,
+                                color: "#475569",
                                 fontFamily: "'Inter', sans-serif",
+                                fontWeight: 500,
                               }}
                             >
-                              {user.designation}
+                              {user.phoneNo}
+                            </Typography>
+                          </Box>
+                        )}
+
+                        {user.email && (
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <Email
+                              sx={{
+                                fontSize: "1.1rem",
+                                mr: 1.5,
+                                mb: 1,
+                                color: "#3498db",
+                              }}
+                            />
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: "#475569",
+                                fontFamily: "'Inter', sans-serif",
+                                fontWeight: 500,
+                              }}
+                              noWrap
+                            >
+                              {user.email}
+                            </Typography>
+                          </Box>
+                        )}
+
+                        {(user.city || user.state || user.country) && (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "flex-start",
+                              mb: 1,
+                            }}
+                          >
+                            <LocationOn
+                              sx={{
+                                fontSize: "1.1rem",
+                                mr: 1.5,
+                                // mt: 0.2,
+                                color: "#3498db",
+                              }}
+                            />
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: "#475569",
+                                fontFamily: "'Inter', sans-serif",
+                                fontWeight: 500,
+                                lineHeight: 1.4,
+                              }}
+                            >
+                              {[user.city, user.state, user.country]
+                                .filter(Boolean)
+                                .join(", ")}
                             </Typography>
                           </Box>
                         )}
                       </Box>
-                    </Box>
 
-                    <Divider sx={{ my: 1, opacity: 2 }} />
-
-                    {/* Contact & Location Info */}
-                    <Box sx={{ flexGrow: 1, pt: 0 }}>
-                      {user.phoneNo && (
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Phone
-                            sx={{
-                              fontSize: "1.1rem",
-                              mr: 1.5,
-                              color: "#3498db",
-                              mb: 1,
-                            }}
-                          />
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: "#475569",
-                              fontFamily: "'Inter', sans-serif",
-                              fontWeight: 500,
-                            }}
-                          >
-                            {user.phoneNo}
-                          </Typography>
-                        </Box>
-                      )}
-
-                      {user.email && (
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Email
-                            sx={{
-                              fontSize: "1.1rem",
-                              mr: 1.5,
-                              mb: 1,
-                              color: "#3498db",
-                            }}
-                          />
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: "#475569",
-                              fontFamily: "'Inter', sans-serif",
-                              fontWeight: 500,
-                            }}
-                            noWrap
-                          >
-                            {user.email}
-                          </Typography>
-                        </Box>
-                      )}
-
-                      {(user.city || user.state || user.country) && (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "flex-start",
-                            mb: 1,
-                          }}
-                        >
-                          <LocationOn
-                            sx={{
-                              fontSize: "1.1rem",
-                              mr: 1.5,
-                              // mt: 0.2,
-                              color: "#3498db",
-                            }}
-                          />
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: "#475569",
-                              fontFamily: "'Inter', sans-serif",
-                              fontWeight: 500,
-                              lineHeight: 1.4,
-                            }}
-                          >
-                            {[user.city, user.state, user.country]
-                              .filter(Boolean)
-                              .join(", ")}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-
-                    {/* Action Button */}
-                    <Button
-                      component={Link}
-                      to={`/${user.userName}`}
-                      variant="contained"
-                      sx={{
-                        mt: 2,
-                        background:
-                          "linear-gradient(135deg, #3498db 0%, #2980b9 100%)",
-                        color: "white",
-                        borderRadius: "12px",
-                        py: 1.2,
-                        fontWeight: 600,
-                        fontSize: "0.9rem",
-                        textTransform: "none",
-                        fontFamily: "'Inter', sans-serif",
-                        boxShadow: "0 4px 15px rgba(52, 152, 219, 0.3)",
-                        "&:hover": {
+                      {/* Action Button */}
+                      <Button
+                        component={Link}
+                        to={`/${user.userName}`}
+                        variant="contained"
+                        sx={{
+                          mt: 2,
                           background:
-                            "linear-gradient(135deg, #2980b9 0%, #2471a3 100%)",
-                          boxShadow: "0 6px 20px rgba(52, 152, 219, 0.4)",
-                          transform: "translateY(-1px)",
-                        },
-                        transition: "all 0.3s ease",
-                      }}
-                    >
-                      View Portfolio
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+                            "linear-gradient(135deg, #3498db 0%, #2980b9 100%)",
+                          color: "white",
+                          borderRadius: "12px",
+                          py: 1.2,
+                          fontWeight: 600,
+                          fontSize: "0.9rem",
+                          textTransform: "none",
+                          fontFamily: "'Inter', sans-serif",
+                          boxShadow: "0 4px 15px rgba(52, 152, 219, 0.3)",
+                          "&:hover": {
+                            background:
+                              "linear-gradient(135deg, #2980b9 0%, #2471a3 100%)",
+                            boxShadow: "0 6px 20px rgba(52, 152, 219, 0.4)",
+                            transform: "translateY(-1px)",
+                          },
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        View Portfolio
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              )
+
+            })}
           </Grid>
         ) : (
           <Box sx={{ textAlign: "center", py: 10 }}>
