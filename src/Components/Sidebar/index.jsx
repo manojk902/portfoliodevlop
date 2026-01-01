@@ -8,24 +8,18 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  useTheme,
+  // useTheme,
   Tooltip,
-  Divider,
   Typography,
-  Badge,
-  Chip,
   IconButton,
 } from "@mui/material";
 import {
   Person,
   DesignServices,
   Dashboard,
-  Settings,
-  Help,
-  Star,
-  TrendingUp,
-  KeyboardArrowRight,
-  ExpandMore,
+  // Settings,
+  // Help,
+
   Menu,
   Close,
 } from "@mui/icons-material";
@@ -33,7 +27,7 @@ import {
 const Sidebar = ({ variant = "permanent", onClose, isExpanded, setIsExpanded }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const theme = useTheme();
+  // const theme = useTheme();
   // const [isExpanded, setIsExpanded] = useState(false);
   const [isManuallyOpen, setIsManuallyOpen] = useState(false);
 
@@ -58,18 +52,18 @@ const Sidebar = ({ variant = "permanent", onClose, isExpanded, setIsExpanded }) 
     },
   ];
 
-  const secondaryMenuItems = [
-    {
-      label: "Settings",
-      path: "/settings",
-      icon: <Settings sx={{ fontSize: "20px" }} />,
-    },
-    {
-      label: "Help & Support",
-      path: "/help",
-      icon: <Help sx={{ fontSize: "20px" }} />,
-    },
-  ];
+  // const secondaryMenuItems = [
+  //   {
+  //     label: "Settings",
+  //     path: "/settings",
+  //     icon: <Settings sx={{ fontSize: "20px" }} />,
+  //   },
+  //   {
+  //     label: "Help & Support",
+  //     path: "/help",
+  //     icon: <Help sx={{ fontSize: "20px" }} />,
+  //   },
+  // ];
 
   const sidebarWidth = isExpanded ? 180 : 60;
 
