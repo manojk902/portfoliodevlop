@@ -52,7 +52,7 @@ import axios from "axios";
 import { apiUrl } from "../../../utils/common";
 import { useSelector } from "react-redux";
 import { format, parseISO } from "date-fns";
-import { green } from "@mui/material/colors";
+// import { green } from "@mui/material/colors";
 
 // Define section types with fields, required fields, and whether they allow multiple entries
 const sectionTypes = {
@@ -214,7 +214,7 @@ const SectionPreview = ({ section, onEdit }) => {
         // <Stack spacing={1.5}>
         <>
           {section.data.map((item, index) => (
-            console.log(item, "itemitemitem"),
+            // console.log(item, "itemitemitem"),
             <Box key={index}>
               {/* Experience Section */}
               {section.name === "Experience" && (
